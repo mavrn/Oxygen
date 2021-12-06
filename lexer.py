@@ -7,10 +7,12 @@ CHAR_TYPES = {"NUM": 0, "+": 1, "-": 2, "*": 3, "/": 4, "(": 5, ")": 6}
 
 
 class Lexer:
-    current_char = ""
+
 
     def __init__(self, text):
         self.text = iter(text)
+        current_char = None
+        self.next_char()
 
     def next_char(self):
         try:

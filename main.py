@@ -3,7 +3,7 @@ from parse import Parser
 
 
 if __name__ == '__main__':
-    while True:
+   while True:
         inp = input(">>")
         lexer = Lexer(inp)
         tokens = lexer.gen_tokens()
