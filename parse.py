@@ -1,6 +1,5 @@
 from collections import namedtuple
 
-NumNode = int()
 AddNode = namedtuple("AddNode", ["n1", "n2"])
 SubNode = namedtuple("SubNode", ["n1", "n2"])
 MultNode = namedtuple("MultNode", ["n1", "n2"])

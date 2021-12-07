@@ -1,5 +1,6 @@
 from lexer import Lexer
 from parse import Parser
+from interpreter import evaluate
 
 
 if __name__ == '__main__':
@@ -9,5 +10,7 @@ if __name__ == '__main__':
         tokens = lexer.gen_tokens()
         print(tokens)
         parser = Parser(tokens)
-        print(parser.parse())
+        tree = parser.parse()
+        print(tree)
+        print(evaluate(tree))
 
