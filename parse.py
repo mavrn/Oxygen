@@ -1,9 +1,12 @@
 from collections import namedtuple
+from lexer import OPERATORS
 
-AddNode = namedtuple("AddNode", ["n1", "n2"])
-SubNode = namedtuple("SubNode", ["n1", "n2"])
-MultNode = namedtuple("MultNode", ["n1", "n2"])
-DivNode = namedtuple("DivNode", ["n1", "n2"])
+AddNode = namedtuple("AddNode", ["a", "b"])
+SubNode = namedtuple("SubNode", ["a", "b"])
+MultNode = namedtuple("MultNode", ["a", "b"])
+DivNode = namedtuple("DivNode", ["a", "b"])
+AssignNode = namedtuple("AssignNode", ["identifier", "value"])
+VariableNode = namedtuple("VariableNode", ["identifier"])
 
 
 class Parser:
@@ -19,7 +22,33 @@ class Parser:
             self.current_token = None
 
     def parse(self):
-        return self.expression()
+        if self.current_token.type == 7:
+            return self.gen_assign_node()
+        else:
+            return self.expression()
+
+    def gen_assign_node(self):
+        identifier = self.current_token.value
+        self.next_token()
+        if self.current_token is None:
+            return VariableNode(identifier)
+        elif self.current_token.type == 1:
+            self.next_token()
+            return AddNode(VariableNode(identifier), self.expression())
+        elif self.current_token.type == 2:
+            self.next_token()
+            return SubNode(VariableNode(identifier), self.expression())
+        elif self.current_token.type == 3:
+            self.next_token()
+            return MultNode(VariableNode(identifier), self.expression())
+        elif self.current_token.type == 4:
+            self.next_token()
+            return DivNode(VariableNode(identifier), self.expression())
+        elif self.current_token.type == 8:
+            self.next_token()
+            return AssignNode(identifier, self.expression())
+        else:
+            raise Exception("Syntax Error")
 
     def expression(self):
         result = self.term()
@@ -50,7 +79,7 @@ class Parser:
             return token.value
         elif token.type == 2:
             self.next_token()
-            return -self.factor()
+            return MultNode(-1, self.factor())
         elif token.type == 5:
             self.next_token()
             result = self.expression()
@@ -59,5 +88,8 @@ class Parser:
             else:
                 self.next_token()
                 return result
+        elif token.type == 7:
+            self.next_token()
+            return VariableNode(token.value)
         else:
             raise Exception("Syntax error")

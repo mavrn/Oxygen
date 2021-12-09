@@ -2,16 +2,16 @@ from collections import namedtuple
 
 token = namedtuple("token", "type value", defaults=(None, None))
 NUM_CHARS = ".0123456789"
-OPERATORS = "+-*/()"
-CHAR_TYPES = {"NUM": 0, "+": 1, "-": 2, "*": 3, "/": 4, "(": 5, ")": 6}
+LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+OPERATORS = "+-*/()="
+CHAR_TYPES = {"NUM": 0, "+": 1, "-": 2, "*": 3, "/": 4, "(": 5, ")": 6, "IDENTIFIER": 7, "=": 8}
 
 
 class Lexer:
 
-
     def __init__(self, text):
         self.text = iter(text)
-        current_char = None
+        self.current_char = None
         self.next_char()
 
     def next_char(self):
@@ -23,6 +23,7 @@ class Lexer:
     def gen_tokens(self):
         tokens = []
 
+
         while self.current_char is not None:
             if self.current_char == " ":
                 self.next_char()
@@ -31,6 +32,8 @@ class Lexer:
             elif self.current_char in OPERATORS:
                 tokens.append(token(CHAR_TYPES.get(self.current_char)))
                 self.next_char()
+            elif self.current_char in LETTERS:
+                tokens.append(self.gen_identifier())
             else:
                 raise Exception(f"Illegal Character {self.current_char}")
         return tokens
@@ -46,3 +49,11 @@ class Lexer:
         if number.count(".") > 1:
             raise Exception("Illegal number", number)
         return token(CHAR_TYPES.get("NUM"), float(number))
+
+    def gen_identifier(self):
+        name = ""
+        while self.current_char is not None and self.current_char in LETTERS:
+            name += self.current_char
+            self.next_char()
+
+        return token(CHAR_TYPES.get("IDENTIFIER"), name)
