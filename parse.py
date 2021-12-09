@@ -1,10 +1,11 @@
 from collections import namedtuple
-from lexer import OPERATORS
+import Tokens
 
 AddNode = namedtuple("AddNode", ["a", "b"])
 SubNode = namedtuple("SubNode", ["a", "b"])
 MultNode = namedtuple("MultNode", ["a", "b"])
 DivNode = namedtuple("DivNode", ["a", "b"])
+ModulusNode = namedtuple("ModulusNode", ["a", "b"])
 AssignNode = namedtuple("AssignNode", ["identifier", "value"])
 VariableNode = namedtuple("VariableNode", ["identifier"])
 
@@ -22,7 +23,7 @@ class Parser:
             self.current_token = None
 
     def parse(self):
-        if self.current_token.type == 7:
+        if self.current_token.type == Tokens.IDENTIFIER:
             return self.gen_assign_node()
         else:
             return self.expression()
@@ -32,19 +33,22 @@ class Parser:
         self.next_token()
         if self.current_token is None:
             return VariableNode(identifier)
-        elif self.current_token.type == 1:
+        elif self.current_token.type == Tokens.PLUS_SIGN:
             self.next_token()
             return AddNode(VariableNode(identifier), self.expression())
-        elif self.current_token.type == 2:
+        elif self.current_token.type == Tokens.MINUS_SIGN:
             self.next_token()
             return SubNode(VariableNode(identifier), self.expression())
-        elif self.current_token.type == 3:
+        elif self.current_token.type == Tokens.MULT_SIGN:
             self.next_token()
             return MultNode(VariableNode(identifier), self.expression())
-        elif self.current_token.type == 4:
+        elif self.current_token.type == Tokens.DIV_SIGN:
             self.next_token()
             return DivNode(VariableNode(identifier), self.expression())
-        elif self.current_token.type == 8:
+        elif self.current_token.type == Tokens.MODULUS_SIGN:
+            self.next_token()
+            return ModulusNode(VariableNode(identifier), self.expression())
+        elif self.current_token.type == Tokens.EQUALS:
             self.next_token()
             return AssignNode(identifier, self.expression())
         else:
@@ -52,8 +56,8 @@ class Parser:
 
     def expression(self):
         result = self.term()
-        while self.current_token is not None and self.current_token.type in (1, 2):
-            if self.current_token.type == 1:
+        while self.current_token is not None and self.current_token.type in (Tokens.PLUS_SIGN, Tokens.MINUS_SIGN):
+            if self.current_token.type == Tokens.PLUS_SIGN:
                 self.next_token()
                 result = AddNode(result, self.term())
             else:
@@ -63,32 +67,38 @@ class Parser:
 
     def term(self):
         result = self.factor()
-        while self.current_token is not None and self.current_token.type in (3, 4):
-            if self.current_token.type == 3:
+        while self.current_token is not None and self.current_token.type in (Tokens.MULT_SIGN, Tokens.DIV_SIGN, Tokens.MODULUS_SIGN):
+            if self.current_token.type == Tokens.MULT_SIGN:
                 self.next_token()
                 result = MultNode(result, self.factor())
-            else:
+            elif self.current_token.type == Tokens.DIV_SIGN:
                 self.next_token()
                 result = DivNode(result, self.factor())
+            else:
+                self.next_token()
+                result = ModulusNode(result, self.factor())
         return result
 
     def factor(self):
         token = self.current_token
-        if token.type == 0:
+        if token.type == Tokens.NUMBER:
             self.next_token()
             return token.value
-        elif token.type == 2:
+        elif token.type == Tokens.PLUS_SIGN:
+            self.next_token()
+            return self.factor()
+        elif token.type == Tokens.MINUS_SIGN:
             self.next_token()
             return MultNode(-1, self.factor())
-        elif token.type == 5:
+        elif token.type == Tokens.LPAREN:
             self.next_token()
             result = self.expression()
-            if self.current_token.type != 6:
+            if self.current_token.type != Tokens.RPAREN:
                 raise Exception("SyntaxError")
             else:
                 self.next_token()
                 return result
-        elif token.type == 7:
+        elif token.type == Tokens.IDENTIFIER:
             self.next_token()
             return VariableNode(token.value)
         else:

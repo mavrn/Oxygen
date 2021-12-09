@@ -1,10 +1,11 @@
 from collections import namedtuple
+import Tokens
 
 token = namedtuple("token", "type value", defaults=(None, None))
 NUM_CHARS = ".0123456789"
 LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-OPERATORS = "+-*/()="
-CHAR_TYPES = {"NUM": 0, "+": 1, "-": 2, "*": 3, "/": 4, "(": 5, ")": 6, "IDENTIFIER": 7, "=": 8}
+OPERATORS = "+-*/%()="
+CHAR_TYPES = {"+": Tokens.PLUS_SIGN, "-": Tokens.MINUS_SIGN, "*": Tokens.MULT_SIGN, "/": Tokens.DIV_SIGN, "%": Tokens.MODULUS_SIGN, "=": Tokens.EQUALS}
 
 
 class Lexer:
@@ -22,7 +23,6 @@ class Lexer:
 
     def gen_tokens(self):
         tokens = []
-
 
         while self.current_char is not None:
             if self.current_char == " ":
@@ -48,12 +48,11 @@ class Lexer:
             number = "0" + number
         if number.count(".") > 1:
             raise Exception("Illegal number", number)
-        return token(CHAR_TYPES.get("NUM"), float(number))
+        return token(Tokens.NUMBER, float(number))
 
     def gen_identifier(self):
         name = ""
         while self.current_char is not None and self.current_char in LETTERS:
             name += self.current_char
             self.next_char()
-
-        return token(CHAR_TYPES.get("IDENTIFIER"), name)
+        return token(Tokens.IDENTIFIER, name)
