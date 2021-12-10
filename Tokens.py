@@ -1,5 +1,3 @@
-from collections import namedtuple
-
 # Includes token types
 
 NUMBER = 0
@@ -12,4 +10,6 @@ LPAREN = 6
 RPAREN = 7
 IDENTIFIER = 8
 EQUALS = 9
+KEYWORD = 10
+EXP = 11
 

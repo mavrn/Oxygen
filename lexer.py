@@ -1,11 +1,14 @@
 from collections import namedtuple
+
 import Tokens
 
 token = namedtuple("token", "type value", defaults=(None, None))
 NUM_CHARS = ".0123456789"
 LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-OPERATORS = "+-*/%()="
-CHAR_TYPES = {"+": Tokens.PLUS_SIGN, "-": Tokens.MINUS_SIGN, "*": Tokens.MULT_SIGN, "/": Tokens.DIV_SIGN, "%": Tokens.MODULUS_SIGN, "=": Tokens.EQUALS}
+OPERATORS = "+-*/%()=^"
+CHAR_TYPES = {"+": Tokens.PLUS_SIGN, "-": Tokens.MINUS_SIGN, "*": Tokens.MULT_SIGN, "/": Tokens.DIV_SIGN,
+              "%": Tokens.MODULUS_SIGN, "=": Tokens.EQUALS, "(": Tokens.LPAREN, ")": Tokens.RPAREN, "^": Tokens.EXP}
+KEYWORDS = ["sqrt", "sin", "cos", "tan", "factorial"]
 
 
 class Lexer:
@@ -55,4 +58,13 @@ class Lexer:
         while self.current_char is not None and self.current_char in LETTERS:
             name += self.current_char
             self.next_char()
-        return token(Tokens.IDENTIFIER, name)
+        if name in KEYWORDS:
+            if self.current_char == ".":
+                self.next_char()
+                return token(Tokens.KEYWORD, name)
+            elif self.current_char == "(":
+                return token(Tokens.KEYWORD, name)
+            else:
+                raise Exception(f"Wrong use of keyword {name}")
+        else:
+            return token(Tokens.IDENTIFIER, name)
