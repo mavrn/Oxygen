@@ -27,36 +27,8 @@ class Parser:
     def parse(self):
         if self.current_token is None:
             return None
-        elif self.current_token.type == Tokens.IDENTIFIER:
-            return self.gen_assign_node()
         else:
             return self.expression()
-
-    def gen_assign_node(self):
-        identifier = self.current_token.value
-        self.next_token()
-        if self.current_token is None:
-            return VariableNode(identifier)
-        elif self.current_token.type == Tokens.PLUS_SIGN:
-            self.next_token()
-            return AddNode(VariableNode(identifier), self.expression())
-        elif self.current_token.type == Tokens.MINUS_SIGN:
-            self.next_token()
-            return SubNode(VariableNode(identifier), self.expression())
-        elif self.current_token.type == Tokens.MULT_SIGN:
-            self.next_token()
-            return MultNode(VariableNode(identifier), self.expression())
-        elif self.current_token.type == Tokens.DIV_SIGN:
-            self.next_token()
-            return DivNode(VariableNode(identifier), self.expression())
-        elif self.current_token.type == Tokens.MODULUS_SIGN:
-            self.next_token()
-            return ModulusNode(VariableNode(identifier), self.expression())
-        elif self.current_token.type == Tokens.EQUALS:
-            self.next_token()
-            return AssignNode(identifier, self.expression())
-        else:
-            raise Exception("Syntax Error")
 
     def expression(self):
         result = self.term()
@@ -71,13 +43,19 @@ class Parser:
 
     def term(self):
         result = self.exponential()
-        while self.current_token is not None and self.current_token.type in (Tokens.MULT_SIGN, Tokens.DIV_SIGN, Tokens.MODULUS_SIGN):
+        while self.current_token is not None and self.current_token.type in (Tokens.MULT_SIGN, Tokens.DIV_SIGN, Tokens.MODULUS_SIGN, Tokens.EQUALS):
             if self.current_token.type == Tokens.MULT_SIGN:
                 self.next_token()
                 result = MultNode(result, self.exponential())
             elif self.current_token.type == Tokens.DIV_SIGN:
                 self.next_token()
                 result = DivNode(result, self.exponential())
+            elif self.current_token.type == Tokens.EQUALS:
+                self.next_token()
+                try:
+                    result = AssignNode(result.identifier, self.expression())
+                except AttributeError:
+                    raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
             else:
                 self.next_token()
                 result = ModulusNode(result, self.exponential())
@@ -120,4 +98,4 @@ class Parser:
             self.next_token()
             return KeywordNode(keyword, self.exponential())
         else:
-            raise Exception("Syntax error")
+            raise SyntaxError("Invalid syntax")

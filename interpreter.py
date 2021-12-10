@@ -15,7 +15,9 @@ def evaluate(node):
     elif type(node).__name__ == "ModulusNode":
         return evaluate(node.a) % evaluate(node.b)
     elif type(node).__name__ == "AssignNode":
-        variables[node.identifier] = evaluate(node.value)
+        assignment_value = evaluate(node.value)
+        variables[node.identifier] = assignment_value
+        return assignment_value
     elif type(node).__name__ == "VariableNode":
         value = variables.get(node.identifier)
         if value is None:
