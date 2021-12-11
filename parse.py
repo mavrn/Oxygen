@@ -10,6 +10,9 @@ ExpNode = namedtuple("ExpNode", ["a", "b"])
 AssignNode = namedtuple("AssignNode", ["identifier", "value"])
 VariableNode = namedtuple("VariableNode", ["identifier"])
 KeywordNode = namedtuple("KeywordNode", ["keyword", "value"])
+FuncDeclareNode = namedtuple("FuncDeclareNode", ["identifier", "arguments", "body"])
+# Include an identifier, a list of arguments and a tree representing the body
+FuncCallNode = namedtuple("FuncCallNode", ["identifier", "arguments"])
 
 
 class Parser:
@@ -27,6 +30,9 @@ class Parser:
     def parse(self):
         if self.current_token is None:
             return None
+        elif self.current_token.type == Tokens.FUNCTION_KEYWORD:
+            self.next_token()
+            return self.declare_function()
         else:
             return self.expression()
 
@@ -61,6 +67,7 @@ class Parser:
                 result = ModulusNode(result, self.exponential())
         return result
 
+    # TODO: consider replacing with keyword
     def exponential(self):
         token = self.factor()
         if self.current_token is not None and self.current_token.type == Tokens.EXP:
@@ -91,11 +98,48 @@ class Parser:
                 self.next_token()
                 return result
         elif token.type == Tokens.IDENTIFIER:
+            identifier = token.value
             self.next_token()
-            return VariableNode(token.value)
+            if self.current_token is None or self.current_token.type != Tokens.LPAREN:
+                return VariableNode(token.value)
+            else:
+                return self.call_function(identifier)
+
         elif token.type == Tokens.KEYWORD:
             keyword = self.current_token.value
             self.next_token()
             return KeywordNode(keyword, self.exponential())
         else:
             raise SyntaxError("Invalid syntax")
+
+    # TODO: do some more testing with functions
+    def declare_function(self):
+        arguments = []
+        if self.current_token.type != Tokens.IDENTIFIER:
+            raise SyntaxError("Expected an identifier")
+        else:
+            identifier = self.current_token.value
+            self.next_token()
+        while self.current_token.type == Tokens.IDENTIFIER:
+            arguments.append(self.current_token.value)
+            self.next_token()
+        if self.current_token.type != Tokens.FUNCTION_OPERATOR:
+            raise SyntaxError("Expected \"=>\"")
+        else:
+            self.next_token()
+            return FuncDeclareNode(identifier, arguments, self.expression())
+
+    def call_function(self, identifier):
+        arguments = []
+        self.next_token()
+        while self.current_token is not None and self.current_token.type in (
+                Tokens.IDENTIFIER, Tokens.COMMA, Tokens.NUMBER):
+            arguments.append(self.expression())
+            if self.current_token.type not in (Tokens.COMMA, Tokens.RPAREN):
+                raise SyntaxError("Expected comma or closing parenthesis")
+            elif self.current_token.type != Tokens.RPAREN:
+                self.next_token()
+        if self.current_token.type != Tokens.RPAREN:
+            raise SyntaxError("Expected closing parenthesis")
+        self.next_token()
+        return FuncCallNode(identifier, arguments)

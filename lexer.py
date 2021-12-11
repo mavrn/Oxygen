@@ -1,18 +1,18 @@
 from collections import namedtuple
-
 import Tokens
 
 token = namedtuple("token", "type value", defaults=(None, None))
 NUM_CHARS = ".0123456789"
 LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-OPERATORS = "+-*/%()=^"
+OPERATORS = "+-*/%()=^=>,"
 CHAR_TYPES = {"+": Tokens.PLUS_SIGN, "-": Tokens.MINUS_SIGN, "*": Tokens.MULT_SIGN, "/": Tokens.DIV_SIGN,
-              "%": Tokens.MODULUS_SIGN, "=": Tokens.EQUALS, "(": Tokens.LPAREN, ")": Tokens.RPAREN, "^": Tokens.EXP}
+              "%": Tokens.MODULUS_SIGN, "=": Tokens.EQUALS, "(": Tokens.LPAREN, ")": Tokens.RPAREN, "^": Tokens.EXP,
+              "=>": Tokens.FUNCTION_OPERATOR, ",": Tokens.COMMA}
 KEYWORDS = ["sqrt", "sin", "cos", "tan", "factorial"]
+FN_KEYWORD = "fn"
 
 
 class Lexer:
-
     def __init__(self, text):
         self.text = iter(text)
         self.current_char = None
@@ -33,8 +33,16 @@ class Lexer:
             elif self.current_char in NUM_CHARS:
                 tokens.append(self.gen_number())
             elif self.current_char in OPERATORS:
-                tokens.append(token(CHAR_TYPES.get(self.current_char)))
-                self.next_char()
+                if self.current_char != "=":
+                    tokens.append(token(CHAR_TYPES.get(self.current_char)))
+                    self.next_char()
+                else:
+                    self.next_char()
+                    if self.current_char == ">":
+                        tokens.append(token(CHAR_TYPES.get("=>")))
+                        self.next_char()
+                    else:
+                        tokens.append(token(CHAR_TYPES.get("=")))
             elif self.current_char in LETTERS:
                 tokens.append(self.gen_identifier())
             else:
@@ -65,6 +73,8 @@ class Lexer:
             elif self.current_char == "(":
                 return token(Tokens.KEYWORD, name)
             else:
-                raise Exception(f"Wrong use of keyword {name}")
+                raise SyntaxError(f"Wrong use of keyword {name}.")
+        elif name == FN_KEYWORD:
+            return token(Tokens.FUNCTION_KEYWORD)
         else:
             return token(Tokens.IDENTIFIER, name)
