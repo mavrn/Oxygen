@@ -1,10 +1,8 @@
 # **A simple interactive interpreter written in python**
 
----
 
 ## Syntax explanation
 
---- 
 
 
 **Note: The `>` at the beginning of the line will indicate user input, the following line will be the interpreter
@@ -121,7 +119,6 @@ SyntaxError: Expected "=>"
 
 ## Functionality
 
----
 
 Here's a quick summary on how it works: <br>
 First, the **lexer** will convert the input string into a list of `tokens`. I used `namedtuples` for that. <br>
