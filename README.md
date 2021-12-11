@@ -10,6 +10,7 @@ output.**
 
 ### Declaring Variables
 
+---
 
 Integers and floats are assigned with the identifier on the left, and the value on the right. Example:
 
@@ -31,10 +32,11 @@ Nested and chained assignments are also possible:
 
 ### Operations
 
+---
 
 The interpreter will understand the following operations:
 
-- Add, Subtract, Multiplicate, Divide with the common operators
+- Add, Subtract, Multiply, Divide with the common operators
 - Modulus with %
 - Exponentiate with ^
 - Brackets
@@ -50,6 +52,7 @@ Operator precedence will follow the common order:
 
 ### Keywords
 
+---
 
 Currently, there are the following usable keywords:
 
@@ -70,6 +73,7 @@ Keywords can be used in two ways: `keyword.factor` or `keyword(expression)`
 
 ### Functions
 
+---
 
 Functions are declared using the keyword `fn`, the identifier, the arguments listed with spaces inbetween, <br>
 the operator =>
@@ -80,7 +84,7 @@ and the function body.
 fn add x y => x + y
 ```
 
-Functions are called using the identifier and the respective arguments in brackets; seperated by commas.
+Functions are called using the identifier and the respective arguments in brackets; separated by commas.
 > Calling the "add" function:
 
 ```python
@@ -90,6 +94,7 @@ sum = add(7, 3)
 
 ### Output
 
+---
 
 Output for a valid function declaration will be an empty string. <br>
 Output for a valid expression will be the result of the expression.<br>
@@ -97,6 +102,7 @@ Output for input consisting entirely of whitespace will be nothing.
 
 ### Errors
 
+---
 
 Exceptions will be thrown for invalid Expressions. <br>
 *Some examples*:
@@ -118,7 +124,7 @@ Here's a quick summary on how it works: <br>
 First, the **lexer** will convert the input string into a list of `tokens`. I used `namedtuples` for that. <br>
 Then, the **parser** will recursively go over these tokens and put them into defined nodes (also `namedtuples`),
 following the common order. <br>
-Lastly, the generated tree of operations will be recusively evaluated in the **interpreter**. <br>
+Lastly, the generated tree of operations will be recursively evaluated in the **interpreter**. <br>
 
 #### Example input:
 
