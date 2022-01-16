@@ -7,7 +7,6 @@ OPERATORS = "+-*/%()^,"
 CHAR_TYPES = {"+": Tokens.PLUS_SIGN, "-": Tokens.MINUS_SIGN, "*": Tokens.MULT_SIGN, "/": Tokens.DIV_SIGN,
               "%": Tokens.MODULUS_SIGN, "=": Tokens.EQUALS, "(": Tokens.LPAREN, ")": Tokens.RPAREN, "^": Tokens.EXP,
               "=>": Tokens.FUNCTION_OPERATOR, ",": Tokens.COMMA, ".": Tokens.PERIOD_FUNC_CALL}
-KEYWORDS = ["sqrt", "sin", "cos", "tan", "factorial"]
 FN_KEYWORD = "fn"
 
 
@@ -71,15 +70,7 @@ class Lexer:
         while self.current_char is not None and self.current_char in (LETTERS + NUM_CHARS):
             name += self.current_char
             self.next_char()
-        if name in KEYWORDS:
-            if self.current_char == ".":
-                self.next_char()
-                return token(Tokens.KEYWORD, name)
-            elif self.current_char == "(":
-                return token(Tokens.KEYWORD, name)
-            else:
-                raise SyntaxError(f"Wrong use of keyword {name}.")
-        elif name == FN_KEYWORD:
+        if name == FN_KEYWORD:
             return token(Tokens.FUNCTION_KEYWORD)
         else:
             return token(Tokens.IDENTIFIER, name)

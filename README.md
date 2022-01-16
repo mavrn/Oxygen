@@ -50,27 +50,6 @@ Operator precedence will follow the common order:
 20
 ```
 
-### **Keywords**
-
----
-
-Currently, there are the following usable keywords:
-
-- `sqrt` (square root)
-- `sin`, `cos`, `tan`
-- `factorial`
-
-Keywords can be used in two ways: `keyword.factor` or `keyword(expression)`
-
-*Example:*
-
-```python
-> sqrt.81
-9
-> sqrt(80+1)
-9
-```
-
 ### **Functions**
 
 ---
@@ -81,24 +60,65 @@ and the function body.
 > Declaring the function "add" that takes two arguments and returns the sum:
 
 ```python
-fn add x y => x + y
+> fn add x y => x + y
 ```
 
 Functions are called using the identifier and the respective arguments in brackets; separated by commas.
 > Calling the "add" function:
 
 ```python
-sum = add(7, 3)
+> sum = add(7, 3)
 10
+```
+
+Alternatively, if the function takes exactly one argument, it is also callable with the identifier, a period, and the
+argument.
+
+```python
+> fn add_two x => x + 2
+> add_two.2
+4
+```
+
+If there is a name conflict between a function variable and a global variable, the function variable will take
+precedence
+(emulating local and global scope).
+
+```python
+> x = 5
+> add_two(4)
+6
+```
+
+### **Built-in functions**
+
+---
+
+Currently, there are the following usable built-in functions:
+
+- `sqrt` (square root)
+- `sin`, `cos`, `tan`
+- `factorial`
+
+They are called just like normal functions: `keyword.factor` or `keyword(expression)`
+
+*Example:*
+
+```python
+> sqrt.81
+9
+> sqrt(80+1)
+9
 ```
 
 ### **Output**
 
 ---
 
-Output for a valid function declaration will be an empty string. <br>
 Output for a valid expression will be the result of the expression.<br>
-Output for input consisting entirely of whitespace will be nothing.
+Output for a valid function declaration will be an nothing. <br>
+Output for input consisting entirely of whitespace will be nothing. <br>
+A warning will be displayed if the user tries to override a built-in function.
 
 ### **Errors**
 
@@ -112,8 +132,9 @@ Exceptions will be thrown for invalid Expressions. <br>
 SyntaxError: Expected a closing parenthesis.
 > y + 1
 NameError: Name "y" is not defined.
-> 81.sqrt
-SyntaxError: Wrong use of keyword sqrt.
+> fn add a b => a + b
+> add(5)
+SyntaxError: Expected 2 arguments, got 1.
 > fn add a b = a + b
 SyntaxError: Expected "=>"
 ```

@@ -7,7 +7,6 @@ from fractions import Fraction
 
 # TODO: add comments
 # TODO: add custom exceptions
-# BUG: Case a(sqrt(x)) unexpected Exception
 
 
 def start_session(fractions=False, debug=False):
@@ -22,8 +21,11 @@ def start_session(fractions=False, debug=False):
         if debug:
             print(tree)
         result = evaluate(tree)
+        print(result)
         if result is not None:
-            if result % 1 == 0:
+            if isinstance(result, str):
+                print(result)
+            elif result % 1 == 0:
                 print(int(result))
             else:
                 if fractions:

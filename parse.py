@@ -44,11 +44,10 @@ class Parser:
                 self.next_token()
                 result = Nodes.DivNode(result, self.exponential())
             elif self.current_token.type == Tokens.EQUALS:
-                self.next_token()
-                try:
-                    result = Nodes.AssignNode(result.identifier, self.expression())
-                except AttributeError:
+                if type(result).__name__ == "float" or result.type != Tokens.IDENTIFIER:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
+                self.next_token()
+                result = Nodes.AssignNode(result.identifier, self.expression())
             else:
                 self.next_token()
                 result = Nodes.ModulusNode(result, self.exponential())
@@ -91,11 +90,6 @@ class Parser:
                 return Nodes.VariableNode(token.value)
             else:
                 return self.call_function(identifier)
-
-        elif token.type == Tokens.KEYWORD:
-            keyword = self.current_token.value
-            self.next_token()
-            return Nodes.KeywordNode(keyword, self.exponential())
         else:
             raise SyntaxError("Invalid syntax")
 

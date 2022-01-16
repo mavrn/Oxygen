@@ -1,7 +1,7 @@
 import interface
 
 def main():
-    interface.start_session(fractions=False)
+    interface.start_session(fractions=False, debug=True)
 
 
 
