@@ -1,5 +1,7 @@
+from collections import namedtuple
 # Includes token types
 
+token = namedtuple("token", "type value", defaults=(None, None))
 NUMBER = 0
 PLUS_SIGN = 1
 MINUS_SIGN = 2
@@ -14,7 +16,8 @@ KEYWORD = 10
 EXP = 11
 FUNCTION_OPERATOR = 12
 FUNCTION_KEYWORD = 13
-COMMA = 14
+PERIOD_FUNC_CALL = 14
+COMMA = 15
 
 # Debug
 type_dict = {
@@ -32,5 +35,6 @@ type_dict = {
     11: "EXPONENTIAL_SIGN",
     12: "FUNCTION_OPERATOR",
     13: "FUNCTION_KEYWORD",
-    14: "COMMA"
+    14: "PERIOD_FUNC_CALL",
+    15: "COMMA"
 }

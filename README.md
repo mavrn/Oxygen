@@ -8,7 +8,7 @@
 **Note: The `>` at the beginning of the line will indicate user input, the following line will be the interpreter
 output.**
 
-### Declaring Variables
+### **Declaring Variables**
 
 ---
 
@@ -30,7 +30,7 @@ Nested and chained assignments are also possible:
 4
 ```
 
-### Operations
+### **Operations**
 
 ---
 
@@ -50,7 +50,7 @@ Operator precedence will follow the common order:
 20
 ```
 
-### Keywords
+### **Keywords**
 
 ---
 
@@ -71,7 +71,7 @@ Keywords can be used in two ways: `keyword.factor` or `keyword(expression)`
 9
 ```
 
-### Functions
+### **Functions**
 
 ---
 
@@ -92,7 +92,7 @@ sum = add(7, 3)
 10
 ```
 
-### Output
+### **Output**
 
 ---
 
@@ -100,7 +100,7 @@ Output for a valid function declaration will be an empty string. <br>
 Output for a valid expression will be the result of the expression.<br>
 Output for input consisting entirely of whitespace will be nothing.
 
-### Errors
+### **Errors**
 
 ---
 
@@ -118,7 +118,7 @@ SyntaxError: Wrong use of keyword sqrt.
 SyntaxError: Expected "=>"
 ```
 
-## Functionality
+## **Functionality**
 
 Here's a quick summary on how it works: <br>
 First, the **lexer** will convert the input string into a list of `tokens`. I used `namedtuples` for that. <br>
@@ -132,19 +132,19 @@ Lastly, the generated tree of operations will be recursively evaluated in the **
 x = 5 + 1
 ```
 
-#### Lexer output:
+#### **Lexer** output:
 
 ```python
 [token(type='IDENTIFIER', value='x'), token(type='EQUALS', value=None), token(type='NUMBER', value=5.0), token(type='PLUS_SIGN', value=None), token(type='NUMBER', value=1.0)]
 ```
 
-#### Parser output:
+#### **Parser** output:
 
 ```python
 AssignNode(identifier='x', value=AddNode(a=5.0, b=1.0))
 ```
 
-#### Interpreter output:
+#### **Interpreter** output:
 
 ```
 6

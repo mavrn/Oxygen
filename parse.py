@@ -1,18 +1,5 @@
-from collections import namedtuple
 import Tokens
-
-AddNode = namedtuple("AddNode", ["a", "b"])
-SubNode = namedtuple("SubNode", ["a", "b"])
-MultNode = namedtuple("MultNode", ["a", "b"])
-DivNode = namedtuple("DivNode", ["a", "b"])
-ModulusNode = namedtuple("ModulusNode", ["a", "b"])
-ExpNode = namedtuple("ExpNode", ["a", "b"])
-AssignNode = namedtuple("AssignNode", ["identifier", "value"])
-VariableNode = namedtuple("VariableNode", ["identifier"])
-KeywordNode = namedtuple("KeywordNode", ["keyword", "value"])
-FuncDeclareNode = namedtuple("FuncDeclareNode", ["identifier", "arguments", "body"])
-# Include an identifier, a list of arguments and a tree representing the body
-FuncCallNode = namedtuple("FuncCallNode", ["identifier", "arguments"])
+import Nodes
 
 
 class Parser:
@@ -41,10 +28,10 @@ class Parser:
         while self.current_token is not None and self.current_token.type in (Tokens.PLUS_SIGN, Tokens.MINUS_SIGN):
             if self.current_token.type == Tokens.PLUS_SIGN:
                 self.next_token()
-                result = AddNode(result, self.term())
+                result = Nodes.AddNode(result, self.term())
             else:
                 self.next_token()
-                result = SubNode(result, self.term())
+                result = Nodes.SubNode(result, self.term())
         return result
 
     def term(self):
@@ -52,19 +39,19 @@ class Parser:
         while self.current_token is not None and self.current_token.type in (Tokens.MULT_SIGN, Tokens.DIV_SIGN, Tokens.MODULUS_SIGN, Tokens.EQUALS):
             if self.current_token.type == Tokens.MULT_SIGN:
                 self.next_token()
-                result = MultNode(result, self.exponential())
+                result = Nodes.MultNode(result, self.exponential())
             elif self.current_token.type == Tokens.DIV_SIGN:
                 self.next_token()
-                result = DivNode(result, self.exponential())
+                result = Nodes.DivNode(result, self.exponential())
             elif self.current_token.type == Tokens.EQUALS:
                 self.next_token()
                 try:
-                    result = AssignNode(result.identifier, self.expression())
+                    result = Nodes.AssignNode(result.identifier, self.expression())
                 except AttributeError:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
             else:
                 self.next_token()
-                result = ModulusNode(result, self.exponential())
+                result = Nodes.ModulusNode(result, self.exponential())
         return result
 
     # TODO: consider replacing with keyword
@@ -72,7 +59,7 @@ class Parser:
         token = self.factor()
         if self.current_token is not None and self.current_token.type == Tokens.EXP:
             self.next_token()
-            return ExpNode(token, self.factor())
+            return Nodes.ExpNode(token, self.factor())
         else:
             return token
 
@@ -88,7 +75,7 @@ class Parser:
             return self.exponential()
         elif token.type == Tokens.MINUS_SIGN:
             self.next_token()
-            return MultNode(-1, self.exponential())
+            return Nodes.MultNode(-1, self.exponential())
         elif token.type == Tokens.LPAREN:
             self.next_token()
             result = self.expression()
@@ -100,15 +87,15 @@ class Parser:
         elif token.type == Tokens.IDENTIFIER:
             identifier = token.value
             self.next_token()
-            if self.current_token is None or self.current_token.type != Tokens.LPAREN:
-                return VariableNode(token.value)
+            if self.current_token is None or self.current_token.type not in (Tokens.LPAREN, Tokens.PERIOD_FUNC_CALL):
+                return Nodes.VariableNode(token.value)
             else:
                 return self.call_function(identifier)
 
         elif token.type == Tokens.KEYWORD:
             keyword = self.current_token.value
             self.next_token()
-            return KeywordNode(keyword, self.exponential())
+            return Nodes.KeywordNode(keyword, self.exponential())
         else:
             raise SyntaxError("Invalid syntax")
 
@@ -127,19 +114,26 @@ class Parser:
             raise SyntaxError("Expected \"=>\"")
         else:
             self.next_token()
-            return FuncDeclareNode(identifier, arguments, self.expression())
+            return Nodes.FuncDeclareNode(identifier, arguments, self.expression())
 
     def call_function(self, identifier):
         arguments = []
-        self.next_token()
-        while self.current_token is not None and self.current_token.type in (
-                Tokens.IDENTIFIER, Tokens.COMMA, Tokens.NUMBER):
+        if self.current_token.type == Tokens.LPAREN:
+            self.next_token()
+            while self.current_token is not None and self.current_token.type in (
+            Tokens.IDENTIFIER, Tokens.COMMA, Tokens.NUMBER):
+                arguments.append(self.expression())
+                if self.current_token.type not in (Tokens.COMMA, Tokens.RPAREN):
+                    raise SyntaxError("Expected comma or closing parenthesis")
+                elif self.current_token.type != Tokens.RPAREN:
+                    self.next_token()
+            if self.current_token.type != Tokens.RPAREN:
+                raise SyntaxError("Expected closing parenthesis")
+            self.next_token()
+            return Nodes.FuncCallNode(identifier, arguments)
+        elif self.current_token.type == Tokens.PERIOD_FUNC_CALL:
+            self.next_token()
             arguments.append(self.expression())
-            if self.current_token.type not in (Tokens.COMMA, Tokens.RPAREN):
-                raise SyntaxError("Expected comma or closing parenthesis")
-            elif self.current_token.type != Tokens.RPAREN:
-                self.next_token()
-        if self.current_token.type != Tokens.RPAREN:
-            raise SyntaxError("Expected closing parenthesis")
-        self.next_token()
-        return FuncCallNode(identifier, arguments)
+            return Nodes.FuncCallNode(identifier, arguments)
+        else:
+            raise SyntaxError("An unknown error occurred")
