@@ -98,6 +98,8 @@ Currently, there are the following usable built-in functions:
 
 - `sqrt` (square root)
 - `sin`, `cos`, `tan`
+- `asin`, `acos`, `atan`
+- `abs`
 - `factorial`
 
 They are called just like normal functions: `keyword.factor` or `keyword(expression)`
