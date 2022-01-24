@@ -2,16 +2,13 @@ import math
 from collections import namedtuple
 
 function = namedtuple("function", ["arguments", "body"])
-global_fields = {}
+global_fields = {"pi": math.pi, "e": math.e}
 local_fields = {}
 OperationNodes = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
-KEYWORDS = ["sin", "cos", "tan", "sqrt", "factorial"]
+KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial"]
 
 
-# POSSIBLE BUG: name conflicts variables/function arguments
-
-
-def evaluate(node):
+def evaluate(node, scope="global"):
     node_type = type(node).__name__
     if node_type == "FuncDeclareNode":
         global_fields[node.identifier] = function(node.arguments, node.body)
@@ -22,9 +19,16 @@ def evaluate(node):
     elif node_type in OperationNodes:
         return operation_handler(node)
     elif node_type == "AssignNode":
-        assignment_value = evaluate(node.value)
-        global_fields[node.identifier] = assignment_value
-        return assignment_value
+        if scope == "local":
+            assignment_value = evaluate(node.value, scope="local")
+            local_fields[node.identifier] = assignment_value
+            return assignment_value
+        elif scope == "global":
+            assignment_value = evaluate(node.value)
+            global_fields[node.identifier] = assignment_value
+            return assignment_value
+        else:
+            raise Exception("An unknown exception occured.")
     elif node_type == "VariableNode":
         global_value = global_fields.get(node.identifier)
         local_value = local_fields.get(node.identifier)
@@ -48,13 +52,11 @@ def function_call_handler(node):
         else:
             raise NameError(f"No callable function found with name {node.identifier}")
     arguments = node.arguments
-    for i, argument in enumerate(arguments):
-        arguments[i] = evaluate(argument)
     if len(arguments) != len(func.arguments):
         raise TypeError(
             f"Expected {len(func.arguments)} arguments for function {node.identifier}, got {len(arguments)}.")
     for i, argument in enumerate(arguments):
-        local_fields[func.arguments[i]] = argument
+        local_fields[func.arguments[i]] = evaluate(argument, "local")
     result = evaluate(func.body)
     local_fields.clear()
     return result
@@ -74,25 +76,33 @@ def keyword_handler(node):
     elif keyword == "tan":
         return math.tan(argument)
     elif keyword == "factorial":
-        result = argument
-        if result % 1 == 0:
-            return math.factorial(int(result))
+        if argument % 1 == 0:
+            return math.factorial(int(argument))
         else:
-            raise TypeError(f"Expected type int, got type {type(node.value).__name__}")
+            raise TypeError(f"Expected type int, got type {type(argument).__name__}")
+    elif keyword == "asin":
+        return math.asin(argument)
+    elif keyword == "acos":
+        return math.acos(argument)
+    elif keyword == "atan":
+        return math.atan(argument)
+    elif keyword == "abs":
+        return abs(argument)
     else:
         raise Exception(f"Unknown exception occurred while handling the keyword {keyword}")
 
 
 def operation_handler(node):
-    if type(node).__name__ == "AddNode":
+    node_type = type(node).__name__
+    if node_type == "AddNode":
         return evaluate(node.a) + evaluate(node.b)
-    elif type(node).__name__ == "SubNode":
+    elif node_type == "SubNode":
         return evaluate(node.a) - evaluate(node.b)
-    elif type(node).__name__ == "MultNode":
+    elif node_type == "MultNode":
         return evaluate(node.a) * evaluate(node.b)
-    elif type(node).__name__ == "DivNode":
+    elif node_type == "DivNode":
         return evaluate(node.a) / evaluate(node.b)
-    elif type(node).__name__ == "ModulusNode":
+    elif node_type == "ModulusNode":
         return evaluate(node.a) % evaluate(node.b)
-    elif type(node).__name__ == "ExpNode":
+    elif node_type == "ExpNode":
         return evaluate(node.a) ** evaluate(node.b)

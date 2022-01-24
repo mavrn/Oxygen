@@ -1,5 +1,6 @@
 from collections import namedtuple
-# Includes token types
+
+# Matches token types to an identifiable number
 
 token = namedtuple("token", "type value", defaults=(None, None))
 NUMBER = 0
@@ -19,6 +20,7 @@ PERIOD_FUNC_CALL = 13
 COMMA = 14
 
 # Debug
+# Can make lexer output readable
 type_dict = {
     0: "NUMBER",
     1: "PLUS_SIGN",

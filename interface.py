@@ -3,25 +3,40 @@ from lexer import Lexer, token
 from parse import Parser
 from Tokens import type_dict
 from fractions import Fraction
+import traceback
 
 
 # TODO: add comments
 # TODO: add custom exceptions
 
 
-def start_session(fractions=False, debug=False):
+def start_session(fractions=False, debug=False, dont_quit_after_exceptions=False):
     while True:
         inp = input(">>")
-        lexer = Lexer(inp)
-        tokens = lexer.gen_tokens()
-        if debug:
-            print(token_readable(tokens))
-        parser = Parser(tokens)
-        tree = parser.parse()
-        if debug:
-            print(tree)
-        result = evaluate(tree)
-        print(result)
+        if dont_quit_after_exceptions:
+            try:
+                lexer = Lexer(inp)
+                tokens = lexer.gen_tokens()
+                if debug:
+                    print(token_readable(tokens))
+                parser = Parser(tokens)
+                tree = parser.parse()
+                if debug:
+                    print(tree)
+                result = evaluate(tree)
+            except Exception as e:
+                print(e)
+                result = None
+        else:
+            lexer = Lexer(inp)
+            tokens = lexer.gen_tokens()
+            if debug:
+                print(token_readable(tokens))
+            parser = Parser(tokens)
+            tree = parser.parse()
+            if debug:
+                print(tree)
+            result = evaluate(tree)
         if result is not None:
             if isinstance(result, str):
                 print(result)

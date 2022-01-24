@@ -16,12 +16,16 @@ class Parser:
 
     def parse(self):
         if self.current_token is None:
-            return None
+            tree = None
         elif self.current_token.type == Tokens.FUNCTION_KEYWORD:
             self.next_token()
-            return self.declare_function()
+            tree = self.declare_function()
         else:
-            return self.expression()
+            tree = self.expression()
+        if self.current_token is not None:
+            raise SyntaxError("Invalid Syntax.")
+        else:
+            return tree
 
     def expression(self):
         result = self.term()
@@ -44,10 +48,11 @@ class Parser:
                 self.next_token()
                 result = Nodes.DivNode(result, self.exponential())
             elif self.current_token.type == Tokens.EQUALS:
-                if type(result).__name__ == "float" or result.type != Tokens.IDENTIFIER:
+                if type(result).__name__ == "VariableNode":
+                    self.next_token()
+                    result = Nodes.AssignNode(result.identifier, self.expression())
+                else:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
-                self.next_token()
-                result = Nodes.AssignNode(result.identifier, self.expression())
             else:
                 self.next_token()
                 result = Nodes.ModulusNode(result, self.exponential())
