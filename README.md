@@ -1,9 +1,11 @@
 # **A simple interactive interpreter written in python**
 
+## Installation
 
-## Syntax explanation
+To run the program, simply download the source code and run main.py with Python 3.9+. <br> You won't need any additional
+libraries.
 
-
+## Syntax
 
 **Note: The `>` at the beginning of the line will indicate user input, the following line will be the interpreter
 output.**
@@ -54,9 +56,8 @@ Operator precedence will follow the common order:
 
 ---
 
-Functions are declared using the keyword `fn`, the identifier, the arguments listed with spaces inbetween, <br>
-the operator =>
-and the function body.
+Functions are declared using the keyword `fn`, the identifier, the arguments listed with spaces inbetween, the operator
+=> and the function body.
 > Declaring the function "add" that takes two arguments and returns the sum:
 
 ```python
@@ -90,7 +91,7 @@ precedence
 6
 ```
 
-### **Built-in functions**
+### **Built-in functions and constants**
 
 ---
 
@@ -113,12 +114,22 @@ They are called just like normal functions: `keyword.factor` or `keyword(express
 9
 ```
 
+There also are a few built-in mathematical constants: pi, e, h, and golden (for the golden ratio)
+They are used just like variables.
+> Example: Utilizing pi to declare a function which takes in a radius and returns the circumference of the circle
+
+```python
+> fn get_circumference radius => 2 * pi * radius
+> get_circumference(2)
+12.566370614359172
+```
+
 ### **Output**
 
 ---
 
 Output for a valid expression will be the result of the expression.<br>
-Output for a valid function declaration will be an nothing. <br>
+Output for a valid function declaration will be nothing. <br>
 Output for input consisting entirely of whitespace will be nothing. <br>
 A warning will be displayed if the user tries to override a built-in function.
 
@@ -137,6 +148,9 @@ NameError: Name "y" is not defined.
 > fn add a b => a + b
 > add(5)
 SyntaxError: Expected 2 arguments, got 1.
+> x = 2
+> x()
+TypeError: float object is not callable
 > fn add a b = a + b
 SyntaxError: Expected "=>"
 ```
@@ -150,7 +164,7 @@ following the common order. <br>
 Lastly, the generated tree of operations will be recursively evaluated in the **interpreter**. <br>
 
 #### Example input:
- 
+
 ```python
 x = 5 + 1
 ```
