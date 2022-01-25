@@ -5,43 +5,44 @@ import Nodes
 # Is responsible for recursively generating a tree of operations based on the lexer output using the pre-defined Nodes
 # from the Nodes.py file.
 class Parser:
-    # defines an iterator based on the list of Tokens
+    # Defines an iterator based on the list of Tokens
     def __init__(self, tokens):
         self.tokens = iter(tokens)
         self.current_token = None
         self.next_token()
 
-    # advances the iterator to the next token, returns None at the end of the list
+    # Advances the iterator to the next token, returns None at the end of the list
     def next_token(self):
         try:
             self.current_token = next(self.tokens)
         except StopIteration:
             self.current_token = None
 
-    # will start and end the parsing process
+    # Will start and end the parsing process
     def parse(self):
-        # if there are no tokens, None will be returned
+        # If there are no tokens, None will be returned
         if self.current_token is None:
             tree = None
-        # if the first token is the FUNCTION_KEYWORD, the parsing process will begin at the declare_function function
+        # If the first token is the FUNCTION_KEYWORD, the parsing process will begin at the declare_function() function
         elif self.current_token.type == Tokens.FUNCTION_KEYWORD:
             self.next_token()
             tree = self.declare_function()
         else:
             tree = self.expression()
-        # if the parsing process is finished and there are still tokens left, the syntax is invalid:
-        # an example would be x = 2a
+        # If the parsing process is finished and there are still tokens left, the syntax is invalid:
+        # An example would be x = 2a
         if self.current_token is not None:
             raise SyntaxError("Invalid Syntax.")
         else:
             return tree
 
-    # following, there are the valid elements of an expression, following the common order top-down.
-    # an expression will have a plus or minus sign
-    # a term will have a multiplication, division, assignment(equals) or a modulus sign
-    # an "exponential" will have the exponentiation operator. the reason this has its own layer is that exponential
+    # Following, there are the valid elements of an expression, following the common order top-down.
+    # These elements are grouped in "layers", which are expression, term, "exponential" and factor
+    # An expression will have a plus or minus sign
+    # A term will have a multiplication, division, assignment(equals) or a modulus sign
+    # An "exponential" will have the exponentiation operator. The reason this has its own layer is that exponential
     # operations will have to be evaluated before a term, but after a factor.
-    # finally, the factor can be a number, identifier or an expression between brackets.
+    # Finally, the factor can be a number, identifier or an expression between brackets.
     def expression(self):
         result = self.term()
         while self.current_token is not None and self.current_token.type in (Tokens.PLUS_SIGN, Tokens.MINUS_SIGN):
@@ -64,7 +65,7 @@ class Parser:
                 self.next_token()
                 result = Nodes.DivNode(result, self.exponential())
             elif self.current_token.type == Tokens.EQUALS:
-                # will throw an exception if an equals comes after anything other than a variable
+                # Will throw an exception if an equals comes after anything other than a variable
                 if type(result).__name__ == "VariableNode":
                     self.next_token()
                     result = Nodes.AssignNode(result.identifier, self.expression())
@@ -87,18 +88,18 @@ class Parser:
         token = self.current_token
         if token is None:
             raise SyntaxError("Expected number or identifier")
-        # will return the float value for a number token
+        # Will return the float value for a number token
         if token.type == Tokens.NUMBER:
             self.next_token()
             return token.value
-        # will handle unary plus und minus signs
+        # Will handle unary plus und minus signs
         elif token.type == Tokens.PLUS_SIGN:
             self.next_token()
             return self.exponential()
         elif token.type == Tokens.MINUS_SIGN:
             self.next_token()
             return Nodes.MultNode(-1, self.exponential())
-        # will handle parentheses and throw an exception in case of a missing parenthesis
+        # Will handle parentheses and throw an exception in case of a missing parenthesis
         elif token.type == Tokens.LPAREN:
             self.next_token()
             result = self.expression()
@@ -107,7 +108,7 @@ class Parser:
             else:
                 self.next_token()
                 return result
-        # will return either a variable node or a function call node if brackets or a period come after the identifier
+        # Will return either a variable node or a function call node if brackets or a period come after the identifier
         elif token.type == Tokens.IDENTIFIER:
             identifier = token.value
             self.next_token()
@@ -119,7 +120,7 @@ class Parser:
             raise SyntaxError("Invalid syntax")
 
     # TODO: do some more testing with functions
-    # will follow the pre-defined syntax of a function declaration linearly
+    # Will follow the pre-defined syntax of a function declaration linearly
     # and will throw exceptions if the syntax is incorrect
     def declare_function(self):
         arguments = []
@@ -137,11 +138,11 @@ class Parser:
             self.next_token()
             return Nodes.FuncDeclareNode(identifier=identifier, arguments=arguments, body=self.expression())
 
-    # will follow the pre-defined syntax of a function call linearly
+    # Will follow the pre-defined syntax of a function call linearly
     # and will throw exceptions if the syntax is incorrect
     def call_function(self, identifier):
         arguments = []
-        # will handle a function call by brackets
+        # Will handle a function call by brackets
         if self.current_token.type == Tokens.LPAREN:
             self.next_token()
             while self.current_token is not None and self.current_token.type in (
@@ -156,11 +157,11 @@ class Parser:
                 raise SyntaxError("Expected closing parenthesis")
             self.next_token()
             return Nodes.FuncCallNode(identifier=identifier, arguments=arguments)
-        # will handle a function call by period
+        # Will handle a function call by period
         elif self.current_token.type == Tokens.PERIOD_FUNC_CALL:
             self.next_token()
             arguments.append(self.expression())
             return Nodes.FuncCallNode(identifier=identifier, arguments=arguments)
-        # the program should never reach this point
+        # The program should never reach this point
         else:
             raise SyntaxError("An unknown error occurred")

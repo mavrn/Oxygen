@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-# Matches token types to an identifiable number
+# Matches token types to an easily-compared number
 
 token = namedtuple("token", "type value", defaults=(None, None))
 NUMBER = 0

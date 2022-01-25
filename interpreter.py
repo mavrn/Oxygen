@@ -1,14 +1,17 @@
 import math
 from collections import namedtuple
 
+# Defines a function consisting of the arguments and the body
 function = namedtuple("function", ["arguments", "body"])
-global_fields = {"pi": math.pi, "e": math.e}
+# Define global and local fields, which emulate global and local (function) scope
+global_fields = {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * 10 ** -34}
 local_fields = {}
 OperationNodes = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial"]
 
 
-def evaluate(node, scope="global"):
+# Will evaluate the tree (parser output) recursively
+def evaluate(node):
     node_type = type(node).__name__
     if node_type == "FuncDeclareNode":
         global_fields[node.identifier] = function(node.arguments, node.body)
@@ -19,17 +22,11 @@ def evaluate(node, scope="global"):
     elif node_type in OperationNodes:
         return operation_handler(node)
     elif node_type == "AssignNode":
-        if scope == "local":
-            assignment_value = evaluate(node.value, scope="local")
-            local_fields[node.identifier] = assignment_value
-            return assignment_value
-        elif scope == "global":
-            assignment_value = evaluate(node.value)
-            global_fields[node.identifier] = assignment_value
-            return assignment_value
-        else:
-            raise Exception("An unknown exception occured.")
+        assignment_value = evaluate(node.value)
+        global_fields[node.identifier] = assignment_value
+        return assignment_value
     elif node_type == "VariableNode":
+        # Will check for a local field first, then a global one, and finally raise an exception if
         global_value = global_fields.get(node.identifier)
         local_value = local_fields.get(node.identifier)
         if local_value is not None:
@@ -44,29 +41,47 @@ def evaluate(node, scope="global"):
         return node
 
 
+# Will handle all nodes of type FuncCallNode
 def function_call_handler(node):
+    # Fetches the function from the global fields and its name
     func = global_fields.get(node.identifier)
+    node_type = type(func).__name__
+    # If none is found, the function might be a built-in one. If not, an error will be risen
     if func is None:
         if node.identifier in KEYWORDS:
             return keyword_handler(node)
         else:
             raise NameError(f"No callable function found with name {node.identifier}")
+    # If the field previously fetched is not a function (i.e. a float value), an error will be risen
+    elif node_type != "function":
+        raise TypeError(f"{node_type} object is not callable")
+    # The arguments the user has called the function with are saved
     arguments = node.arguments
+    # The numbers of the called and defined arguments have to match, else an error will be risen
     if len(arguments) != len(func.arguments):
         raise TypeError(
             f"Expected {len(func.arguments)} arguments for function {node.identifier}, got {len(arguments)}.")
+    # The arguments the function was called with are now assigned
+    # with the names and order they were previously defined in the function.
+    # The arguments will be assigned to the local fields
     for i, argument in enumerate(arguments):
-        local_fields[func.arguments[i]] = evaluate(argument, "local")
+        local_fields[func.arguments[i]] = evaluate(argument)
+    # Now that the variables are assigned, the function body can be evaluated
     result = evaluate(func.body)
+    # Local fields will be cleared after the function ends, just like in any other language
     local_fields.clear()
     return result
 
 
+# Will handle any type of KeywordNode
 def keyword_handler(node):
     keyword = node.identifier
+    # As all the built-in functions only accept one argument,
+    # so the program raises an error if called with more or less arguments
     if len(node.arguments) != 1:
         raise SyntaxError(f"Expected 1 argument, got {len(node.arguments)}")
     argument = evaluate(node.arguments[0])
+    # Will match the identifier to the pre-defined keywords and operate accordingly
     if keyword == "sqrt":
         return math.sqrt(argument)
     elif keyword == "sin":
@@ -92,6 +107,7 @@ def keyword_handler(node):
         raise Exception(f"Unknown exception occurred while handling the keyword {keyword}")
 
 
+# Will handle any type of simple operation
 def operation_handler(node):
     node_type = type(node).__name__
     if node_type == "AddNode":

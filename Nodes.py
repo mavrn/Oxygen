@@ -1,5 +1,6 @@
 from collections import namedtuple
 
+# Includes all node types
 AddNode = namedtuple("AddNode", ["a", "b"])
 SubNode = namedtuple("SubNode", ["a", "b"])
 MultNode = namedtuple("MultNode", ["a", "b"])
