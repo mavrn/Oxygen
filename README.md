@@ -114,8 +114,7 @@ They are called just like normal functions: `keyword.factor` or `keyword(express
 9
 ```
 
-There also are a few built-in mathematical constants: pi, e, h, and golden (for the golden ratio)
-They are used just like variables.
+There also are a few built-in mathematical constants: pi, e, h, and golden (for the golden ratio).
 > Example: Utilizing pi to declare a function which takes in a radius and returns the circumference of the circle
 
 ```python
