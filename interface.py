@@ -1,8 +1,9 @@
+from fractions import Fraction
+
+from Tokens import type_dict
 from interpreter import evaluate
 from lexer import Lexer, token
 from parse import Parser
-from Tokens import type_dict
-from fractions import Fraction
 
 
 # TODO: add comments

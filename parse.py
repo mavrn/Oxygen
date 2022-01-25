@@ -1,5 +1,5 @@
-import Tokens
 import Nodes
+import Tokens
 
 
 # Is responsible for recursively generating a tree of operations based on the lexer output using the pre-defined Nodes

@@ -4,7 +4,7 @@ from collections import namedtuple
 # Defines a function consisting of the arguments and the body
 function = namedtuple("function", ["arguments", "body"])
 # Define global and local fields, which emulate global and local (function) scope
-global_fields = {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * 10 ** -34}
+global_fields = {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * (10 ** (-34))}
 local_fields = {}
 OperationNodes = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial"]
