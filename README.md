@@ -150,7 +150,7 @@ following the common order. <br>
 Lastly, the generated tree of operations will be recursively evaluated in the **interpreter**. <br>
 
 #### Example input:
-
+ 
 ```python
 x = 5 + 1
 ```
