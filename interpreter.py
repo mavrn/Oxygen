@@ -1,5 +1,6 @@
 import math
 from collections import namedtuple
+import Nodes, Tokens, Datatypes
 
 # Defines a function consisting of the arguments and the body
 function = namedtuple("function", ["arguments", "body"])
@@ -25,6 +26,8 @@ def evaluate(node):
         assignment_value = evaluate(node.value)
         global_fields[node.identifier] = assignment_value
         return assignment_value
+    elif node_type == "ComparisonNode":
+        return comparison_handler(node)
     elif node_type == "VariableNode":
         # Will check for a local field first, then a global one, and finally raise an exception if
         global_value = global_fields.get(node.identifier)
@@ -128,3 +131,28 @@ def operation_handler(node):
         return a % b
     elif node_type == "ExpNode":
         return a ** b
+
+
+# Will handle any type of simple comparison
+def comparison_handler(node):
+    operator = node.operator
+    a = evaluate(node.a)
+    b = evaluate(node.b)
+    if not isinstance(a, float):
+        raise TypeError("Cannot operate on object of type " + type(a).__name__)
+    if not isinstance(b, float):
+        raise TypeError("Cannot operate on object of type " + type(b).__name__)
+    if operator == Tokens.COMP_EQUALS:
+        return Datatypes.Bool(a == b)
+    elif operator == Tokens.COMP_NOT_EQUALS:
+        return Datatypes.Bool(a != b)
+    elif operator == Tokens.GREATER_THAN:
+        return Datatypes.Bool(a > b)
+    elif operator == Tokens.LESS_THAN:
+        return Datatypes.Bool(a < b)
+    elif operator == Tokens.GREATER_OR_EQUALS:
+        return Datatypes.Bool(a >= b)
+    elif operator == Tokens.LESS_OR_EQUALS:
+        return Datatypes.Bool(a <= b)
+    else:
+        raise Exception("An unknown error occurred")

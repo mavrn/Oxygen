@@ -62,9 +62,12 @@ class Parser:
 
     def term(self):
         result = self.exponential()
+        # TODO: Do this some other way
         while self.current_token_type in (Tokens.MULT_SIGN, Tokens.DIV_SIGN, Tokens.MODULUS_SIGN, Tokens.EQUALS,
                                           Tokens.PLUS_ASSIGN, Tokens.MINUS_ASSIGN, Tokens.MULT_ASSIGN,
-                                          Tokens.DIV_ASSIGN, Tokens.MODULUS_ASSIGN):
+                                          Tokens.DIV_ASSIGN, Tokens.MODULUS_ASSIGN, Tokens.COMP_EQUALS,
+                                          Tokens.COMP_NOT_EQUALS, Tokens.GREATER_THAN, Tokens.LESS_THAN,
+                                          Tokens.GREATER_OR_EQUALS, Tokens.LESS_OR_EQUALS):
             if self.current_token_type == Tokens.MULT_SIGN:
                 self.next_token()
                 result = Nodes.MultNode(result, self.exponential())
@@ -93,6 +96,11 @@ class Parser:
                                                   self.expression()))
                 else:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
+            elif self.current_token_type in (Tokens.COMP_EQUALS, Tokens.COMP_NOT_EQUALS, Tokens.GREATER_THAN,
+                                             Tokens.GREATER_OR_EQUALS, Tokens.LESS_THAN, Tokens.LESS_OR_EQUALS):
+                comparison_type = self.current_token_type
+                self.next_token()
+                result = Nodes.ComparisonNode(result, self.expression(), comparison_type)
             else:
                 self.next_token()
                 result = Nodes.ModulusNode(result, self.exponential())

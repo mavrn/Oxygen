@@ -3,7 +3,8 @@ from fractions import Fraction
 from Tokens import type_dict
 from interpreter import evaluate
 from lexer import Lexer, token
-from parse import Parser
+from parser import Parser
+import Datatypes
 
 
 # TODO: add custom exceptions
@@ -46,19 +47,19 @@ def start_session(fractions=False, debug=False, quit_after_exceptions=True):
         # Printing the result
         # Won't print anything if the result is None
         if result is not None:
-            if isinstance(result, str):
+            if isinstance(result, (str, Datatypes.Bool)):
                 print(result)
-            elif not isinstance(result, float):
-                print("Object:", repr(result))
-            # Will print result without decimals in case of a whole number
-            elif result % 1 == 0:
-                print(int(result))
-            else:
-                if fractions:
+            elif isinstance(result, float):
+                if result % 1 == 0:
+                    print(int(result))
+                elif fractions:
                     # Prints an approximate fraction if fractions is set to True
                     print(str(Fraction(result).limit_denominator()))
                 else:
                     print(result)
+            elif not isinstance(result, float):
+                print("Object:", repr(result))
+            # Will print result without decimals in case of a whole number
 
 
 # For debug purposes

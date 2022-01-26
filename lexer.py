@@ -51,8 +51,32 @@ class Lexer:
                 if self.current_char == ">":
                     tokens.append(token(Tokens.FUNCTION_OPERATOR))
                     self.next_char()
+                elif self.current_char == "=":
+                    tokens.append(token(Tokens.COMP_EQUALS))
+                    self.next_char()
                 else:
                     tokens.append(token(Tokens.EQUALS))
+            elif self.current_char == "!":
+                self.next_char()
+                if self.current_char == "=":
+                    tokens.append(token(Tokens.COMP_NOT_EQUALS))
+                    self.next_char()
+                else:
+                    raise Exception("Illegal Character \"!\"")
+            elif self.current_char == ">":
+                self.next_char()
+                if self.current_char == "=":
+                    tokens.append(token(Tokens.GREATER_OR_EQUALS))
+                    self.next_char()
+                else:
+                    tokens.append(token(Tokens.GREATER_THAN))
+            elif self.current_char == "<":
+                self.next_char()
+                if self.current_char == "=":
+                    tokens.append(token(Tokens.LESS_OR_EQUALS))
+                    self.next_char()
+                else:
+                    tokens.append(token(Tokens.LESS_THAN))
             elif self.current_char in (NUM_CHARS + "."):
                 tokens.append(self.gen_number())
             elif self.current_char in LETTERS:

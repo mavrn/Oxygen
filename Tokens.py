@@ -24,7 +24,13 @@ FUNCTION_KEYWORD = 17
 PERIOD_FUNC_CALL = 18
 COMMA = 19
 COMP_EQUALS = 20
-
+COMP_NOT_EQUALS = 21
+GREATER_THAN = 22
+LESS_THAN = 23
+GREATER_OR_EQUALS = 24
+LESS_OR_EQUALS = 25
+TRUE = 26
+FALSE = 27
 # Debug
 # Can make lexer output readable
 type_dict = {
@@ -47,5 +53,13 @@ type_dict = {
     16: "FUNCTION_OPERATOR",
     17: "FUNCTION_KEYWORD",
     18: "PERIOD_FUNC_CALL",
-    19: "COMMA"
+    19: "COMMA",
+    20: "COMP_EQUALS",
+    21: "COMP_NOT_EQUALS",
+    22: "GREATER_THAN",
+    23: "LESS_THAN",
+    24: "GREATER_OR_EQUALS",
+    25: "LESS_OR_EQUALS",
+    26: "TRUE",
+    27: "FALSE"
 }
