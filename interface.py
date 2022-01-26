@@ -6,7 +6,6 @@ from lexer import Lexer, token
 from parse import Parser
 
 
-# TODO: add comments
 # TODO: add custom exceptions
 
 
@@ -49,9 +48,9 @@ def start_session(fractions=False, debug=False, quit_after_exceptions=True):
         if result is not None:
             if isinstance(result, str):
                 print(result)
-            # Will print result without decimals in case of a whole number
             elif not isinstance(result, float):
                 print("Object:", repr(result))
+            # Will print result without decimals in case of a whole number
             elif result % 1 == 0:
                 print(int(result))
             else:
@@ -65,10 +64,10 @@ def start_session(fractions=False, debug=False, quit_after_exceptions=True):
 # For debug purposes
 # Makes the lexer tokens readable by matching the IDs to the Tokens.type_dict
 def token_readable(tokens):
-    readable_tokens = []
-    for unreadable_token in tokens:
-        readable_token = token(type_dict.get(unreadable_token.type), unreadable_token.value)
-        readable_tokens.append(readable_token)
+    readable_tokens = [token(
+        type_dict.get(unreadable_token.type),
+        unreadable_token.value)
+        for unreadable_token in tokens]
     return readable_tokens
 
 

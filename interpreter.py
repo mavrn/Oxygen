@@ -43,7 +43,7 @@ def evaluate(node):
 
 # Will handle all nodes of type FuncCallNode
 def function_call_handler(node):
-    # Fetches the function from the global fields and its name
+    # Fetches the function and its name from the global fields
     func = global_fields.get(node.identifier)
     node_type = type(func).__name__
     # If none is found, the function might be a built-in one. If not, an error will be risen

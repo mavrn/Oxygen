@@ -11,7 +11,7 @@ OPERATOR_DICT = {"+": Tokens.PLUS_SIGN, "-": Tokens.MINUS_SIGN, "*": Tokens.MULT
 FN_KEYWORD = "fn"
 
 
-# TODO: consider replacing confusing ifs with regex
+# TODO: replace this with a regex lexer
 
 
 # Is responsible for generating a list of tokens based on a string input using the pre-defined Tokens

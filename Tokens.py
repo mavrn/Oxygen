@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-# Matches token types to an easily-compared number
+# Matches token types to easily-compared numbers
 
 token = namedtuple("token", "type value", defaults=(None, None))
 NUMBER = 0
@@ -23,6 +23,7 @@ FUNCTION_OPERATOR = 16
 FUNCTION_KEYWORD = 17
 PERIOD_FUNC_CALL = 18
 COMMA = 19
+COMP_EQUALS = 20
 
 # Debug
 # Can make lexer output readable

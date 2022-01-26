@@ -13,6 +13,7 @@ VariableNode = namedtuple("VariableNode", ["identifier"])
 KeywordNode = namedtuple("KeywordNode", ["keyword", "value"])
 FuncDeclareNode = namedtuple("FuncDeclareNode", ["identifier", "arguments", "body"])
 FuncCallNode = namedtuple("FuncCallNode", ["identifier", "arguments"])
+ComparisonNode = namedtuple("ComparisonNode", ["a", "b", "operator"])
 
 
 def match_operator_to_node(operator_id):
