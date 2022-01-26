@@ -28,6 +28,18 @@ def evaluate(node):
         return assignment_value
     elif node_type == "ComparisonNode":
         return comparison_handler(node)
+    elif node_type == "BooleanNegationNode":
+        bool = evaluate(node.value)
+        custom_bool = Datatypes.Bool(bool)
+        custom_bool.reverse()
+        return custom_bool
+    elif node_type == "LogicalOperationNode":
+        if node.operation == Tokens.AND:
+            return Datatypes.Bool(
+                Datatypes.Bool(evaluate(node.a)).boolean_value and Datatypes.Bool(evaluate(node.b)).boolean_value)
+        else:
+            return Datatypes.Bool(
+                Datatypes.Bool(evaluate(node.a)).boolean_value or Datatypes.Bool(evaluate(node.b)).boolean_value)
     elif node_type == "VariableNode":
         # Will check for a local field first, then a global one, and finally raise an exception if
         global_value = global_fields.get(node.identifier)
@@ -116,9 +128,9 @@ def operation_handler(node):
     a = evaluate(node.a)
     b = evaluate(node.b)
     if not isinstance(a, float):
-        raise TypeError("Cannot operate on object of type " + type(a).__name__)
+        raise TypeError("Cannot use mathematical operations on object of type " + type(a).__name__)
     if not isinstance(b, float):
-        raise TypeError("Cannot operate on object of type " + type(b).__name__)
+        raise TypeError("Cannot use mathematical operations on object of type " + type(b).__name__)
     if node_type == "AddNode":
         return a + b
     elif node_type == "SubNode":

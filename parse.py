@@ -1,5 +1,6 @@
 import Nodes
 import Tokens
+import Datatypes
 
 
 # Is responsible for recursively generating a tree of operations based on the lexer output using the pre-defined Nodes
@@ -51,13 +52,17 @@ class Parser:
     # Finally, the factor can be a number, identifier or an expression between brackets.
     def expression(self):
         result = self.term()
-        while self.current_token_type in (Tokens.PLUS_SIGN, Tokens.MINUS_SIGN):
+        while self.current_token_type in (Tokens.PLUS_SIGN, Tokens.MINUS_SIGN, Tokens.AND, Tokens.OR):
             if self.current_token_type == Tokens.PLUS_SIGN:
                 self.next_token()
                 result = Nodes.AddNode(result, self.term())
-            else:
+            elif self.current_token_type == Tokens.MINUS_SIGN:
                 self.next_token()
                 result = Nodes.SubNode(result, self.term())
+            elif self.current_token_type in (Tokens.AND, Tokens.OR):
+                operation_type = self.current_token_type
+                self.next_token()
+                result = Nodes.LogicalOperationNode(result, self.term(), operation_type)
         return result
 
     def term(self):
@@ -100,7 +105,7 @@ class Parser:
                                              Tokens.GREATER_OR_EQUALS, Tokens.LESS_THAN, Tokens.LESS_OR_EQUALS):
                 comparison_type = self.current_token_type
                 self.next_token()
-                result = Nodes.ComparisonNode(result, self.expression(), comparison_type)
+                result = Nodes.ComparisonNode(result, self.exponential(), comparison_type)
             else:
                 self.next_token()
                 result = Nodes.ModulusNode(result, self.exponential())
@@ -123,6 +128,15 @@ class Parser:
         if token_type == Tokens.NUMBER:
             self.next_token()
             return token.value
+        elif token_type == Tokens.TRUE:
+            self.next_token()
+            return Datatypes.Bool(True)
+        elif token_type == Tokens.FALSE:
+            self.next_token()
+            return Datatypes.Bool(False)
+        elif token_type == Tokens.NOT:
+            self.next_token()
+            return Nodes.BooleanNegationNode(self.exponential())
         # Will handle unary plus und minus signs
         elif token_type == Tokens.PLUS_SIGN:
             self.next_token()
@@ -133,7 +147,7 @@ class Parser:
         # Will handle parentheses and throw an exception in case of a missing parenthesis
         elif token_type == Tokens.LPAREN:
             self.next_token()
-            if self.current_token.get_type() == Tokens.RPAREN:
+            if self.current_token_type == Tokens.RPAREN:
                 raise SyntaxError("Empty brackets cannot be evaluated.")
             result = self.expression()
             if self.current_token is None or self.current_token_type != Tokens.RPAREN:

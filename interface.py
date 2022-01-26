@@ -3,7 +3,7 @@ from fractions import Fraction
 from Tokens import type_dict
 from interpreter import evaluate
 from lexer import Lexer, token
-from parser import Parser
+from parse import Parser
 import Datatypes
 
 

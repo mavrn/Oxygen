@@ -62,7 +62,7 @@ class Lexer:
                     tokens.append(token(Tokens.COMP_NOT_EQUALS))
                     self.next_char()
                 else:
-                    raise Exception("Illegal Character \"!\"")
+                    tokens.append(token(Tokens.NOT))
             elif self.current_char == ">":
                 self.next_char()
                 if self.current_char == "=":
@@ -77,6 +77,12 @@ class Lexer:
                     self.next_char()
                 else:
                     tokens.append(token(Tokens.LESS_THAN))
+            elif self.current_char == "&":
+                tokens.append(token(Tokens.AND))
+                self.next_char()
+            elif self.current_char == "|":
+                tokens.append(token(Tokens.OR))
+                self.next_char()
             elif self.current_char in (NUM_CHARS + "."):
                 tokens.append(self.gen_number())
             elif self.current_char in LETTERS:
@@ -105,11 +111,21 @@ class Lexer:
 
     # Will generate and return an identifier with multiple or one letter(s)
     def gen_identifier(self):
-        name = ""
+        identifier = ""
         while self.current_char is not None and self.current_char in (LETTERS + NUM_CHARS):
-            name += self.current_char
+            identifier += self.current_char
             self.next_char()
-        if name == FN_KEYWORD:
+        if identifier == FN_KEYWORD:
             return token(Tokens.FUNCTION_KEYWORD)
+        elif identifier == "True":
+            return token(Tokens.TRUE)
+        elif identifier == "False":
+            return token(Tokens.FALSE)
+        elif identifier == "not":
+            return token(Tokens.NOT)
+        elif identifier == "and":
+            return token(Tokens.AND)
+        elif identifier == "or":
+            return token(Tokens.OR)
         else:
-            return token(Tokens.IDENTIFIER, name)
+            return token(Tokens.IDENTIFIER, identifier)

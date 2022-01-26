@@ -31,6 +31,9 @@ GREATER_OR_EQUALS = 24
 LESS_OR_EQUALS = 25
 TRUE = 26
 FALSE = 27
+NOT = 28
+AND = 29
+OR = 30
 # Debug
 # Can make lexer output readable
 type_dict = {
@@ -61,5 +64,8 @@ type_dict = {
     24: "GREATER_OR_EQUALS",
     25: "LESS_OR_EQUALS",
     26: "TRUE",
-    27: "FALSE"
+    27: "FALSE",
+    28: "NOT",
+    29: "AND",
+    30: "OR"
 }

@@ -14,7 +14,9 @@ output.**
 
 ---
 
-Integers and floats are assigned with the identifier on the left, and the value on the right. Example:
+This interpreter has 2 different datatypes: numbers(which will always be floats) and bools. <br>
+Variables are assigned with the identifier on the left, an equals sign, and the value on the right. Identifiers can only
+consist of uppercase letters, lowercase letters and underscores. Example:
 
 ```python
 > x = 3
@@ -32,17 +34,33 @@ Nested and chained assignments are also possible:
 4
 ```
 
+Booleans are assigned the same way, except there must be some kind of boolean statement on the right. This can be
+either "True" or "False" or a comparison. Numbers can be converted to bools; 0 will be converted to False while any
+other number will be converted to True. Other datatypes like functions can not be converted to bools. Some examples:
+
+```python
+> x = True
+True
+> x = 2 > 3
+False
+> x = !0
+True
+```
+
 ### **Operations**
 
 ---
 
-The interpreter will understand the following operations:
+The interpreter will be able to evaluate the following operations:
 
 - Add, Subtract, Multiply, Divide with the common operators
 - Operation assignment with +=, -=, *=, /= and %=
 - Modulus with %
 - Exponentiate with ^
-- Brackets
+- Comparison operators:  ==, !=, <, >, <=, >=
+- Logical operator NOT: Can be used either by "!" or "not"
+- Logical operator AND: Can be used either by "&" or "and"
+- Logical operator OR: Can be used either by "|" or "or"
 
 Operator precedence will follow the common order:
 
@@ -58,7 +76,7 @@ Operator precedence will follow the common order:
 ---
 
 Functions are declared using the keyword `fn`, the identifier, the arguments listed with spaces inbetween, the operator
-=> and the function body.
+=> and the function body (including the expression the function should return).
 > Declaring the function "add" that takes two arguments and returns the sum:
 
 ```python
