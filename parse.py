@@ -98,7 +98,7 @@ class Parser:
             return self.exponential()
         elif token.type == Tokens.MINUS_SIGN:
             self.next_token()
-            return Nodes.MultNode(-1, self.exponential())
+            return Nodes.MultNode(-1.0, self.exponential())
         # Will handle parentheses and throw an exception in case of a missing parenthesis
         elif token.type == Tokens.LPAREN:
             self.next_token()
@@ -160,7 +160,7 @@ class Parser:
         # Will handle a function call by period
         elif self.current_token.type == Tokens.PERIOD_FUNC_CALL:
             self.next_token()
-            arguments.append(self.expression())
+            arguments.append(self.exponential())
             return Nodes.FuncCallNode(identifier=identifier, arguments=arguments)
         # The program should never reach this point
         else:
