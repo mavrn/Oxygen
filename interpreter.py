@@ -110,15 +110,21 @@ def keyword_handler(node):
 # Will handle any type of simple operation
 def operation_handler(node):
     node_type = type(node).__name__
+    a = evaluate(node.a)
+    b = evaluate(node.b)
+    if not isinstance(a, float):
+        raise TypeError("Cannot operate on object of type", type(a).__name__)
+    if not isinstance(b, float):
+        raise TypeError("Cannot operate on object of type", type(b).__name__)
     if node_type == "AddNode":
-        return evaluate(node.a) + evaluate(node.b)
+        return a + b
     elif node_type == "SubNode":
-        return evaluate(node.a) - evaluate(node.b)
+        return a - b
     elif node_type == "MultNode":
-        return evaluate(node.a) * evaluate(node.b)
+        return a * b
     elif node_type == "DivNode":
-        return evaluate(node.a) / evaluate(node.b)
+        return a / b
     elif node_type == "ModulusNode":
-        return evaluate(node.a) % evaluate(node.b)
+        return a % b
     elif node_type == "ExpNode":
-        return evaluate(node.a) ** evaluate(node.b)
+        return a ** b
