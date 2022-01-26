@@ -102,6 +102,8 @@ class Parser:
         # Will handle parentheses and throw an exception in case of a missing parenthesis
         elif token.type == Tokens.LPAREN:
             self.next_token()
+            if self.current_token.type == Tokens.RPAREN:
+                raise SyntaxError("Empty brackets cannot be evaluated.")
             result = self.expression()
             if self.current_token is None or self.current_token.type != Tokens.RPAREN:
                 raise SyntaxError("Expected a closing parenthesis")
@@ -145,9 +147,7 @@ class Parser:
         # Will handle a function call by brackets
         if self.current_token.type == Tokens.LPAREN:
             self.next_token()
-            while self.current_token is not None and self.current_token.type in (
-                    Tokens.IDENTIFIER, Tokens.COMMA, Tokens.NUMBER
-            ):
+            while self.current_token is not None and self.current_token.type != Tokens.RPAREN:
                 arguments.append(self.expression())
                 if self.current_token.type == Tokens.COMMA:
                     self.next_token()
