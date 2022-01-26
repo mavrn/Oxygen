@@ -39,6 +39,7 @@ Nested and chained assignments are also possible:
 The interpreter will understand the following operations:
 
 - Add, Subtract, Multiply, Divide with the common operators
+- Operation assignment with +=, -=, *=, /= and %=
 - Modulus with %
 - Exponentiate with ^
 - Brackets

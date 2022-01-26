@@ -4,8 +4,10 @@ from Tokens import token
 NUM_CHARS = "0123456789"
 LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
 OPERATORS = "+-*/%()^,"
-CHAR_TYPES = {"+": Tokens.PLUS_SIGN, "-": Tokens.MINUS_SIGN, "*": Tokens.MULT_SIGN, "/": Tokens.DIV_SIGN,
-              "%": Tokens.MODULUS_SIGN, "(": Tokens.LPAREN, ")": Tokens.RPAREN, "^": Tokens.EXP, ",": Tokens.COMMA}
+OPERATOR_DICT = {"+": Tokens.PLUS_SIGN, "-": Tokens.MINUS_SIGN, "*": Tokens.MULT_SIGN, "/": Tokens.DIV_SIGN,
+                 "%": Tokens.MODULUS_SIGN, "+=": Tokens.PLUS_ASSIGN, "-=": Tokens.MINUS_ASSIGN,
+                 "*=": Tokens.MULT_ASSIGN, "/=": Tokens.DIV_ASSIGN, "%=": Tokens.MODULUS_ASSIGN,
+                 "(": Tokens.LPAREN, ")": Tokens.RPAREN, "^": Tokens.EXP, ",": Tokens.COMMA}
 FN_KEYWORD = "fn"
 
 
@@ -34,11 +36,15 @@ class Lexer:
         while self.current_char is not None:
             if self.current_char == " ":
                 self.next_char()
-            elif self.current_char in (NUM_CHARS + "."):
-                tokens.append(self.gen_number())
             elif self.current_char in OPERATORS:
-                tokens.append(token(CHAR_TYPES.get(self.current_char)))
+                operator = self.current_char
                 self.next_char()
+                # Checks for an equals after an operator to determine if the token should be of assign type
+                if operator in "+-*/%" and self.current_char == "=":
+                    tokens.append(token(OPERATOR_DICT.get(operator + "=")))
+                    self.next_char()
+                else:
+                    tokens.append(token(OPERATOR_DICT.get(self.current_char)))
             elif self.current_char == "=":
                 self.next_char()
                 # We have to differentiate between a simple equals and the function operator "=>", so we check for a ">"
@@ -47,6 +53,8 @@ class Lexer:
                     self.next_char()
                 else:
                     tokens.append(token(Tokens.EQUALS))
+            elif self.current_char in (NUM_CHARS + "."):
+                tokens.append(self.gen_number())
             elif self.current_char in LETTERS:
                 tokens.append(self.gen_identifier())
                 # Will recognize when a function is called with a period after the identifier

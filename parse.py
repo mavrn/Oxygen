@@ -32,7 +32,8 @@ class Parser:
         # If the parsing process is finished and there are still tokens left, the syntax is invalid:
         # An example would be x = 2a
         if self.current_token is not None:
-            raise SyntaxError("Invalid Syntax.")
+            raise SyntaxError(f"Reached the end of parsing, but there still is a Token of type"
+                              f" {Tokens.type_dict.get(self.current_token.type)} left.")
         else:
             return tree
 
@@ -57,7 +58,8 @@ class Parser:
     def term(self):
         result = self.exponential()
         while self.current_token is not None and self.current_token.type in (
-                Tokens.MULT_SIGN, Tokens.DIV_SIGN, Tokens.MODULUS_SIGN, Tokens.EQUALS):
+                Tokens.MULT_SIGN, Tokens.DIV_SIGN, Tokens.MODULUS_SIGN, Tokens.EQUALS, Tokens.PLUS_ASSIGN,
+                Tokens.MINUS_ASSIGN, Tokens.MULT_ASSIGN, Tokens.DIV_ASSIGN, Tokens.MODULUS_ASSIGN):
             if self.current_token.type == Tokens.MULT_SIGN:
                 self.next_token()
                 result = Nodes.MultNode(result, self.exponential())
@@ -69,6 +71,21 @@ class Parser:
                 if type(result).__name__ == "VariableNode":
                     self.next_token()
                     result = Nodes.AssignNode(result.identifier, self.expression())
+                else:
+                    raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
+            elif self.current_token.type in (Tokens.PLUS_ASSIGN, Tokens.MINUS_ASSIGN, Tokens.MULT_ASSIGN,
+                                             Tokens.DIV_ASSIGN, Tokens.MODULUS_ASSIGN):
+                # Will make a check if assign operator comes after a variable first, then will match the operator
+                # And return assign nodes accordingly
+                # TODO: make this less confusing
+                if type(result).__name__ == "VariableNode":
+                    operator_type = self.current_token.type
+                    self.next_token()
+                    operator_node = Nodes.match_operator_to_node(operator_type)
+                    result = Nodes.AssignNode(result.identifier,
+                                              operator_node(
+                                                  Nodes.VariableNode(result.identifier),
+                                                  self.expression()))
                 else:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
             else:
