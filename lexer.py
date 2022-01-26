@@ -44,7 +44,7 @@ class Lexer:
                     tokens.append(token(OPERATOR_DICT.get(operator + "=")))
                     self.next_char()
                 else:
-                    tokens.append(token(OPERATOR_DICT.get(self.current_char)))
+                    tokens.append(token(OPERATOR_DICT.get(operator)))
             elif self.current_char == "=":
                 self.next_char()
                 # We have to differentiate between a simple equals and the function operator "=>", so we check for a ">"
