@@ -50,6 +50,8 @@ def start_session(fractions=False, debug=False, quit_after_exceptions=True):
             if isinstance(result, str):
                 print(result)
             # Will print result without decimals in case of a whole number
+            elif not isinstance(result, float):
+                print("Object:", repr(result))
             elif result % 1 == 0:
                 print(int(result))
             else:
