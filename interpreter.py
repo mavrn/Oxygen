@@ -113,9 +113,9 @@ def operation_handler(node):
     a = evaluate(node.a)
     b = evaluate(node.b)
     if not isinstance(a, float):
-        raise TypeError("Cannot operate on object of type", type(a).__name__)
+        raise TypeError("Cannot operate on object of type " + type(a).__name__)
     if not isinstance(b, float):
-        raise TypeError("Cannot operate on object of type", type(b).__name__)
+        raise TypeError("Cannot operate on object of type " + type(b).__name__)
     if node_type == "AddNode":
         return a + b
     elif node_type == "SubNode":
