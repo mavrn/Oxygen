@@ -113,7 +113,7 @@ class Parser:
                     result = Datatypes.AssignNode(result.identifier,
                                                   operator_node(
                                                       Datatypes.VariableNode(result.identifier),
-                                                      self.statement()))
+                                                      self.expression()))
                 else:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
             else:
