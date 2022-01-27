@@ -2,7 +2,7 @@
 
 ## Installation
 
-To run the program, simply download the source code and run main.py with Python 3.9+. <br> You won't need any additional
+To run the program, simply clone the repository (or download the source code) and run main.py with Python 3.9+. <br> You won't need any additional
 libraries.
 
 ## Syntax
