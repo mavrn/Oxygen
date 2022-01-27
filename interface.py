@@ -1,8 +1,6 @@
-from fractions import Fraction
-
-from interpreter import evaluate
 from lexer import Lexer
 from parse import Parser
+from interpreter import Interpreter
 import Datatypes
 
 
@@ -13,7 +11,8 @@ import Datatypes
 # debug: Will print lexer output and parser output additionally
 # quit_after_exceptions: Will prevent program from quitting after reaching an exception.
 # Setting this to False is experimental and can lead to unexpected behaviour
-def start_session(fractions=False, debug=False, quit_after_exceptions=True):
+def start_session(debug=False, quit_after_exceptions=False):
+    interpreter = Interpreter()
     while True:
         inp = input(">>")
         if quit_after_exceptions:
@@ -26,9 +25,13 @@ def start_session(fractions=False, debug=False, quit_after_exceptions=True):
             tree = parser.parse()
             if debug:
                 print(tree)
-            result = evaluate(tree)
+            result = interpreter.evaluate(tree)
         else:
             # This will do the same exact thing as the block above, but will catch any exceptions coming through
+            # To make this possible, all fields are backed up, so they can be reverted to their original states
+            # in case of an exception
+            interpreter.backup_global_fields = interpreter.global_fields.copy()
+            interpreter.backup_local_fields = interpreter.local_fields.copy()
             try:
                 lexer = Lexer(inp)
                 tokens = lexer.gen_tokens()
@@ -38,8 +41,9 @@ def start_session(fractions=False, debug=False, quit_after_exceptions=True):
                 tree = parser.parse()
                 if debug:
                     print(tree)
-                result = evaluate(tree)
+                result = interpreter.evaluate(tree)
             except Exception as e:
+                interpreter.revert()
                 print(f"{type(e).__name__}: {e}")
                 result = None
 
@@ -51,9 +55,6 @@ def start_session(fractions=False, debug=False, quit_after_exceptions=True):
             elif isinstance(result, float):
                 if result % 1 == 0:
                     print(int(result))
-                elif fractions:
-                    # Prints an approximate fraction if fractions is set to True
-                    print(str(Fraction(result).limit_denominator()))
                 else:
                     print(result)
             elif not isinstance(result, float):
