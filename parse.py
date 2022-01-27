@@ -34,7 +34,7 @@ class Parser:
             self.next_token()
             tree = self.declare_function()
         else:
-            tree = self.expression()
+            tree = self.statement()
         # If the parsing process is finished and there are still tokens left, the syntax is invalid:
         # An example would be x = 2a
         if self.current_token is not None:
@@ -50,6 +50,18 @@ class Parser:
     # An "exponential" will have the exponentiation operator. The reason this has its own layer is that exponential
     # operations will have to be evaluated before a term, but after a factor.
     # Finally, the factor can be a number, identifier or an expression between brackets.
+    def statement(self):
+        result = self.expression()
+        while self.current_token_type == Datatypes.IF:
+            else_expr = None
+            self.next_token()
+            condition = self.statement()
+            if self.current_token_type == Datatypes.ELSE:
+                self.next_token()
+                else_expr = self.statement()
+            result = Datatypes.IfNode(result, condition, else_expr)
+        return result
+
     def expression(self):
         result = self.term()
         while self.current_token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN, Datatypes.AND, Datatypes.OR):
@@ -86,7 +98,7 @@ class Parser:
                 # Will throw an exception if an equals sign comes after anything other than a variable
                 if type(result).__name__ == "VariableNode":
                     self.next_token()
-                    result = Datatypes.AssignNode(result.identifier, self.expression())
+                    result = Datatypes.AssignNode(result.identifier, self.statement())
                 else:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
             elif self.current_token_type in (Datatypes.PLUS_ASSIGN, Datatypes.MINUS_ASSIGN, Datatypes.MULT_ASSIGN,
@@ -101,7 +113,7 @@ class Parser:
                     result = Datatypes.AssignNode(result.identifier,
                                                   operator_node(
                                                       Datatypes.VariableNode(result.identifier),
-                                                      self.expression()))
+                                                      self.statement()))
                 else:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
             else:
@@ -149,7 +161,7 @@ class Parser:
             self.next_token()
             if self.current_token_type == Datatypes.RPAREN:
                 raise SyntaxError("Empty brackets cannot be evaluated.")
-            result = self.expression()
+            result = self.statement()
             if self.current_token is None or self.current_token_type != Datatypes.RPAREN:
                 raise SyntaxError("Expected a closing parenthesis")
             elif type(result).__name__ == "ComparisonNode":
@@ -187,7 +199,7 @@ class Parser:
             raise SyntaxError("Expected \"=>\"")
         else:
             self.next_token()
-            return Datatypes.FuncDeclareNode(identifier=identifier, arguments=arguments, body=self.expression())
+            return Datatypes.FuncDeclareNode(identifier=identifier, arguments=arguments, body=self.statement())
 
     # Will follow the pre-defined syntax of a function call linearly
     # and will throw exceptions if the syntax is incorrect
@@ -197,7 +209,7 @@ class Parser:
         if self.current_token_type == Datatypes.LPAREN:
             self.next_token()
             while self.current_token is not None and self.current_token_type != Datatypes.RPAREN:
-                arguments.append(self.expression())
+                arguments.append(self.statement())
                 if self.current_token_type == Datatypes.COMMA:
                     self.next_token()
                 elif self.current_token_type != Datatypes.RPAREN:

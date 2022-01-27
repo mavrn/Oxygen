@@ -65,6 +65,8 @@ FALSE = 27
 NOT = 28
 AND = 29
 OR = 30
+IF = 31
+ELSE = 32
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -82,6 +84,7 @@ ComparisonNode = namedtuple("ComparisonNode", ["a", "b", "operator"])
 BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])
 BooleanConversionNode = namedtuple("BooleanConversionNode", ["value"])
 LogicalOperationNode = namedtuple("LogicalOperationNode", ["a", "b", "operation"])
+IfNode = namedtuple("IfNode", ["if_expr", "condition", "else_expr"])
 
 # Defines a function consisting of the arguments and the body
 function = namedtuple("function", ["arguments", "body"])
@@ -135,5 +138,7 @@ type_dict = {
     27: "FALSE",
     28: "NOT",
     29: "AND",
-    30: "OR"
+    30: "OR",
+    31: "IF",
+    32: "ELSE"
 }

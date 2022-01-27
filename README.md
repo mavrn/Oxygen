@@ -34,18 +34,7 @@ Nested and chained assignments are also possible:
 4
 ```
 
-Booleans are assigned the same way, except there must be some kind of boolean statement on the right. This can be either
-be "True","False" or some comparison. Numbers can be converted to bools too; 0 will be converted to False while any
-other number will be converted to True. Other datatypes like functions can not be converted to bools. Some examples:
 
-```python
-> x = True
-True
-> x = 2 > 3
-False
-> x = !0
-True
-```
 
 ### **Operations**
 
@@ -57,10 +46,6 @@ The interpreter will be able to evaluate the following operations:
 - Operation assignment with +=, -=, *=, /= and %=
 - Modulus with %
 - Exponentiate with ^
-- Comparison operators:  ==, !=, <, >, <=, >=
-- Logical operator NOT: Can be used either by "!" or "not"
-- Logical operator AND: Can be used either by "&" or "and"
-- Logical operator OR: Can be used either by "|" or "or"
 
 Operator precedence will follow the common order:
 
@@ -69,6 +54,30 @@ Operator precedence will follow the common order:
 14
 > x = (2+3)*4
 20
+```
+
+### **Bools**
+
+---
+In addition to floats, boolean values are supported as well. Boolean operators include:
+
+- Comparison operators:  ==, !=, <, >, <=, >=
+- Logical operator NOT: Can be used either by "!" or "not"
+- Logical operator AND: Can be used either by "&" or "and"
+- Logical operator OR: Can be used either by "|" or "or"
+
+Booleans are assigned the same way as floats, except there must be some kind of boolean statement on the right. This can
+be either be "True", "False" or some comparison. Numbers can be converted to bools too; 0 will be converted to False
+while any other number will be converted to True. Other datatypes like functions can not be converted to bools. Some
+examples:
+
+```python
+> x = True
+True
+> x = 2 > 3
+False
+> x = not 0
+True
 ```
 
 Chained boolean comparisons are possible. If any type of comparison is put in brackets, it will always be converted to a
@@ -92,6 +101,19 @@ When implicitly converting a boolean value to a number, `False` will be equal to
 > x = True
 > x == 1
 True
+```
+
+If-statements have to be one-liners like they are possible in python; following the
+syntax [expression + if + condition + else + expression]. Although not recommended for clarity reasons, if-statements
+can be nested.
+
+```python
+> 8 if 3<10 else 10
+8
+> x = False
+False
+> y = 10 if x else 5
+5
 ```
 
 ### **Functions**
@@ -220,18 +242,28 @@ True
 
 ```python
 > fn reverse boolean_value => !boolean_value
-reverse(1==1)
+> reverse(1==1)
 False
 ```
 
-> Defining a function which takes the values a, b and x and returns True if x is between a and b (and vice versa)
+> Defining a function which takes the arguments a, b and x and returns True if x is between a and b (and vice versa)
 
 ```python
-fn is_in_range a b x => a<x<b
-is_in_range(0, 5, 3)
+> fn is_in_range a b x => a<x<b
+> is_in_range(0, 5, 3)
 True
-is_in_range(-2, 2, -4)
+> is_in_range(-2, 2, -4)
 False
+```
+
+> Defining a function which takes an argument x and returns x divided by 2 only if x is divisible by 2. If not, x is not changed.
+
+```python
+> fn divide_by_two x => x/2 if x%2 == 0 else x
+> divide_by_two.12
+6
+> divide_by_two.13
+13
 ```
 
 ## **Functionality**

@@ -42,6 +42,12 @@ def evaluate(node):
                 Datatypes.Bool(evaluate(node.a)) or Datatypes.Bool(evaluate(node.b)))
     elif node_type == "BooleanConversionNode":
         return Datatypes.Bool(evaluate(node.value))
+    elif node_type == "IfNode":
+        condition = bool(evaluate(node.condition))
+        if condition:
+            return evaluate(node.if_expr)
+        else:
+            return evaluate(node.else_expr)
     elif node_type == "VariableNode":
         # Will check for a local field first, then a global one, and finally raise an exception if
         global_value = global_fields.get(node.identifier)

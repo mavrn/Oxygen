@@ -129,5 +129,9 @@ class Lexer:
             return token(Datatypes.AND)
         elif identifier == "or":
             return token(Datatypes.OR)
+        elif identifier == "if":
+            return token(Datatypes.IF)
+        elif identifier == "else":
+            return token(Datatypes.ELSE)
         else:
             return token(Datatypes.IDENTIFIER, identifier)
