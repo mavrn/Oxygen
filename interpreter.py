@@ -1,5 +1,4 @@
 import math
-from collections import namedtuple
 import Datatypes
 
 
@@ -37,10 +36,12 @@ def evaluate(node):
     elif node_type == "LogicalOperationNode":
         if node.operation == Datatypes.AND:
             return Datatypes.Bool(
-                Datatypes.Bool(evaluate(node.a)).boolean_value and Datatypes.Bool(evaluate(node.b)).boolean_value)
+                Datatypes.Bool(evaluate(node.a)) and Datatypes.Bool(evaluate(node.b)))
         else:
             return Datatypes.Bool(
-                Datatypes.Bool(evaluate(node.a)).boolean_value or Datatypes.Bool(evaluate(node.b)).boolean_value)
+                Datatypes.Bool(evaluate(node.a)) or Datatypes.Bool(evaluate(node.b)))
+    elif node_type == "BooleanConversionNode":
+        return Datatypes.Bool(evaluate(node.value))
     elif node_type == "VariableNode":
         # Will check for a local field first, then a global one, and finally raise an exception if
         global_value = global_fields.get(node.identifier)
@@ -150,33 +151,31 @@ def operation_handler(node):
 
 # Will handle any type of simple comparison
 def comparison_handler(node):
-    operator = node.operator
+    # Will convert any chained comparison correctly. ie. converts (2<3<5) to (2<3 & 3<5)
+    if isinstance(node.a, Datatypes.ComparisonNode):
+        return evaluate(
+            Datatypes.LogicalOperationNode(node.a, Datatypes.ComparisonNode(node.a.b, node.b, node.operator),
+                                           Datatypes.AND))
     a = evaluate(node.a)
     b = evaluate(node.b)
-    a_is_bool = isinstance(a, Datatypes.Bool)
-    b_is_bool = isinstance(b, Datatypes.Bool)
-    if a_is_bool:
-        a = a.boolean_value
-    if b_is_bool:
-        b = b.boolean_value
-    if type(a) != type(b):
-        if a_is_bool:
-            b = Datatypes.Bool(b).boolean_value
-        elif b_is_bool:
-            a = Datatypes.Bool(a).boolean_value
-        else:
-            raise TypeError(f"Cannot compare type {type(a).__name__} to {type(b).__name__}")
+    operator = node.operator
+    # Fetches the boolean value of the Bool datatype to be able to evaluate it in python
+    if isinstance(a, Datatypes.Bool):
+        a = bool(a)
+    if isinstance(b, Datatypes.Bool):
+        b = bool(b)
     if operator == Datatypes.COMP_EQUALS:
-        return Datatypes.Bool(a == b)
+        result = Datatypes.Bool(a == b)
     elif operator == Datatypes.COMP_NOT_EQUALS:
-        return Datatypes.Bool(a != b)
+        result = Datatypes.Bool(a != b)
     elif operator == Datatypes.GREATER_THAN:
-        return Datatypes.Bool(a > b)
+        result = Datatypes.Bool(a > b)
     elif operator == Datatypes.LESS_THAN:
-        return Datatypes.Bool(a < b)
+        result = Datatypes.Bool(a < b)
     elif operator == Datatypes.GREATER_OR_EQUALS:
-        return Datatypes.Bool(a >= b)
+        result = Datatypes.Bool(a >= b)
     elif operator == Datatypes.LESS_OR_EQUALS:
-        return Datatypes.Bool(a <= b)
+        result = Datatypes.Bool(a <= b)
     else:
         raise Exception("An unknown error occurred")
+    return result

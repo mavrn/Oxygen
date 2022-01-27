@@ -152,6 +152,9 @@ class Parser:
             result = self.expression()
             if self.current_token is None or self.current_token_type != Datatypes.RPAREN:
                 raise SyntaxError("Expected a closing parenthesis")
+            elif type(result).__name__ == "ComparisonNode":
+                self.next_token()
+                return Datatypes.BooleanConversionNode(result)
             else:
                 self.next_token()
                 return result

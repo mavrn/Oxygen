@@ -24,6 +24,9 @@ class Bool:
         if self.boolean_value is True:
             return "True"
 
+    def __bool__(self):
+        return self.boolean_value
+
     def reverse(self):
         self.boolean_value = not self.boolean_value
 
@@ -77,6 +80,7 @@ FuncDeclareNode = namedtuple("FuncDeclareNode", ["identifier", "arguments", "bod
 FuncCallNode = namedtuple("FuncCallNode", ["identifier", "arguments"])
 ComparisonNode = namedtuple("ComparisonNode", ["a", "b", "operator"])
 BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])
+BooleanConversionNode = namedtuple("BooleanConversionNode", ["value"])
 LogicalOperationNode = namedtuple("LogicalOperationNode", ["a", "b", "operation"])
 
 # Defines a function consisting of the arguments and the body

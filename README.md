@@ -71,6 +71,29 @@ Operator precedence will follow the common order:
 20
 ```
 
+Chained boolean comparisons are possible. If any type of comparison is put in brackets, it will always be converted to a
+boolean value first, which will prevent chaining of comparisons:
+
+```python
+# 3<5<10 is a chained comparison. It will be evaluated to True, as (3<5) and (5<10) are True.
+> 3 < 5 < 10
+True
+# 5==5==5 is a chained comparison. It will be evaluated to True.
+> 5 == 5 == 5
+True
+# The brackets will cause (5 == 5) to be converted to a boolean, leaving "True == 5", which is false.
+> (5 == 5) == 5
+False
+```
+
+When implicitly converting a boolean value to a number, `False` will be equal to 0 and `True` will be equal to 1.
+
+```python
+> x = True
+> x == 1
+True
+```
+
 ### **Functions**
 
 ---
@@ -151,6 +174,7 @@ There also are a few built-in mathematical constants: pi, e, h, and golden (for 
 Output for a valid expression will be the result of the expression.<br>
 Output for a valid function declaration will be nothing. <br>
 Output for input consisting entirely of whitespace will be nothing. <br>
+Output for any input preceded by `/` will be nothing and the input will be ignored. <br>
 A warning will be displayed if the user tries to override a built-in function.
 
 ### **Errors**
@@ -203,7 +227,7 @@ False
 > Defining a function which takes the values a, b and x and returns True if x is between a and b (and vice versa)
 
 ```python
-fn is_in_range a b x => x > a and x < b
+fn is_in_range a b x => a<x<b
 is_in_range(0, 5, 3)
 True
 is_in_range(-2, 2, -4)

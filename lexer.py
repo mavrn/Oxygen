@@ -33,6 +33,8 @@ class Lexer:
     # Generates a list of tokens
     def gen_tokens(self):
         tokens = []
+        if self.current_char == "/":
+            return tokens
         while self.current_char is not None:
             if self.current_char == " ":
                 self.next_char()
