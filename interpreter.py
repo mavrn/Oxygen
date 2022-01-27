@@ -1,21 +1,22 @@
 import math
 from collections import namedtuple
-import Nodes, Tokens, Datatypes
+import Datatypes
 
-# Defines a function consisting of the arguments and the body
-function = namedtuple("function", ["arguments", "body"])
+
 # Define global and local fields, which emulate global and local (function) scope
 global_fields = {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * (10 ** (-34))}
 local_fields = {}
 OperationNodes = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
-KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial"]
+KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial", "bool"]
 
+
+# TODO: FIX BUG - chained comparisons (i.e. 7==7==3 evals to True)
 
 # Will evaluate the tree (parser output) recursively
 def evaluate(node):
     node_type = type(node).__name__
     if node_type == "FuncDeclareNode":
-        global_fields[node.identifier] = function(node.arguments, node.body)
+        global_fields[node.identifier] = Datatypes.function(node.arguments, node.body)
         if node.identifier in KEYWORDS:
             return f"Warning: Built-in function {node.identifier} has been overridden."
     elif node_type == "FuncCallNode":
@@ -29,12 +30,12 @@ def evaluate(node):
     elif node_type == "ComparisonNode":
         return comparison_handler(node)
     elif node_type == "BooleanNegationNode":
-        bool = evaluate(node.value)
-        custom_bool = Datatypes.Bool(bool)
+        boolean = evaluate(node.value)
+        custom_bool = Datatypes.Bool(boolean)
         custom_bool.reverse()
         return custom_bool
     elif node_type == "LogicalOperationNode":
-        if node.operation == Tokens.AND:
+        if node.operation == Datatypes.AND:
             return Datatypes.Bool(
                 Datatypes.Bool(evaluate(node.a)).boolean_value and Datatypes.Bool(evaluate(node.b)).boolean_value)
         else:
@@ -94,7 +95,7 @@ def keyword_handler(node):
     # As all the built-in functions only accept one argument,
     # so the program raises an error if called with more or less arguments
     if len(node.arguments) != 1:
-        raise SyntaxError(f"Expected 1 argument, got {len(node.arguments)}")
+        raise SyntaxError(f"Expected 1 argument for function {keyword}, got {len(node.arguments)}")
     argument = evaluate(node.arguments[0])
     # Will match the identifier to the pre-defined keywords and operate accordingly
     if keyword == "sqrt":
@@ -118,6 +119,8 @@ def keyword_handler(node):
         return math.atan(argument)
     elif keyword == "abs":
         return abs(argument)
+    elif keyword == "bool":
+        return Datatypes.Bool(argument)
     else:
         raise Exception(f"Unknown exception occurred while handling the keyword {keyword}")
 
@@ -150,21 +153,30 @@ def comparison_handler(node):
     operator = node.operator
     a = evaluate(node.a)
     b = evaluate(node.b)
-    if not isinstance(a, float):
-        raise TypeError("Cannot operate on object of type " + type(a).__name__)
-    if not isinstance(b, float):
-        raise TypeError("Cannot operate on object of type " + type(b).__name__)
-    if operator == Tokens.COMP_EQUALS:
+    a_is_bool = isinstance(a, Datatypes.Bool)
+    b_is_bool = isinstance(b, Datatypes.Bool)
+    if a_is_bool:
+        a = a.boolean_value
+    if b_is_bool:
+        b = b.boolean_value
+    if type(a) != type(b):
+        if a_is_bool:
+            b = Datatypes.Bool(b).boolean_value
+        elif b_is_bool:
+            a = Datatypes.Bool(a).boolean_value
+        else:
+            raise TypeError(f"Cannot compare type {type(a).__name__} to {type(b).__name__}")
+    if operator == Datatypes.COMP_EQUALS:
         return Datatypes.Bool(a == b)
-    elif operator == Tokens.COMP_NOT_EQUALS:
+    elif operator == Datatypes.COMP_NOT_EQUALS:
         return Datatypes.Bool(a != b)
-    elif operator == Tokens.GREATER_THAN:
+    elif operator == Datatypes.GREATER_THAN:
         return Datatypes.Bool(a > b)
-    elif operator == Tokens.LESS_THAN:
+    elif operator == Datatypes.LESS_THAN:
         return Datatypes.Bool(a < b)
-    elif operator == Tokens.GREATER_OR_EQUALS:
+    elif operator == Datatypes.GREATER_OR_EQUALS:
         return Datatypes.Bool(a >= b)
-    elif operator == Tokens.LESS_OR_EQUALS:
+    elif operator == Datatypes.LESS_OR_EQUALS:
         return Datatypes.Bool(a <= b)
     else:
         raise Exception("An unknown error occurred")

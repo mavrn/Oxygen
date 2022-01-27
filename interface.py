@@ -1,8 +1,7 @@
 from fractions import Fraction
 
-from Tokens import type_dict
 from interpreter import evaluate
-from lexer import Lexer, token
+from lexer import Lexer
 from parse import Parser
 import Datatypes
 
@@ -65,8 +64,8 @@ def start_session(fractions=False, debug=False, quit_after_exceptions=True):
 # For debug purposes
 # Makes the lexer tokens readable by matching the IDs to the Tokens.type_dict
 def token_readable(tokens):
-    readable_tokens = [token(
-        type_dict.get(unreadable_token.type),
+    readable_tokens = [Datatypes.token(
+        Datatypes.type_dict.get(unreadable_token.type),
         unreadable_token.value)
         for unreadable_token in tokens]
     return readable_tokens

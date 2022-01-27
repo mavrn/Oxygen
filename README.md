@@ -34,8 +34,8 @@ Nested and chained assignments are also possible:
 4
 ```
 
-Booleans are assigned the same way, except there must be some kind of boolean statement on the right. This can be
-either "True" or "False" or a comparison. Numbers can be converted to bools; 0 will be converted to False while any
+Booleans are assigned the same way, except there must be some kind of boolean statement on the right. This can be either
+be "True","False" or some comparison. Numbers can be converted to bools too; 0 will be converted to False while any
 other number will be converted to True. Other datatypes like functions can not be converted to bools. Some examples:
 
 ```python
@@ -121,6 +121,8 @@ Currently, there are the following usable built-in functions:
 - `asin`, `acos`, `atan`
 - `abs`
 - `factorial`
+- `bool` - *Note: This will attempt to convert anything into a bool. <br> The same thing will be done automatically in
+  the context of a boolean expression*
 
 They are called just like normal functions: `keyword.factor` or `keyword(expression)`
 
@@ -171,6 +173,41 @@ SyntaxError: Expected 2 arguments, got 1.
 TypeError: float object is not callable
 > fn add a b = a + b
 SyntaxError: Expected "=>"
+```
+
+## **Code examples**
+
+> Evaluating an expression and comparing it to 1
+
+```python
+> 1 == (0.5 + 2 / 2^2)
+True
+```
+
+> Defining a function which can calculate c in a triangle according to the theorem of pythagoras
+
+```python
+> fn get_c a b => sqrt(a^2+b^2)
+> get_c(3,4)
+5
+```
+
+> Defining a function that reverses a boolean value
+
+```python
+> fn reverse boolean_value => !boolean_value
+reverse(1==1)
+False
+```
+
+> Defining a function which takes the values a, b and x and returns True if x is between a and b (and vice versa)
+
+```python
+fn is_in_range a b x => x > a and x < b
+is_in_range(0, 5, 3)
+True
+is_in_range(-2, 2, -4)
+False
 ```
 
 ## **Functionality**
