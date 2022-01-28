@@ -2,8 +2,18 @@
 
 ## Installation
 
-To run the program, simply clone the repository (or download the source code) and run main.py with Python 3.9+. <br> You won't need any additional
-libraries.
+To run the program, simply clone the repository (or download the source code) and run main.py with Python 3.9+. <br>
+You will need [numpy](https://pypi.org/project/numpy/) v1.22.1+ and [matplotlib](https://pypi.org/project/matplotlib/)
+v3.5.1+ for plotting purposes. <br>
+When running main.py, you can specify the following arguments:
+
+| Agument               | Function                                                                                 | Default |
+|-----------------------|------------------------------------------------------------------------------------------|---------|
+| quit_after_exceptions | Will quit the program if an exception occurs. Might be more stable and less error-prone. | False   |
+| debug                 | In addition to the expression result, will print the output of both Lexer and Parser     | False   |
+
+Example:
+`python main.py quit_after_exceptions`
 
 ## Syntax
 
@@ -14,7 +24,6 @@ output.**
 
 ---
 
-This interpreter has 2 different datatypes: numbers(which will always be floats) and bools. <br>
 Variables are assigned with the identifier on the left, an equals sign, and the value on the right. Identifiers can only
 consist of uppercase letters, lowercase letters and underscores. Example:
 
@@ -166,8 +175,10 @@ Currently, there are the following usable built-in functions:
 - `asin`, `acos`, `atan`
 - `abs`
 - `factorial`
-- `bool` - *Note: This will attempt to convert anything into a bool. <br> The same thing will be done automatically in
-  the context of a boolean expression*
+- `bool` - *This will attempt to convert anything into a bool. <br> The same thing will be done automatically in the
+  context of a boolean expression*
+- `fraction` *This will attempt to convert anything into a fraction*
+- `plot`
 
 They are called just like normal functions: `keyword.factor` or `keyword(expression)`
 
@@ -184,10 +195,32 @@ There also are a few built-in mathematical constants: pi, e, h, and golden (for 
 > Example: Utilizing pi to declare a function which takes in a radius and returns the circumference of the circle
 
 ```python
-> fn get_circumference radius => 2 * pi * radius
+> fn
+get_circumference
+radius = > 2 * pi * radius
 > get_circumference(2)
 12.566370614359172
 ```
+
+### **Plotting**
+
+---
+
+Any defined function can be plotted using matplotlib. This is done using the built-in `plot` function with the following
+syntax:
+`plot(function identifier, lower bound, upper bound, increment)`, while the increment is an optional argument with a
+default of 0.001 (making a smooth graph in most cases). Matplotlib will then draw the function from the lower bound to
+the upper bound, using the given increment.
+> Defining a function f(x) = 0.5*x³ + 2x² and plotting it using `plot()`
+
+```python
+> fn
+f
+x = > 0.5 * x ^ 3 + 2 * x ^ 2
+> plot(f, -4, 2)
+``` 
+
+![img.png](plotted_function.png)
 
 ### **Output**
 

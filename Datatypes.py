@@ -32,7 +32,7 @@ class Bool:
 
 
 # TOKEN
-token = namedtuple("token", "type value", defaults=(None, None))
+token = namedtuple("token", ["type", "value"], defaults=(None, None))
 # TOKEN TYPES
 NUMBER = 0
 PLUS_SIGN = 1
@@ -77,7 +77,6 @@ ModulusNode = namedtuple("ModulusNode", ["a", "b"])
 ExpNode = namedtuple("ExpNode", ["a", "b"])
 AssignNode = namedtuple("AssignNode", ["identifier", "value"])
 VariableNode = namedtuple("VariableNode", ["identifier"])
-KeywordNode = namedtuple("KeywordNode", ["keyword", "value"])
 FuncDeclareNode = namedtuple("FuncDeclareNode", ["identifier", "arguments", "body"])
 FuncCallNode = namedtuple("FuncCallNode", ["identifier", "arguments"])
 ComparisonNode = namedtuple("ComparisonNode", ["a", "b", "operator"])
