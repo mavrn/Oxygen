@@ -1,7 +1,9 @@
+from _ast import Sub
 from collections import namedtuple
 
 
 # CUSTOM BOOLEAN DATACLASS
+# Exists to make the Interpreter Booleans customizable
 class Bool:
     def __init__(self, value: bool = None):
         if isinstance(value, bool):
@@ -90,54 +92,44 @@ function = namedtuple("function", ["arguments", "body"])
 
 
 # Returns the correct node for operation assignments
-def match_operator_to_node(operator_id):
-    id = operator_id
-    if id == PLUS_ASSIGN:
-        return AddNode
-    elif id == MINUS_ASSIGN:
-        return SubNode
-    elif id == MULT_ASSIGN:
-        return MultNode
-    elif id == DIV_ASSIGN:
-        return DivNode
-    else:
-        return ModulusNode
-
+OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
+                      MODULUS_SIGN: ModulusNode, EQUALS: AssignNode, PLUS_ASSIGN: AddNode, MINUS_ASSIGN: SubNode,
+                      MULT_ASSIGN: MultNode, DIV_ASSIGN: DivNode, MODULUS_ASSIGN: ModulusNode}
 
 # Debug
 # Can make lexer output readable
 type_dict = {
-    0: "NUMBER",
-    1: "PLUS_SIGN",
-    2: "MINUS_SIGN",
-    3: "MULT_SIGN",
-    4: "DIV_SIGN",
-    5: "MODULUS_SIGN",
-    6: "PLUS_ASSIGN",
-    7: "MINUS_ASSIGN",
-    8: "MULT_ASSIGN",
-    9: "DIV_ASSIGN",
-    10: "MODULUS_ASSIGN",
-    11: "LPAREN",
-    12: "RPAREN",
-    13: "IDENTIFIER",
-    14: "EQUALS",
-    15: "EXPONENTIAL_SIGN",
-    16: "FUNCTION_OPERATOR",
-    17: "FUNCTION_KEYWORD",
-    18: "PERIOD_FUNC_CALL",
-    19: "COMMA",
-    20: "COMP_EQUALS",
-    21: "COMP_NOT_EQUALS",
-    22: "GREATER_THAN",
-    23: "LESS_THAN",
-    24: "GREATER_OR_EQUALS",
-    25: "LESS_OR_EQUALS",
-    26: "TRUE",
-    27: "FALSE",
-    28: "NOT",
-    29: "AND",
-    30: "OR",
-    31: "IF",
-    32: "ELSE"
+    NUMBER: "NUMBER",
+    PLUS_SIGN: "PLUS_SIGN",
+    MINUS_SIGN: "MINUS_SIGN",
+    MULT_SIGN: "MULT_SIGN",
+    DIV_SIGN: "DIV_SIGN",
+    MODULUS_SIGN: "MODULUS_SIGN",
+    PLUS_ASSIGN: "PLUS_ASSIGN",
+    MINUS_ASSIGN: "MINUS_ASSIGN",
+    MULT_ASSIGN: "MULT_ASSIGN",
+    DIV_ASSIGN: "DIV_ASSIGN",
+    MODULUS_ASSIGN: "MODULUS_ASSIGN",
+    LPAREN: "LPAREN",
+    RPAREN: "RPAREN",
+    IDENTIFIER: "IDENTIFIER",
+    EQUALS: "EQUALS",
+    EXP: "EXPONENTIAL_SIGN",
+    FUNCTION_OPERATOR: "FUNCTION_OPERATOR",
+    FUNCTION_KEYWORD: "FUNCTION_KEYWORD",
+    PERIOD_FUNC_CALL: "PERIOD_FUNC_CALL",
+    COMMA: "COMMA",
+    COMP_EQUALS: "COMP_EQUALS",
+    COMP_NOT_EQUALS: "COMP_NOT_EQUALS",
+    GREATER_THAN: "GREATER_THAN",
+    LESS_THAN: "LESS_THAN",
+    GREATER_OR_EQUALS: "GREATER_OR_EQUALS",
+    LESS_OR_EQUALS: "LESS_OR_EQUALS",
+    TRUE: "TRUE",
+    FALSE: "FALSE",
+    NOT: "NOT",
+    AND: "AND",
+    OR: "OR",
+    IF: "IF",
+    ELSE: "ELSE"
 }

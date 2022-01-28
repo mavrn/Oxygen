@@ -4,7 +4,7 @@ from numpy import array
 from matplotlib import pyplot as plt
 from fractions import Fraction
 
-KEYWORDS = {"sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial", "bool", "plot", "fraction"}
+KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial", "bool", "plot", "fraction"]
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 
 
@@ -99,7 +99,7 @@ class Interpreter:
         self.local_fields.clear()
         return result
 
-    def revert(self):
+    def rollback(self):
         self.global_fields = self.backup_global_fields
         self.local_fields = self.backup_local_fields
 

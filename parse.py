@@ -3,6 +3,7 @@ import Datatypes
 
 # TODO: update comments
 
+# RECURSIVE DESCENT PARSER
 # Is responsible for recursively generating a tree of operations based on the lexer output using the pre-defined Nodes
 # from the Datatypes.py file.
 class Parser:
@@ -44,12 +45,13 @@ class Parser:
             return tree
 
     # Following, there are the valid elements of an expression, following the common order top-down.
-    # These elements are grouped in "layers", which are expression, term, "exponential" and factor
+    # These elements are grouped in "layers", which are statement, expression, term, "exponential" and factor
+    # The statement is an if statement which consists of the if keyword and multiple expressions
     # An expression will have a plus or minus sign
-    # A term will have a multiplication, division, assignment(equals) or a modulus sign
+    # A term will be any multiplication, division, modulus, assignment operation or a comparison
     # An "exponential" will have the exponentiation operator. The reason this has its own layer is that exponential
-    # operations will have to be evaluated before a term, but after a factor.
-    # Finally, the factor can be a number, identifier or an expression between brackets.
+    # operations have to be evaluated before a term, but after a factor.
+    # Finally, the factor can be a number, identifier or a statement between brackets.
     def statement(self):
         result = self.expression()
         while self.current_token_type == Datatypes.IF:
@@ -59,22 +61,20 @@ class Parser:
             if self.current_token_type == Datatypes.ELSE:
                 self.next_token()
                 else_expr = self.statement()
-            result = Datatypes.IfNode(result, condition, else_expr)
+            result = Datatypes.IfNode(if_expr=result, condition=condition, else_expr=else_expr)
         return result
 
     def expression(self):
         result = self.term()
         while self.current_token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN, Datatypes.AND, Datatypes.OR):
-            if self.current_token_type == Datatypes.PLUS_SIGN:
+            if self.current_token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN):
+                token_type = self.current_token_type
                 self.next_token()
-                result = Datatypes.AddNode(result, self.term())
-            elif self.current_token_type == Datatypes.MINUS_SIGN:
-                self.next_token()
-                result = Datatypes.SubNode(result, self.term())
+                result = Datatypes.OPERATOR_NODE_DICT[token_type](a=result, b=self.term())
             elif self.current_token_type in (Datatypes.AND, Datatypes.OR):
                 operation_type = self.current_token_type
                 self.next_token()
-                result = Datatypes.LogicalOperationNode(result, self.term(), operation_type)
+                result = Datatypes.LogicalOperationNode(a=result, b=self.term(), operation=operation_type)
         return result
 
     def term(self):
@@ -85,33 +85,27 @@ class Parser:
                                           Datatypes.COMP_EQUALS, Datatypes.COMP_NOT_EQUALS, Datatypes.GREATER_THAN,
                                           Datatypes.LESS_THAN, Datatypes.GREATER_OR_EQUALS, Datatypes.LESS_OR_EQUALS
                                           ):
-            if self.current_token_type == Datatypes.MULT_SIGN:
+            if self.current_token_type in (Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN):
+                token_type = self.current_token_type
                 self.next_token()
-                result = Datatypes.MultNode(result, self.exponential())
-            elif self.current_token_type == Datatypes.DIV_SIGN:
-                self.next_token()
-                result = Datatypes.DivNode(result, self.exponential())
-            elif self.current_token_type == Datatypes.MODULUS_SIGN:
-                self.next_token()
-                result = Datatypes.ModulusNode(result, self.exponential())
+                result = Datatypes.OPERATOR_NODE_DICT[token_type](a=result, b=self.exponential())
             elif self.current_token_type == Datatypes.EQUALS:
                 # Will throw an exception if an equals sign comes after anything other than a variable
                 if type(result).__name__ == "VariableNode":
                     self.next_token()
-                    result = Datatypes.AssignNode(result.identifier, self.statement())
+                    result = Datatypes.AssignNode(identifier=result.identifier, value=self.statement())
                 else:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
             elif self.current_token_type in (Datatypes.PLUS_ASSIGN, Datatypes.MINUS_ASSIGN, Datatypes.MULT_ASSIGN,
                                              Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN):
-                # Will make a check if assign operator comes after a variable first, then will match the operator
-                # And return assign nodes accordingly
+                # Will first make a check if assign operator comes after a variable , then will match the operator
+                # and return assign nodes accordingly
                 # TODO: make this less confusing
                 if type(result).__name__ == "VariableNode":
-                    operator_type = self.current_token_type
+                    operator_node = Datatypes.OPERATOR_NODE_DICT[self.current_token_type]
                     self.next_token()
-                    operator_node = Datatypes.match_operator_to_node(operator_type)
-                    result = Datatypes.AssignNode(result.identifier,
-                                                  operator_node(
+                    result = Datatypes.AssignNode(identifier=result.identifier,
+                                                  value=operator_node(
                                                       Datatypes.VariableNode(result.identifier),
                                                       self.expression()))
                 else:
@@ -119,7 +113,7 @@ class Parser:
             else:
                 comparison_type = self.current_token_type
                 self.next_token()
-                result = Datatypes.ComparisonNode(result, self.exponential(), comparison_type)
+                result = Datatypes.ComparisonNode(a=result, b=self.exponential(), operator=comparison_type)
 
         return result
 
@@ -127,7 +121,7 @@ class Parser:
         token = self.factor()
         if self.current_token_type == Datatypes.EXP:
             self.next_token()
-            return Datatypes.ExpNode(token, self.factor())
+            return Datatypes.ExpNode(a=token, b=self.factor())
         else:
             return token
 
@@ -148,14 +142,14 @@ class Parser:
             return Datatypes.Bool(False)
         elif token_type == Datatypes.NOT:
             self.next_token()
-            return Datatypes.BooleanNegationNode(self.exponential())
+            return Datatypes.BooleanNegationNode(value=self.exponential())
         # Will handle unary plus und minus signs
         elif token_type == Datatypes.PLUS_SIGN:
             self.next_token()
             return self.exponential()
         elif token_type == Datatypes.MINUS_SIGN:
             self.next_token()
-            return Datatypes.MultNode(-1.0, self.exponential())
+            return Datatypes.MultNode(a=-1.0, b=self.exponential())
         # Will handle parentheses and throw an exception in case of a missing parenthesis
         elif token_type == Datatypes.LPAREN:
             self.next_token()
@@ -166,7 +160,7 @@ class Parser:
                 raise SyntaxError("Expected a closing parenthesis")
             elif type(result).__name__ == "ComparisonNode":
                 self.next_token()
-                return Datatypes.BooleanConversionNode(result)
+                return Datatypes.BooleanConversionNode(value=result)
             else:
                 self.next_token()
                 return result
@@ -176,13 +170,12 @@ class Parser:
             self.next_token()
             if self.current_token is None or self.current_token_type not in (
                     Datatypes.LPAREN, Datatypes.PERIOD_FUNC_CALL):
-                return Datatypes.VariableNode(token.value)
+                return Datatypes.VariableNode(identifier=identifier)
             else:
                 return self.call_function(identifier)
         else:
             raise SyntaxError("Invalid syntax")
 
-    # TODO: do some more testing with functions
     # Will follow the pre-defined syntax of a function declaration linearly
     # and will throw exceptions if the syntax is incorrect
     def declare_function(self):
@@ -225,4 +218,4 @@ class Parser:
             return Datatypes.FuncCallNode(identifier=identifier, arguments=arguments)
         # The program should never reach this point
         else:
-            raise SyntaxError("An unknown error occurred")
+            raise Exception("An unknown error occurred")

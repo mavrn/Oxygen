@@ -7,10 +7,8 @@ import Datatypes
 # TODO: add custom exceptions
 
 
-# fractions: Will convert the output into an approximate fraction
 # debug: Will print lexer output and parser output additionally
 # quit_after_exceptions: Will prevent program from quitting after reaching an exception.
-# Setting this to False is experimental and can lead to unexpected behaviour
 def start_session(debug=False, quit_after_exceptions=False):
     interpreter = Interpreter()
     while True:
@@ -43,27 +41,28 @@ def start_session(debug=False, quit_after_exceptions=False):
                     print(tree)
                 result = interpreter.evaluate(tree)
             except Exception as e:
-                interpreter.revert()
+                interpreter.rollback()
                 print(f"{type(e).__name__}: {e}")
                 result = None
 
         # Printing the result
         # Won't print anything if the result is None
         if result is not None:
+            # Running some instance checks to make sure that the right thing is printed to the console
             if isinstance(result, (str, Datatypes.Bool)):
                 print(result)
             elif isinstance(result, float):
+                # Will print result without decimals in case of a whole number
                 if result % 1 == 0:
                     print(int(result))
                 else:
                     print(result)
             elif not isinstance(result, float):
                 print("Object:", repr(result))
-            # Will print result without decimals in case of a whole number
 
 
 # For debug purposes
-# Makes the lexer tokens readable by matching the IDs to the Tokens.type_dict
+# Makes the lexer tokens readable by matching the IDs to the Datatypes.type_dict
 def token_readable(tokens):
     readable_tokens = [Datatypes.token(
         Datatypes.type_dict.get(unreadable_token.type),

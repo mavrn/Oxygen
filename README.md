@@ -195,9 +195,7 @@ There also are a few built-in mathematical constants: pi, e, h, and golden (for 
 > Example: Utilizing pi to declare a function which takes in a radius and returns the circumference of the circle
 
 ```python
-> fn
-get_circumference
-radius = > 2 * pi * radius
+> fn get_circumference radius = > 2 * pi * radius
 > get_circumference(2)
 12.566370614359172
 ```
@@ -214,9 +212,7 @@ the upper bound, using the given increment.
 > Defining a function f(x) = 0.5*x³ + 2x² and plotting it using `plot()`
 
 ```python
-> fn
-f
-x = > 0.5 * x ^ 3 + 2 * x ^ 2
+> fn f x = > 0.5 * x ^ 3 + 2 * x ^ 2
 > plot(f, -4, 2)
 ``` 
 
@@ -229,7 +225,6 @@ x = > 0.5 * x ^ 3 + 2 * x ^ 2
 Output for a valid expression will be the result of the expression.<br>
 Output for a valid function declaration will be nothing. <br>
 Output for input consisting entirely of whitespace will be nothing. <br>
-Output for any input preceded by `/` will be nothing and the input will be ignored. <br>
 A warning will be displayed if the user tries to override a built-in function.
 
 ### **Errors**
@@ -253,6 +248,12 @@ TypeError: float object is not callable
 > fn add a b = a + b
 SyntaxError: Expected "=>"
 ```
+
+### **Other Syntax**
+
+---
+
+Any input preceded by `~` will be ignored.
 
 ## **Code examples**
 
