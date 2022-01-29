@@ -40,7 +40,7 @@ class Lexer:
             # Skips whitespace entirely
             if self.current_char == " ":
                 self.next_char()
-            if self.current_char == "~":
+            elif self.current_char == "~":
                 return tokens
             elif self.current_char in OPERATORS:
                 operator = self.current_char
