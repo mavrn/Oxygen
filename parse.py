@@ -167,7 +167,7 @@ class Parser:
         elif token_type == Datatypes.LPAREN:
             self.next_token()
             if self.current_token_type == Datatypes.RPAREN:
-                raise SyntaxError("Empty brackets cannot be evaluated.")
+                raise SyntaxError("Empty parentheses cannot be evaluated.")
             result = self.statement()
             if self.current_token is None or self.current_token_type != Datatypes.RPAREN:
                 raise SyntaxError("Expected a closing parenthesis")

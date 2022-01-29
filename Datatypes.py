@@ -3,7 +3,7 @@ from collections import namedtuple
 
 
 # CUSTOM BOOLEAN DATACLASS
-# Exists to make the Interpreter Booleans customizable
+# Exists to make the Interpreter Bools customizable
 class Bool:
     def __init__(self, value=None):
         if isinstance(value, bool):
@@ -33,9 +33,27 @@ class Bool:
         self.boolean_value = not self.boolean_value
 
 
-# TOKEN
-token = namedtuple("token", ["type", "value"], defaults=(None, None))
-# TOKEN TYPES
+# Defines a function consisting of the arguments and the body
+class Function:
+    def __init__(self, arguments, body):
+        self.arguments = arguments
+        self.body = body
+
+    def __repr__(self):
+        return f"FUNCTION: \n ARGS = {self.arguments} \n BODY = {self.body}"
+
+
+# Defines a token consisting of a type ID and some value
+class Token:
+    def __init__(self, type=None, value=None):
+        self.type = type
+        self.value = value
+
+    def __repr__(self):
+        return f"TOKEN({type_dict.get(self.type)}" + (f", VALUE = {self.value})" if self.value else ")")
+
+
+# TOKEN TYPE IDs
 NUMBER = 0
 PLUS_SIGN = 1
 MINUS_SIGN = 2
@@ -89,17 +107,13 @@ LogicalOperationNode = namedtuple("LogicalOperationNode", ["a", "b", "operation"
 IfNode = namedtuple("IfNode", ["if_expr", "condition", "else_expr"])
 RepNode = namedtuple("RepNode", ["repetitions", "expression"])
 
-# Defines a function consisting of the arguments and the body
-function = namedtuple("function", ["arguments", "body"])
-
-
-# Returns the correct node for operation assignments
+# Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
                       MODULUS_SIGN: ModulusNode, EQUALS: AssignNode, PLUS_ASSIGN: AddNode, MINUS_ASSIGN: SubNode,
                       MULT_ASSIGN: MultNode, DIV_ASSIGN: DivNode, MODULUS_ASSIGN: ModulusNode}
 
 # Debug
-# Can make lexer output readable
+# Helps to make tokens more readable
 type_dict = {
     NUMBER: "NUMBER",
     PLUS_SIGN: "PLUS_SIGN",

@@ -20,7 +20,7 @@ def start_session(debug=False, quit_after_exceptions=False):
             tokens_list = lexer.gen_tokens()
             if debug:
                 for tokens in tokens_list:
-                    print(token_readable(tokens))
+                    print(tokens)
             parser = Parser(tokens_list)
             tree_list = parser.parse()
             if debug:
@@ -36,7 +36,7 @@ def start_session(debug=False, quit_after_exceptions=False):
                 tokens_list = lexer.gen_tokens()
                 if debug:
                     for tokens in tokens_list:
-                        print(token_readable(tokens))
+                        print(tokens)
                 parser = Parser(tokens_list)
                 tree_list = parser.parse()
                 if debug:
@@ -63,17 +63,7 @@ def start_session(debug=False, quit_after_exceptions=False):
                     else:
                         print(line)
                 elif not isinstance(line, float):
-                    print("Object:", repr(line))
-
-
-# For debug purposes
-# Makes the lexer tokens readable by matching the IDs to the Datatypes.type_dict
-def token_readable(tokens):
-    readable_tokens = [Datatypes.token(
-        Datatypes.type_dict.get(unreadable_token.type),
-        unreadable_token.value)
-        for unreadable_token in tokens]
-    return readable_tokens
+                    print(repr(line))
 
 
 if __name__ == '__main__':

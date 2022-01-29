@@ -1,13 +1,16 @@
 import Datatypes
-from Datatypes import token
+from Datatypes import Token
 
 NUM_CHARS = "0123456789"
 LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
-OPERATORS = "+-*/%()^,"
 OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datatypes.MULT_SIGN, "/": Datatypes.DIV_SIGN,
                  "%": Datatypes.MODULUS_SIGN, "+=": Datatypes.PLUS_ASSIGN, "-=": Datatypes.MINUS_ASSIGN,
                  "*=": Datatypes.MULT_ASSIGN, "/=": Datatypes.DIV_ASSIGN, "%=": Datatypes.MODULUS_ASSIGN,
-                 "(": Datatypes.LPAREN, ")": Datatypes.RPAREN, "^": Datatypes.EXP, ",": Datatypes.COMMA}
+                 "(": Datatypes.LPAREN, ")": Datatypes.RPAREN, "^": Datatypes.EXP, ",": Datatypes.COMMA,
+                 "&": Datatypes.AND, "|": Datatypes.OR, "==": Datatypes.COMP_EQUALS, "!=": Datatypes.COMP_NOT_EQUALS,
+                 "<": Datatypes.LESS_THAN, ">": Datatypes.GREATER_THAN, "<=": Datatypes.LESS_OR_EQUALS,
+                 ">=": Datatypes.GREATER_OR_EQUALS, "=>": Datatypes.ARROW, "=": Datatypes.EQUALS, "!": Datatypes.NOT,
+                 }
 KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD,
                 "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
                 "and": Datatypes.AND, "rep": Datatypes.REP}
@@ -16,7 +19,7 @@ KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNC
 # TODO: replace this with a regex lexer
 
 
-# LINEAR ITERATIVE LEXER
+# LEXER/TOKENIZER
 # Is responsible for generating a list of tokens based on a string input using the pre-defined Tokens
 # from the Datatypes.py file.
 class Lexer:
@@ -35,73 +38,37 @@ class Lexer:
 
     # Generates a list of tokens
     def gen_tokens(self):
-        tokens_list = []
         tokens = []
+        tokens_list = []
         while self.current_char is not None:
             # Skips whitespace entirely
             if self.current_char == " ":
                 self.next_char()
+            # Ignores any input after "~"
             elif self.current_char == "~":
-                return tokens
+                break
+            # Concludes current token list and starts a new one after the statement seperator ";"
             elif self.current_char == ";":
                 tokens_list.append(tokens)
                 tokens = []
                 self.next_char()
-            elif self.current_char in OPERATORS:
-                operator = self.current_char
+            # For some characters, there needs to be a check for other characters after them
+            elif self.current_char in OPERATOR_DICT:
+                char = self.current_char
                 self.next_char()
-                # Checks for an equals after an operator to determine if the token should be of assign type
-                if operator in "+-*/%" and self.current_char == "=":
-                    tokens.append(token(OPERATOR_DICT.get(operator + "=")))
+                operator = char + str(self.current_char)
+                if operator in OPERATOR_DICT:
+                    tokens.append(Token(OPERATOR_DICT[operator]))
                     self.next_char()
                 else:
-                    tokens.append(token(OPERATOR_DICT.get(operator)))
-            elif self.current_char == "=":
-                self.next_char()
-                # We have to differentiate between a simple equals, the function operator "=>",
-                # and the equality operator "==", so we check for any > or = after an equals sign
-                if self.current_char == ">":
-                    tokens.append(token(Datatypes.ARROW))
-                    self.next_char()
-                elif self.current_char == "=":
-                    tokens.append(token(Datatypes.COMP_EQUALS))
-                    self.next_char()
-                else:
-                    tokens.append(token(Datatypes.EQUALS))
-            elif self.current_char == "!":
-                self.next_char()
-                if self.current_char == "=":
-                    tokens.append(token(Datatypes.COMP_NOT_EQUALS))
-                    self.next_char()
-                else:
-                    tokens.append(token(Datatypes.NOT))
-            elif self.current_char == ">":
-                self.next_char()
-                if self.current_char == "=":
-                    tokens.append(token(Datatypes.GREATER_OR_EQUALS))
-                    self.next_char()
-                else:
-                    tokens.append(token(Datatypes.GREATER_THAN))
-            elif self.current_char == "<":
-                self.next_char()
-                if self.current_char == "=":
-                    tokens.append(token(Datatypes.LESS_OR_EQUALS))
-                    self.next_char()
-                else:
-                    tokens.append(token(Datatypes.LESS_THAN))
-            elif self.current_char == "&":
-                tokens.append(token(Datatypes.AND))
-                self.next_char()
-            elif self.current_char == "|":
-                tokens.append(token(Datatypes.OR))
-                self.next_char()
+                    tokens.append(Token(OPERATOR_DICT[char]))
             elif self.current_char in (NUM_CHARS + "."):
                 tokens.append(self.gen_number())
             elif self.current_char in LETTERS:
                 tokens.append(self.gen_identifier())
                 # Will recognize when a function is called with a period after the identifier
                 if self.current_char == ".":
-                    tokens.append(token(Datatypes.PERIOD_FUNC_CALL))
+                    tokens.append(Token(Datatypes.PERIOD_FUNC_CALL))
                     self.next_char()
             else:
                 raise Exception(f"Illegal Character {self.current_char}")
@@ -121,7 +88,7 @@ class Lexer:
         # A number with multiple periods will raise an exception
         if number.count(".") > 1:
             raise ValueError(f"Illegal number {number}")
-        return token(Datatypes.NUMBER, float(number))
+        return Token(Datatypes.NUMBER, float(number))
 
     # Will generate and return an identifier with multiple or one letter(s)
     def gen_identifier(self):
@@ -131,6 +98,6 @@ class Lexer:
             self.next_char()
         # If the entered identifier is a keyword, it will be matched to its ID
         if identifier in KEYWORD_DICT:
-            return token(KEYWORD_DICT[identifier])
+            return Token(KEYWORD_DICT[identifier])
         else:
-            return token(Datatypes.IDENTIFIER, identifier)
+            return Token(Datatypes.IDENTIFIER, identifier)

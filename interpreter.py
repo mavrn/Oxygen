@@ -38,7 +38,7 @@ class Interpreter:
     def evaluate(self, node):
         node_type = type(node).__name__
         if node_type == "FuncDeclareNode":
-            self.fields["global"][node.identifier] = Datatypes.function(node.arguments, node.body)
+            self.fields["global"][node.identifier] = Datatypes.Function(node.arguments, node.body)
             if node.identifier in KEYWORDS:
                 return f"Warning: Built-in function {node.identifier} has been overridden."
         elif node_type == "FuncCallNode":
@@ -106,7 +106,7 @@ class Interpreter:
             else:
                 raise NameError(f"No function found with name {node.identifier}")
         # If the field previously fetched is not a function (i.e. a float value), an error will be risen
-        elif node_type != "function":
+        elif node_type != "Function":
             raise TypeError(f"{node_type} object is not callable")
         # The arguments the user has called the function with are saved
         arguments = node.arguments
@@ -128,7 +128,7 @@ class Interpreter:
         self.scope = self.prev_scope
         return result
 
-    # Will handle any type of KeywordNode
+    # Will handle all built-in functions
     def keyword_handler(self, node):
         keyword = node.identifier
         arg_count = len(node.arguments)
