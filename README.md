@@ -218,8 +218,7 @@ It is used with the syntax (`rep` + repetitions + `=>` + statement).
 To seperate statements, use `;`. All statements will be evaluated seperately from left to right.
 
 ```python
-> x = 4; x + 2;
-sqrt.x
+> x = 4; x + 2; sqrt.x
 4
 6
 2
