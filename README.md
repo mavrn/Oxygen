@@ -196,9 +196,7 @@ There also are a few built-in mathematical constants: pi, e, h, and golden (for 
 > Example: Utilizing pi to declare a function which takes in some radius and returns the circumference of the circle
 
 ```python
-> fn
-get_circumference
-radius = > 2 * pi * radius
+> fn get_circumference radius => 2 * pi * radius
 > get_circumference(2)
 12.566370614359172
 ```
@@ -212,8 +210,7 @@ It is used with the syntax (`rep` + repetitions + `=>` + statement).
 
 ```python
 > x = 0
-> rep
-2 = > x += 2
+> rep 2 => x += 2
 2
 4
 ```
@@ -221,8 +218,7 @@ It is used with the syntax (`rep` + repetitions + `=>` + statement).
 To seperate statements, use `;`. All statements will be evaluated seperately from left to right.
 
 ```python
-> x = 4;
-x + 2;
+> x = 4; x + 2;
 sqrt.x
 4
 6
