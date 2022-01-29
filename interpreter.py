@@ -12,7 +12,8 @@ class Interpreter:
     def __init__(self):
         # Define global and local fields, which emulate global and local (function) scope
         self.global_fields = {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * (10 ** (-34))}
-        self.local_fields = {}
+        self.local_fields = []
+        self.function_nest_layer = -1
         self.backup_global_fields = {}
         self.backup_local_fields = {}
 
@@ -56,7 +57,7 @@ class Interpreter:
         elif node_type == "VariableNode":
             # Will check for a local field first, then a global one, and finally raise an exception if
             global_value = self.global_fields.get(node.identifier)
-            local_value = self.local_fields.get(node.identifier)
+            local_value = self.local_fields[self.function_nest_layer].get(node.identifier)
             if local_value is not None:
                 return local_value
             elif global_value is not None:
@@ -70,6 +71,7 @@ class Interpreter:
 
     # Will handle all nodes of type FuncCallNode
     def function_call_handler(self, node):
+
         # Fetches the function and its name from the global fields
         func = self.global_fields.get(node.identifier)
         node_type = type(func).__name__
@@ -91,12 +93,16 @@ class Interpreter:
         # The arguments the function was called with are now assigned
         # to the identifiers in the order they were previously defined in the function.
         # The arguments will be assigned to the local fields
+
+        self.local_fields.append({})
         for i, argument in enumerate(arguments):
-            self.local_fields[func.arguments[i]] = self.evaluate(argument)
+            self.local_fields[self.function_nest_layer + 1][func.arguments[i]] = self.evaluate(argument)
         # Now that the variables are assigned, the function body can be evaluated
+        self.function_nest_layer += 1
         result = self.evaluate(func.body)
         # Local fields will be cleared after the function ends, just like in any other language
-        self.local_fields.clear()
+        self.function_nest_layer -= 1
+        self.local_fields.pop()
         return result
 
     def rollback(self):
