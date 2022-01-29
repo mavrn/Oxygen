@@ -24,8 +24,8 @@ output.**
 
 ---
 
-Variables are assigned with the identifier on the left, an equals sign, and the value on the right. Identifiers can only
-consist of uppercase letters, lowercase letters and underscores. Example:
+Variables are assigned with the identifier on the left, an equals sign, and the value on the right. <br> Identifiers can
+only consist of uppercase letters, lowercase letters and underscores.
 
 ```python
 > x = 3
@@ -75,10 +75,10 @@ In addition to floats, boolean values are supported as well. Boolean operators i
 - Logical operator AND: Can be used either by "&" or "and"
 - Logical operator OR: Can be used either by "|" or "or"
 
-Booleans are assigned the same way as floats, except there must be some kind of boolean statement on the right. This can
-be either be "True", "False" or some comparison. Numbers can be converted to bools too; 0 will be converted to False
-while any other number will be converted to True. Other datatypes like functions can not be converted to bools. Some
-examples:
+Bools are assigned the same way as floats, except there must be some kind of boolean statement on the right. This can be
+either be "True", "False" or some comparison. <br>
+Numbers can be converted to bools too; 0 will be converted to False while any other number will be converted to True.
+Other datatypes like functions can not be converted to bools.
 
 ```python
 > x = True
@@ -89,8 +89,8 @@ False
 True
 ```
 
-Chained boolean comparisons are possible. If any type of comparison is put in brackets, it will always be converted to a
-boolean value first, which will prevent chaining of comparisons:
+Chained comparisons are possible. If any type of comparison is put in brackets, it will always be converted to a boolean
+value first, which will prevent chaining of comparisons:
 
 ```python
 # 3<5<10 is a chained comparison. It will be evaluated to True, as (3<5) and (5<10) are True.
@@ -130,14 +130,15 @@ False
 ---
 
 Functions are declared using the keyword `fn`, the identifier, the arguments listed with spaces inbetween, the operator
-=> and the function body (including the expression the function should return).
+`=>` and the function body (including the expression the function should return).
 > Declaring the function "add" that takes two arguments and returns the sum:
 
 ```python
 > fn add x y => x + y
 ```
 
-Functions are called using the identifier and the respective arguments in brackets; separated by commas.
+Functions are called using the identifier and the respective arguments in brackets; separated by commas. Function calls
+can be nested.
 > Calling the "add" function:
 
 ```python
@@ -145,7 +146,7 @@ Functions are called using the identifier and the respective arguments in bracke
 10
 ```
 
-Alternatively, if the function takes exactly one argument, it is also callable with the identifier, a period, and the
+Alternatively, if a function takes exactly one argument, it is also callable with the identifier, a period, and the
 argument.
 
 ```python
@@ -192,12 +193,40 @@ They are called just like normal functions: `keyword.factor` or `keyword(express
 ```
 
 There also are a few built-in mathematical constants: pi, e, h, and golden (for the golden ratio).
-> Example: Utilizing pi to declare a function which takes in a radius and returns the circumference of the circle
+> Example: Utilizing pi to declare a function which takes in some radius and returns the circumference of the circle
 
 ```python
-> fn get_circumference radius = > 2 * pi * radius
+> fn
+get_circumference
+radius = > 2 * pi * radius
 > get_circumference(2)
 12.566370614359172
+```
+
+### Loops and statement seperators
+
+---
+
+Currently, there is only one type of loop: A simple repetition. <br>
+It is used with the syntax (`rep` + repetitions + `=>` + statement).
+
+```python
+> x = 0
+> rep
+2 = > x += 2
+2
+4
+```
+
+To seperate statements, use `;`. All statements will be evaluated seperately from left to right.
+
+```python
+> x = 4;
+x + 2;
+sqrt.x
+4
+6
+2
 ```
 
 ### **Plotting**
@@ -212,7 +241,7 @@ the upper bound, using the given increment.
 > Defining a function f(x) = 0.5*x³ + 2x² and plotting it using `plot()`
 
 ```python
-> fn f x = > 0.5 * x ^ 3 + 2 * x ^ 2
+> fn f x => 0.5 * x ^ 3 + 2 * x ^ 2
 > plot(f, -4, 2)
 ``` 
 

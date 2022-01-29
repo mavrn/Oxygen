@@ -5,7 +5,7 @@ from collections import namedtuple
 # CUSTOM BOOLEAN DATACLASS
 # Exists to make the Interpreter Booleans customizable
 class Bool:
-    def __init__(self, value: bool = None):
+    def __init__(self, value=None):
         if isinstance(value, bool):
             self.boolean_value = value
         elif isinstance(value, Bool):
@@ -52,7 +52,7 @@ RPAREN = 12
 IDENTIFIER = 13
 EQUALS = 14
 EXP = 15
-FUNCTION_OPERATOR = 16
+ARROW = 16
 FUNCTION_KEYWORD = 17
 PERIOD_FUNC_CALL = 18
 COMMA = 19
@@ -69,6 +69,7 @@ AND = 29
 OR = 30
 IF = 31
 ELSE = 32
+REP = 33
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -86,6 +87,7 @@ BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])
 BooleanConversionNode = namedtuple("BooleanConversionNode", ["value"])
 LogicalOperationNode = namedtuple("LogicalOperationNode", ["a", "b", "operation"])
 IfNode = namedtuple("IfNode", ["if_expr", "condition", "else_expr"])
+RepNode = namedtuple("RepNode", ["repetitions", "expression"])
 
 # Defines a function consisting of the arguments and the body
 function = namedtuple("function", ["arguments", "body"])
@@ -115,7 +117,7 @@ type_dict = {
     IDENTIFIER: "IDENTIFIER",
     EQUALS: "EQUALS",
     EXP: "EXPONENTIAL_SIGN",
-    FUNCTION_OPERATOR: "FUNCTION_OPERATOR",
+    ARROW: "ARROW",
     FUNCTION_KEYWORD: "FUNCTION_KEYWORD",
     PERIOD_FUNC_CALL: "PERIOD_FUNC_CALL",
     COMMA: "COMMA",
@@ -131,5 +133,6 @@ type_dict = {
     AND: "AND",
     OR: "OR",
     IF: "IF",
-    ELSE: "ELSE"
+    ELSE: "ELSE",
+    REP: "REP",
 }

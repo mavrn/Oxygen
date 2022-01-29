@@ -10,7 +10,7 @@ OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datat
                  "(": Datatypes.LPAREN, ")": Datatypes.RPAREN, "^": Datatypes.EXP, ",": Datatypes.COMMA}
 KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD,
                 "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
-                "and": Datatypes.AND}
+                "and": Datatypes.AND, "rep": Datatypes.REP}
 
 
 # TODO: replace this with a regex lexer
@@ -35,6 +35,7 @@ class Lexer:
 
     # Generates a list of tokens
     def gen_tokens(self):
+        tokens_list = []
         tokens = []
         while self.current_char is not None:
             # Skips whitespace entirely
@@ -42,6 +43,10 @@ class Lexer:
                 self.next_char()
             elif self.current_char == "~":
                 return tokens
+            elif self.current_char == ";":
+                tokens_list.append(tokens)
+                tokens = []
+                self.next_char()
             elif self.current_char in OPERATORS:
                 operator = self.current_char
                 self.next_char()
@@ -56,7 +61,7 @@ class Lexer:
                 # We have to differentiate between a simple equals, the function operator "=>",
                 # and the equality operator "==", so we check for any > or = after an equals sign
                 if self.current_char == ">":
-                    tokens.append(token(Datatypes.FUNCTION_OPERATOR))
+                    tokens.append(token(Datatypes.ARROW))
                     self.next_char()
                 elif self.current_char == "=":
                     tokens.append(token(Datatypes.COMP_EQUALS))
@@ -100,7 +105,9 @@ class Lexer:
                     self.next_char()
             else:
                 raise Exception(f"Illegal Character {self.current_char}")
-        return tokens
+        if len(tokens) > 0:
+            tokens_list.append(tokens)
+        return tokens_list
 
     # Will generate and return a number with multiple or one digit(s)
     def gen_number(self):

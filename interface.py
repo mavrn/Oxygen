@@ -2,6 +2,7 @@ from lexer import Lexer
 from parse import Parser
 from interpreter import Interpreter
 import Datatypes
+from fractions import Fraction
 
 
 # TODO: add custom exceptions
@@ -16,49 +17,53 @@ def start_session(debug=False, quit_after_exceptions=False):
         if quit_after_exceptions:
             # Will go through the interpreting process and print the interim results if debug is set to True
             lexer = Lexer(inp)
-            tokens = lexer.gen_tokens()
+            tokens_list = lexer.gen_tokens()
             if debug:
-                print(token_readable(tokens))
-            parser = Parser(tokens)
-            tree = parser.parse()
+                for tokens in tokens_list:
+                    print(token_readable(tokens))
+            parser = Parser(tokens_list)
+            tree_list = parser.parse()
             if debug:
-                print(tree)
-            result = interpreter.evaluate(tree)
+                print(tree_list)
+            output_lines = interpreter.get_output(tree_list)
         else:
             # This will do the same exact thing as the block above, but will catch any exceptions coming through
             # To make this possible, all fields are backed up, so they can be reverted to their original states
             # in case of an exception
-            interpreter.backup_global_fields = interpreter.global_fields.copy()
-            interpreter.backup_local_fields = interpreter.local_fields.copy()
+            interpreter.backup_fields = interpreter.fields.copy()
             try:
                 lexer = Lexer(inp)
-                tokens = lexer.gen_tokens()
+                tokens_list = lexer.gen_tokens()
                 if debug:
-                    print(token_readable(tokens))
-                parser = Parser(tokens)
-                tree = parser.parse()
+                    for tokens in tokens_list:
+                        print(token_readable(tokens))
+                parser = Parser(tokens_list)
+                tree_list = parser.parse()
                 if debug:
-                    print(tree)
-                result = interpreter.evaluate(tree)
+                    print(tree_list)
+                output_lines = interpreter.get_output(tree_list)
             except Exception as e:
                 interpreter.rollback()
                 print(f"{type(e).__name__}: {e}")
-                result = None
+                output_lines = [None]
 
         # Printing the result
         # Won't print anything if the result is None
-        if result is not None:
-            # Running some instance checks to make sure that the right thing is printed to the console
-            if isinstance(result, (str, Datatypes.Bool)):
-                print(result)
-            elif isinstance(result, float):
-                # Will print result without decimals in case of a whole number
-                if result % 1 == 0:
-                    print(int(result))
-                else:
-                    print(result)
-            elif not isinstance(result, float):
-                print("Object:", repr(result))
+        for line in output_lines:
+            if line is not None:
+                # Running some instance checks to make sure that the right thing is printed to the console
+                if isinstance(line, (str, Datatypes.Bool)):
+                    print(line)
+                elif isinstance(line, Fraction):
+                    print(str(line))
+                elif isinstance(line, float):
+                    # Will print result without decimals in case of a whole number
+                    if line % 1 == 0:
+                        print(int(line))
+                    else:
+                        print(line)
+                elif not isinstance(line, float):
+                    print("Object:", repr(line))
 
 
 # For debug purposes

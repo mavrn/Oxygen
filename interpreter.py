@@ -8,20 +8,37 @@ KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factori
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 
 
+# TODO: make it possible to assign functions by assignnode
+
+
 class Interpreter:
     def __init__(self):
         # Define global and local fields, which emulate global and local (function) scope
         self.global_fields = {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * (10 ** (-34))}
-        self.local_fields = []
-        self.function_nest_layer = -1
-        self.backup_global_fields = {}
-        self.backup_local_fields = {}
+        self.fields = {"global": self.global_fields}
+        self.backup_fields = {}
+        self.scope = "global"
+        self.prev_scope = ""
+
+    def get_output(self, tree_list):
+        output_lines = []
+        for tree in tree_list:
+            if type(tree).__name__ == "RepNode":
+                rep_node = tree
+                reps = self.evaluate(rep_node.repetitions)
+                if not isinstance(reps, float) or reps < 0 or reps % 1 != 0:
+                    raise ValueError(f"Invalid repetition count, expected a whole positive number, got {reps}")
+                for _ in range(int(reps)):
+                    output_lines.append(self.evaluate(rep_node.expression))
+            else:
+                output_lines.append(self.evaluate(tree))
+        return output_lines
 
     # Will evaluate the tree (parser output) recursively
     def evaluate(self, node):
         node_type = type(node).__name__
         if node_type == "FuncDeclareNode":
-            self.global_fields[node.identifier] = Datatypes.function(node.arguments, node.body)
+            self.fields["global"][node.identifier] = Datatypes.function(node.arguments, node.body)
             if node.identifier in KEYWORDS:
                 return f"Warning: Built-in function {node.identifier} has been overridden."
         elif node_type == "FuncCallNode":
@@ -30,7 +47,11 @@ class Interpreter:
             return self.operation_handler(node)
         elif node_type == "AssignNode":
             assignment_value = self.evaluate(node.value)
-            self.global_fields[node.identifier] = assignment_value
+            global_value = self.fields["global"].get(node.identifier)
+            if global_value is not None:
+                self.fields["global"][node.identifier] = assignment_value
+            else:
+                self.fields[self.scope][node.identifier] = assignment_value
             return assignment_value
         elif node_type == "ComparisonNode":
             return self.comparison_handler(node)
@@ -39,6 +60,8 @@ class Interpreter:
             custom_bool = Datatypes.Bool(boolean)
             custom_bool.reverse()
             return custom_bool
+        elif node_type == "BooleanConversionNode":
+            return Datatypes.Bool(self.evaluate(node.value))
         elif node_type == "LogicalOperationNode":
             if node.operation == Datatypes.AND:
                 return Datatypes.Bool(
@@ -46,8 +69,6 @@ class Interpreter:
             else:
                 return Datatypes.Bool(
                     Datatypes.Bool(self.evaluate(node.a)) or Datatypes.Bool(self.evaluate(node.b)))
-        elif node_type == "BooleanConversionNode":
-            return Datatypes.Bool(self.evaluate(node.value))
         elif node_type == "IfNode":
             condition = bool(self.evaluate(node.condition))
             if condition:
@@ -56,8 +77,8 @@ class Interpreter:
                 return self.evaluate(node.else_expr)
         elif node_type == "VariableNode":
             # Will check for a local field first, then a global one, and finally raise an exception if
-            global_value = self.global_fields.get(node.identifier)
-            local_value = self.local_fields[self.function_nest_layer].get(node.identifier)
+            global_value = self.fields["global"].get(node.identifier)
+            local_value = self.fields[self.scope].get(node.identifier)
             if local_value is not None:
                 return local_value
             elif global_value is not None:
@@ -69,11 +90,14 @@ class Interpreter:
         else:
             return node
 
+    def rollback(self):
+        self.fields = self.backup_fields
+        self.scope = "global"
+
     # Will handle all nodes of type FuncCallNode
     def function_call_handler(self, node):
-
         # Fetches the function and its name from the global fields
-        func = self.global_fields.get(node.identifier)
+        func = self.fields["global"].get(node.identifier)
         node_type = type(func).__name__
         # If none is found, the function might be a built-in one. If not, an error will be risen
         if func is None:
@@ -93,21 +117,16 @@ class Interpreter:
         # The arguments the function was called with are now assigned
         # to the identifiers in the order they were previously defined in the function.
         # The arguments will be assigned to the local fields
-
-        self.local_fields.append({})
+        self.fields[node.identifier] = {}
         for i, argument in enumerate(arguments):
-            self.local_fields[self.function_nest_layer + 1][func.arguments[i]] = self.evaluate(argument)
+            self.fields[node.identifier][func.arguments[i]] = self.evaluate(argument)
+        self.prev_scope = self.scope
+        self.scope = node.identifier
         # Now that the variables are assigned, the function body can be evaluated
-        self.function_nest_layer += 1
         result = self.evaluate(func.body)
         # Local fields will be cleared after the function ends, just like in any other language
-        self.function_nest_layer -= 1
-        self.local_fields.pop()
+        self.scope = self.prev_scope
         return result
-
-    def rollback(self):
-        self.global_fields = self.backup_global_fields
-        self.local_fields = self.backup_local_fields
 
     # Will handle any type of KeywordNode
     def keyword_handler(self, node):
@@ -147,7 +166,7 @@ class Interpreter:
         elif keyword == "bool":
             return Datatypes.Bool(arg)
         elif keyword == "fraction":
-            return str(Fraction(arg).limit_denominator())
+            return Fraction(arg).limit_denominator()
         else:
             raise Exception(f"Unknown exception occurred while handling the keyword {keyword}")
 

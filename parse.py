@@ -8,32 +8,37 @@ import Datatypes
 # from the Datatypes.py file.
 class Parser:
     # Defines an iterator based on the list of Tokens
-    def __init__(self, tokens):
-        self.tokens = iter(tokens)
+    def __init__(self, statements):
+        self.statements = statements
+        self.current_statement = None
         self.current_token = None
         self.current_token_type = None
-        self.next_token()
 
     # Advances the iterator to the next token, returns None at the end of the list
     # The token type is defined separately to avoid errors being caused by "self.current_token.type" if
     # the current token is None.
+
     def next_token(self):
         try:
-            self.current_token = next(self.tokens)
+            self.current_token = next(self.current_statement)
             self.current_token_type = self.current_token.type
         except StopIteration:
             self.current_token = None
             self.current_token_type = None
 
-    # Will start and end the parsing process
     def parse(self):
+        tree_list = []
+        for statement in self.statements:
+            self.current_statement = iter(statement)
+            self.next_token()
+            tree_list.append(self.parse_statement())
+        return tree_list
+
+    # Will start and end the parsing process
+    def parse_statement(self):
         # If there are no tokens, None will be returned
         if self.current_token is None:
             tree = None
-        # If the first token is the FUNCTION_KEYWORD, the parsing process will begin at the declare_function() function
-        elif self.current_token_type == Datatypes.FUNCTION_KEYWORD:
-            self.next_token()
-            tree = self.declare_function()
         else:
             tree = self.statement()
         # If the parsing process is finished and there are still tokens left, the syntax is invalid:
@@ -134,6 +139,14 @@ class Parser:
         if token_type == Datatypes.NUMBER:
             self.next_token()
             return token.value
+        # In case of a FUNCTION_KEYWORD, the parsing process will continue declare_function() function
+        elif self.current_token_type == Datatypes.FUNCTION_KEYWORD:
+            self.next_token()
+            return self.declare_function()
+        # In case of the loop keyword REP, the parsing process will continue declare_function() function
+        elif self.current_token_type == Datatypes.REP:
+            self.next_token()
+            return self.gen_rep()
         elif token_type == Datatypes.TRUE:
             self.next_token()
             return Datatypes.Bool(True)
@@ -188,7 +201,7 @@ class Parser:
         while self.current_token_type == Datatypes.IDENTIFIER:
             arguments.append(self.current_token.value)
             self.next_token()
-        if self.current_token_type != Datatypes.FUNCTION_OPERATOR:
+        if self.current_token_type != Datatypes.ARROW:
             raise SyntaxError("Expected \"=>\"")
         else:
             self.next_token()
@@ -219,3 +232,11 @@ class Parser:
         # The program should never reach this point
         else:
             raise Exception("An unknown error occurred")
+
+    def gen_rep(self):
+        loop_reps = self.statement()
+        if self.current_token_type != Datatypes.ARROW:
+            raise SyntaxError("Expected \"=>\"")
+        self.next_token()
+        loop_body = self.statement()
+        return Datatypes.RepNode(repetitions=loop_reps, expression=loop_body)
