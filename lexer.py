@@ -65,11 +65,24 @@ class Lexer:
             elif self.current_char in (NUM_CHARS + "."):
                 tokens.append(self.gen_number())
             elif self.current_char in LETTERS:
-                tokens.append(self.gen_identifier())
+                identifier = self.gen_string()
+                # If the entered identifier is a keyword, it will be matched to its ID
+                if identifier in KEYWORD_DICT:
+                    tokens.append(Token(KEYWORD_DICT[identifier]))
+                else:
+                    tokens.append(Token(Datatypes.IDENTIFIER, identifier))
                 # Will recognize when a function is called with a period after the identifier
                 if self.current_char == ".":
                     tokens.append(Token(Datatypes.PERIOD_FUNC_CALL))
                     self.next_char()
+            elif self.current_char in ("\"", "\'"):
+                quotation_mark = self.current_char
+                self.next_char()
+                string = Datatypes.String(self.gen_string())
+                if self.current_char != quotation_mark:
+                    raise SyntaxError(f"Expected {quotation_mark}")
+                tokens.append(Token(Datatypes.STRING, string))
+                self.next_char()
             else:
                 raise Exception(f"Illegal Character {self.current_char}")
         if len(tokens) > 0:
@@ -91,13 +104,9 @@ class Lexer:
         return Token(Datatypes.NUMBER, float(number))
 
     # Will generate and return an identifier with multiple or one letter(s)
-    def gen_identifier(self):
-        identifier = ""
+    def gen_string(self):
+        string = ""
         while self.current_char is not None and self.current_char in (LETTERS + NUM_CHARS):
-            identifier += self.current_char
+            string += self.current_char
             self.next_char()
-        # If the entered identifier is a keyword, it will be matched to its ID
-        if identifier in KEYWORD_DICT:
-            return Token(KEYWORD_DICT[identifier])
-        else:
-            return Token(Datatypes.IDENTIFIER, identifier)
+        return string

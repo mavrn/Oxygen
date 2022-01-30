@@ -23,15 +23,12 @@ class Interpreter:
     def get_output(self, tree_list):
         output_lines = []
         for tree in tree_list:
-            if type(tree).__name__ == "RepNode":
-                rep_node = tree
-                reps = self.evaluate(rep_node.repetitions)
-                if not isinstance(reps, float) or reps < 0 or reps % 1 != 0:
-                    raise ValueError(f"Invalid repetition count, expected a whole positive number, got {reps}")
-                for _ in range(int(reps)):
-                    output_lines.append(self.evaluate(rep_node.expression))
+            out = self.evaluate(tree)
+            if isinstance(out, list):
+                for line in out:
+                    output_lines.append(line)
             else:
-                output_lines.append(self.evaluate(tree))
+                output_lines.append(out)
         return output_lines
 
     # Will evaluate the tree (parser output) recursively
@@ -40,7 +37,7 @@ class Interpreter:
         if node_type == "FuncDeclareNode":
             self.fields["global"][node.identifier] = Datatypes.Function(node.arguments, node.body)
             if node.identifier in KEYWORDS:
-                return f"Warning: Built-in function {node.identifier} has been overridden."
+                return Datatypes.String(f"Warning: Built-in function {node.identifier} has been overridden.")
         elif node_type == "FuncCallNode":
             return self.function_call_handler(node)
         elif node_type in OPERATIONAL_NODES:
@@ -85,6 +82,15 @@ class Interpreter:
                 return global_value
             else:
                 raise NameError(f"Name \"{node.identifier}\" is not defined.")
+        elif node_type == "RepNode":
+            reps = self.evaluate(node.repetitions)
+            if not isinstance(reps, float) or reps < 0 or reps % 1 != 0:
+                raise ValueError(f"Invalid repetition count, expected a whole positive number, got {reps}")
+            out = []
+            for i in range(int(reps)):
+                self.fields["global"]["_c"] = float(i)
+                out.append(self.evaluate(node.expression))
+            return out
         elif node_type == "KeywordNode":
             return self.keyword_handler(node)
         else:

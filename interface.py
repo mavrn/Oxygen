@@ -52,9 +52,7 @@ def start_session(debug=False, quit_after_exceptions=False):
         for line in output_lines:
             if line is not None:
                 # Running some instance checks to make sure that the right thing is printed to the console
-                if isinstance(line, (str, Datatypes.Bool)):
-                    print(line)
-                elif isinstance(line, Fraction):
+                if isinstance(line, Fraction):
                     print(str(line))
                 elif isinstance(line, float):
                     # Will print result without decimals in case of a whole number
@@ -62,7 +60,7 @@ def start_session(debug=False, quit_after_exceptions=False):
                         print(int(line))
                     else:
                         print(line)
-                elif not isinstance(line, float):
+                else:
                     print(repr(line))
 
 

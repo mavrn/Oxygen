@@ -1,4 +1,3 @@
-from _ast import Sub
 from collections import namedtuple
 
 
@@ -31,6 +30,17 @@ class Bool:
 
     def reverse(self):
         self.boolean_value = not self.boolean_value
+
+
+class String:
+    def __init__(self, value=None):
+        self.str = str(value)
+
+    def __str__(self):
+        return self.str
+
+    def __repr__(self):
+        return self.str
 
 
 # Defines a function consisting of the arguments and the body
@@ -88,6 +98,7 @@ OR = 30
 IF = 31
 ELSE = 32
 REP = 33
+STRING = 34
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -149,4 +160,5 @@ type_dict = {
     IF: "IF",
     ELSE: "ELSE",
     REP: "REP",
+    STRING: "STRING"
 }

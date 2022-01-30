@@ -210,18 +210,44 @@ It is used with the syntax (`rep` + repetitions + `=>` + statement).
 
 ```python
 > x = 0
-> rep 2 => x += 2
+> rep
+2 = > x += 2
 2
 4
+```
+
+The repetition count while looping is automatically stored in the variable `_c`.
+
+```python
+> rep
+3 = > _c
+0
+1
+2
 ```
 
 To seperate statements, use `;`. All statements will be evaluated seperately from left to right.
 
 ```python
-> x = 4; x + 2; sqrt.x
+> x = 4;
+x + 2;
+sqrt.x
 4
 6
 2
+```
+
+### **Strings**
+
+---
+
+Strings are indicated by two quotation marks (which can be either `"` or `'`, like in many other languages. There
+currently are no string operations.
+
+```python
+> x = "Hello World"
+Hello
+World
 ```
 
 ### **Plotting**
@@ -322,6 +348,23 @@ False
 6
 > divide_by_two.13
 13
+```
+
+> Coding FizzBuzz
+
+```python
+> fn fizz_buzz i => rep i => "FizzBuzz" if _c % 3 == 0 and _c % 5 == 0 else "Fizz" if _c % 3 == 0 else "Buzz" if _c % 5 == 0 else _c
+fizz_buzz.10
+FizzBuzz
+1
+2
+Fizz
+4
+Buzz
+Fizz
+7
+8
+Fizz
 ```
 
 ## **Functionality**

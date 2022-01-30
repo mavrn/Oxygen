@@ -7,7 +7,6 @@ import Datatypes
 # Is responsible for recursively generating a tree of operations based on the lexer output using the pre-defined Nodes
 # from the Datatypes.py file.
 class Parser:
-    # Defines an iterator based on the list of Tokens
     def __init__(self, statements):
         self.statements = statements
         self.current_statement = None
@@ -17,7 +16,6 @@ class Parser:
     # Advances the iterator to the next token, returns None at the end of the list
     # The token type is defined separately to avoid errors being caused by "self.current_token.type" if
     # the current token is None.
-
     def next_token(self):
         try:
             self.current_token = next(self.current_statement)
@@ -34,7 +32,7 @@ class Parser:
             tree_list.append(self.parse_statement())
         return tree_list
 
-    # Will start and end the parsing process
+    # Will start and end the parsing process for single statements
     def parse_statement(self):
         # If there are no tokens, None will be returned
         if self.current_token is None:
@@ -123,12 +121,12 @@ class Parser:
         return result
 
     def exponential(self):
-        token = self.factor()
+        result = self.factor()
         if self.current_token_type == Datatypes.EXP:
             self.next_token()
-            return Datatypes.ExpNode(a=token, b=self.factor())
+            return Datatypes.ExpNode(a=result, b=self.factor())
         else:
-            return token
+            return result
 
     def factor(self):
         token = self.current_token
@@ -136,7 +134,7 @@ class Parser:
         if token_type is None:
             raise SyntaxError("Expected number or identifier")
         # Will return the float value for a number token
-        if token_type == Datatypes.NUMBER:
+        if token_type in (Datatypes.NUMBER, Datatypes.STRING):
             self.next_token()
             return token.value
         # In case of a FUNCTION_KEYWORD, the parsing process will continue declare_function() function
