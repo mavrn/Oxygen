@@ -22,10 +22,10 @@ def start_session(debug=False, quit_after_exceptions=False):
                 for tokens in tokens_list:
                     print(tokens)
             parser = Parser(tokens_list)
-            tree_list = parser.parse()
+            ast_list = parser.parse()
             if debug:
-                print(tree_list)
-            output_lines = interpreter.get_output(tree_list)
+                print(ast_list)
+            output_lines = interpreter.get_output(ast_list)
         else:
             # This will do the same exact thing as the block above, but will catch any exceptions coming through
             # To make this possible, all fields are backed up, so they can be reverted to their original states
@@ -38,30 +38,50 @@ def start_session(debug=False, quit_after_exceptions=False):
                     for tokens in tokens_list:
                         print(tokens)
                 parser = Parser(tokens_list)
-                tree_list = parser.parse()
+                ast_list = parser.parse()
                 if debug:
-                    print(tree_list)
-                output_lines = interpreter.get_output(tree_list)
+                    print(ast_list)
+                output_lines = interpreter.get_output(ast_list)
             except Exception as e:
                 interpreter.rollback()
                 print(f"{type(e).__name__}: {e}")
                 output_lines = [None]
+            print_output(output_lines)
 
-        # Printing the result
-        # Won't print anything if the result is None
-        for line in output_lines:
-            if line is not None:
-                # Running some instance checks to make sure that the right thing is printed to the console
-                if isinstance(line, Fraction):
-                    print(str(line))
-                elif isinstance(line, float):
-                    # Will print result without decimals in case of a whole number
-                    if line % 1 == 0:
-                        print(int(line))
-                    else:
-                        print(line)
+
+# Instead of starting an interpreter session, this function will simply
+# get the output from any input string and print the output
+def run(input_string, debug=False):
+    interpreter = Interpreter()
+    lexer = Lexer(input_string)
+    tokens_list = lexer.gen_tokens()
+    if debug:
+        for tokens in tokens_list:
+            print(tokens)
+    parser = Parser(tokens_list)
+    ast_list = parser.parse()
+    if debug:
+        print(ast_list)
+    output_lines = interpreter.get_output(ast_list)
+    print_output(output_lines)
+
+
+def print_output(output_lines):
+    # Printing the result
+    # Won't print anything if the result is None
+    for line in output_lines:
+        if line is not None:
+            # Running some instance checks to make sure that the right thing is printed to the console
+            if isinstance(line, Fraction):
+                print(str(line))
+            elif isinstance(line, float):
+                # Will print result without decimals in case of a whole number
+                if line % 1 == 0:
+                    print(int(line))
                 else:
-                    print(repr(line))
+                    print(line)
+            else:
+                print(repr(line))
 
 
 if __name__ == '__main__':

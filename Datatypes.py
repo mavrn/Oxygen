@@ -99,6 +99,7 @@ IF = 31
 ELSE = 32
 REP = 33
 STRING = 34
+AS = 35
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -116,7 +117,7 @@ BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])
 BooleanConversionNode = namedtuple("BooleanConversionNode", ["value"])
 LogicalOperationNode = namedtuple("LogicalOperationNode", ["a", "b", "operation"])
 IfNode = namedtuple("IfNode", ["if_expr", "condition", "else_expr"])
-RepNode = namedtuple("RepNode", ["repetitions", "expression"])
+RepNode = namedtuple("RepNode", ["repetitions", "expression", "count_identifier"])
 
 # Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
@@ -160,5 +161,6 @@ type_dict = {
     IF: "IF",
     ELSE: "ELSE",
     REP: "REP",
-    STRING: "STRING"
+    STRING: "STRING",
+    AS: "AS"
 }

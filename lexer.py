@@ -13,7 +13,7 @@ OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datat
                  }
 KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD,
                 "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
-                "and": Datatypes.AND, "rep": Datatypes.REP}
+                "and": Datatypes.AND, "rep": Datatypes.REP, "as": Datatypes.AS}
 
 
 # TODO: replace this with a regex lexer
@@ -48,7 +48,7 @@ class Lexer:
             elif self.current_char == "~":
                 break
             # Concludes current token list and starts a new one after the statement seperator ";"
-            elif self.current_char == ";":
+            elif self.current_char in ";\n":
                 tokens_list.append(tokens)
                 tokens = []
                 self.next_char()

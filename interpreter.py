@@ -20,10 +20,10 @@ class Interpreter:
         self.scope = "global"
         self.prev_scope = ""
 
-    def get_output(self, tree_list):
+    def get_output(self, ast_list):
         output_lines = []
-        for tree in tree_list:
-            out = self.evaluate(tree)
+        for ast in ast_list:
+            out = self.evaluate(ast)
             if isinstance(out, list):
                 for line in out:
                     output_lines.append(line)
@@ -31,7 +31,7 @@ class Interpreter:
                 output_lines.append(out)
         return output_lines
 
-    # Will evaluate the tree (parser output) recursively
+    # Will evaluate the ast (parser output) recursively
     def evaluate(self, node):
         node_type = type(node).__name__
         if node_type == "FuncDeclareNode":
@@ -88,7 +88,7 @@ class Interpreter:
                 raise ValueError(f"Invalid repetition count, expected a whole positive number, got {reps}")
             out = []
             for i in range(int(reps)):
-                self.fields["global"]["_c"] = float(i)
+                self.fields["global"][node.count_identifier] = float(i)
                 out.append(self.evaluate(node.expression))
             return out
         elif node_type == "KeywordNode":
@@ -158,7 +158,7 @@ class Interpreter:
             return math.tan(arg)
         elif keyword == "factorial":
             if arg % 1 == 0:
-                return math.factorial(int(arg))
+                return float(math.factorial(int(arg)))
             else:
                 raise TypeError(f"Expected type int, got type {type(arg).__name__}")
         elif keyword == "asin":

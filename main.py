@@ -1,5 +1,6 @@
 import interface
 import sys
+import test_programs
 
 
 def main():
@@ -8,6 +9,7 @@ def main():
     for arg in args:
         if arg in interface_args:
             interface_args[arg] = True
+    # interface.run(test_programs.test7, debug=interface_args["debug"])
     interface.start_session(debug=interface_args["debug"],
                             quit_after_exceptions=interface_args["quit_after_exceptions"])
 

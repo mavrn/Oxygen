@@ -25,12 +25,12 @@ class Parser:
             self.current_token_type = None
 
     def parse(self):
-        tree_list = []
+        ast_list = []
         for statement in self.statements:
             self.current_statement = iter(statement)
             self.next_token()
-            tree_list.append(self.parse_statement())
-        return tree_list
+            ast_list.append(self.parse_statement())
+        return ast_list
 
     # Will start and end the parsing process for single statements
     def parse_statement(self):
@@ -232,9 +232,17 @@ class Parser:
             raise Exception("An unknown error occurred")
 
     def gen_rep(self):
+        count_identifier = "_c"
         loop_reps = self.statement()
+        if self.current_token_type == Datatypes.AS:
+            self.next_token()
+            if self.current_token_type != Datatypes.IDENTIFIER:
+                raise SyntaxError("Expected identifier after 'as' keyword")
+            else:
+                count_identifier = self.current_token.value
+                self.next_token()
         if self.current_token_type != Datatypes.ARROW:
             raise SyntaxError("Expected \"=>\"")
         self.next_token()
         loop_body = self.statement()
-        return Datatypes.RepNode(repetitions=loop_reps, expression=loop_body)
+        return Datatypes.RepNode(repetitions=loop_reps, expression=loop_body, count_identifier=count_identifier)

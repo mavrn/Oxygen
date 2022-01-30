@@ -210,28 +210,29 @@ It is used with the syntax (`rep` + repetitions + `=>` + statement).
 
 ```python
 > x = 0
-> rep
-2 = > x += 2
+> rep 2 => x += 2
 2
 4
 ```
 
-The repetition count while looping is automatically stored in the variable `_c`.
+The repetition count while looping is automatically stored in the variable `_c`, but this identifier can be changed with
+the keyword `as`.
 
 ```python
-> rep
-3 = > _c
+> rep 3 => _c
 0
 1
 2
+> rep 3 as i => i / 2
+0
+0.5
+1
 ```
 
 To seperate statements, use `;`. All statements will be evaluated seperately from left to right.
 
 ```python
-> x = 4;
-x + 2;
-sqrt.x
+> x = 4; x + 2; sqrt.x
 4
 6
 2
@@ -246,8 +247,7 @@ currently are no string operations.
 
 ```python
 > x = "Hello World"
-Hello
-World
+Hello World
 ```
 
 ### **Plotting**
@@ -259,10 +259,10 @@ syntax:
 `plot(function identifier, lower bound, upper bound, increment)`, while the increment is an optional argument with a
 default of 0.001 (making a smooth graph in most cases). Matplotlib will then draw the function from the lower bound to
 the upper bound, using the given increment.
-> Defining a function f(x) = 0.5*x³ + 2x² and plotting it using `plot()`
+> Defining a function f(x) = 0.5\*x³ + 2\*x² and plotting it using `plot()`
 
 ```python
-> fn f x => 0.5 * x ^ 3 + 2 * x ^ 2
+> fn f x => 0.5 * x^3 + 2 * x^2
 > plot(f, -4, 2)
 ``` 
 
@@ -284,7 +284,7 @@ A warning will be displayed if the user tries to override a built-in function.
 Exceptions will be thrown for invalid Expressions. <br>
 *Some examples*:
 
-```
+```python
 > 4 + (4 + 1
 SyntaxError: Expected a closing parenthesis.
 > y + 1
@@ -353,7 +353,7 @@ False
 > Coding FizzBuzz
 
 ```python
-> fn fizz_buzz i => rep i => "FizzBuzz" if _c % 3 == 0 and _c % 5 == 0 else "Fizz" if _c % 3 == 0 else "Buzz" if _c % 5 == 0 else _c
+> fn fizz_buzz i => rep i as c=> "FizzBuzz" if c % 3 == 0 and c % 5 == 0 else "Fizz" if c % 3 == 0 else "Buzz" if c % 5 == 0 else c
 fizz_buzz.10
 FizzBuzz
 1
@@ -365,6 +365,15 @@ Fizz
 7
 8
 Fizz
+```
+
+> Calculating P in a binomial distribution
+
+```python
+> fn bin_cof n k => factorial.n / (factorial.k * factorial(n-k))
+> fn P p n x => bin_cof(n,x) * p^x * (1-p)^(n-x)
+> P(0.3, 20, 6)
+0.19163898275344238
 ```
 
 ## **Functionality**
