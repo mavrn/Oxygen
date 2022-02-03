@@ -34,7 +34,10 @@ class Bool:
 
 class String:
     def __init__(self, value=None):
-        self.str = str(value)
+        if isinstance(value, float) and value % 1 == 0:
+            self.str = str(int(value))
+        else:
+            self.str = str(value)
 
     def __str__(self):
         return self.str
@@ -60,7 +63,7 @@ class Token:
         self.value = value
 
     def __repr__(self):
-        return f"TOKEN({type_dict.get(self.type)}" + (f", VALUE = {self.value})" if self.value else ")")
+        return f"TOKEN({type_dict.get(self.type)}" + (f", VALUE = {self.value})" if self.value is not None else ")")
 
 
 # TOKEN TYPE IDs
@@ -98,8 +101,14 @@ OR = 30
 IF = 31
 ELSE = 32
 REP = 33
-STRING = 34
-AS = 35
+FOR = 34
+STRING = 35
+AS = 36
+DOUBLE_MINUS = 37
+DOUBLE_PLUS = 38
+BLOCK_END = 39
+RETURN = 40
+PRINT = 41
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -117,7 +126,10 @@ BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])
 BooleanConversionNode = namedtuple("BooleanConversionNode", ["value"])
 LogicalOperationNode = namedtuple("LogicalOperationNode", ["a", "b", "operation"])
 IfNode = namedtuple("IfNode", ["if_expr", "condition", "else_expr"])
-RepNode = namedtuple("RepNode", ["repetitions", "expression", "count_identifier"])
+RepNode = namedtuple("RepNode", ["repetitions", "count_identifier", "statements"])
+ForNode = namedtuple("ForNode", ["assignment", "condition", "increment", "statements"])
+ReturnNode = namedtuple("ReturnNode", ["statement"])
+PrintNode = namedtuple("PrintNode", ["statement"])
 
 # Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
@@ -161,6 +173,12 @@ type_dict = {
     IF: "IF",
     ELSE: "ELSE",
     REP: "REP",
+    FOR: "FOR",
     STRING: "STRING",
-    AS: "AS"
+    AS: "AS",
+    DOUBLE_MINUS: "DOUBLE_MINUS",
+    DOUBLE_PLUS: "DOUBLE_PLUS",
+    BLOCK_END: "BLOCK_END",
+    RETURN: "RETURN",
+    PRINT: "PRINT"
 }

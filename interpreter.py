@@ -19,17 +19,19 @@ class Interpreter:
         self.backup_fields = {}
         self.scope = "global"
         self.prev_scope = ""
+        self.return_value = None
+        self.output_lines = []
 
     def get_output(self, ast_list):
-        output_lines = []
+        self.output_lines = []
         for ast in ast_list:
             out = self.evaluate(ast)
             if isinstance(out, list):
                 for line in out:
-                    output_lines.append(line)
+                    self.output_lines.append(line)
             else:
-                output_lines.append(out)
-        return output_lines
+                self.output_lines.append(out)
+        return self.output_lines
 
     # Will evaluate the ast (parser output) recursively
     def evaluate(self, node):
@@ -68,10 +70,14 @@ class Interpreter:
                     Datatypes.Bool(self.evaluate(node.a)) or Datatypes.Bool(self.evaluate(node.b)))
         elif node_type == "IfNode":
             condition = bool(self.evaluate(node.condition))
+            out = []
             if condition:
-                return self.evaluate(node.if_expr)
-            else:
-                return self.evaluate(node.else_expr)
+                for statement in node.if_expr:
+                    out.append(self.evaluate(statement))
+            elif len(node.else_expr) is not None:
+                for statement in node.else_expr:
+                    out.append(self.evaluate(statement))
+            return out
         elif node_type == "VariableNode":
             # Will check for a local field first, then a global one, and finally raise an exception if
             global_value = self.fields["global"].get(node.identifier)
@@ -89,10 +95,23 @@ class Interpreter:
             out = []
             for i in range(int(reps)):
                 self.fields["global"][node.count_identifier] = float(i)
-                out.append(self.evaluate(node.expression))
+                for statement in node.statements:
+                    out.append(self.evaluate(statement))
+            return out
+        elif node_type == "ForNode":
+            self.evaluate(node.assignment)
+            out = []
+            while bool(self.evaluate(node.condition)):
+                for statement in node.statements:
+                    out.append(self.evaluate(statement))
+                self.evaluate(node.increment)
             return out
         elif node_type == "KeywordNode":
             return self.keyword_handler(node)
+        elif node_type == "PrintNode":
+            self.output_lines.append(Datatypes.String(self.evaluate(node.statement)))
+        elif node_type == "ReturnNode":
+            self.return_value = self.evaluate(node.statement)
         else:
             return node
 
@@ -129,7 +148,15 @@ class Interpreter:
         self.prev_scope = self.scope
         self.scope = node.identifier
         # Now that the variables are assigned, the function body can be evaluated
-        result = self.evaluate(func.body)
+        result = None
+        if isinstance(func.body, list):
+            for statement in func.body:
+                self.evaluate(statement)
+                if self.return_value is not None:
+                    result = self.return_value
+                    self.return_value = None
+        else:
+            result = self.evaluate(func.body)
         # Local fields will be cleared after the function ends, just like in any other language
         self.scope = self.prev_scope
         return result

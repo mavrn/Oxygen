@@ -20,3 +20,21 @@ test7 = """fn bin_cof n k => factorial.n / (factorial.k * factorial(n-k))
 fn P p n x => bin_cof(n,x) * p^x * (1-p)^(n-x)
 P(0.3, 20, 6)
 """
+test8 = """x = 10
+fn n a =>
+return a == (x /2)<<
+n.5
+n.10
+"""
+test9 = """fn x a =>
+print(a+1)
+print(a+2)
+return a-1<<
+x.0
+"""
+test10 = """if False =>
+x=0 <<
+else =>
+x=1 <<
+x
+"""

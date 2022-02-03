@@ -10,10 +10,12 @@ OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datat
                  "&": Datatypes.AND, "|": Datatypes.OR, "==": Datatypes.COMP_EQUALS, "!=": Datatypes.COMP_NOT_EQUALS,
                  "<": Datatypes.LESS_THAN, ">": Datatypes.GREATER_THAN, "<=": Datatypes.LESS_OR_EQUALS,
                  ">=": Datatypes.GREATER_OR_EQUALS, "=>": Datatypes.ARROW, "=": Datatypes.EQUALS, "!": Datatypes.NOT,
+                 "--": Datatypes.DOUBLE_MINUS, "++": Datatypes.DOUBLE_PLUS, "<<": Datatypes.BLOCK_END
                  }
 KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD,
                 "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
-                "and": Datatypes.AND, "rep": Datatypes.REP, "as": Datatypes.AS}
+                "and": Datatypes.AND, "rep": Datatypes.REP, "as": Datatypes.AS, "for": Datatypes.FOR,
+                "return": Datatypes.RETURN, "print": Datatypes.PRINT}
 
 
 # TODO: replace this with a regex lexer
@@ -42,12 +44,12 @@ class Lexer:
         tokens_list = []
         while self.current_char is not None:
             # Skips whitespace entirely
-            if self.current_char == " ":
+            if self.current_char in [" ", "\t"]:
                 self.next_char()
             # Ignores any input after "~"
             elif self.current_char == "~":
                 break
-            # Concludes current token list and starts a new one after the statement seperator ";"
+            # Concludes current token list and starts a new one after the statement separator ";"
             elif self.current_char in ";\n":
                 tokens_list.append(tokens)
                 tokens = []
@@ -65,23 +67,13 @@ class Lexer:
             elif self.current_char in (NUM_CHARS + "."):
                 tokens.append(self.gen_number())
             elif self.current_char in LETTERS:
-                identifier = self.gen_string()
-                # If the entered identifier is a keyword, it will be matched to its ID
-                if identifier in KEYWORD_DICT:
-                    tokens.append(Token(KEYWORD_DICT[identifier]))
-                else:
-                    tokens.append(Token(Datatypes.IDENTIFIER, identifier))
+                tokens.append(self.gen_identifier())
                 # Will recognize when a function is called with a period after the identifier
                 if self.current_char == ".":
                     tokens.append(Token(Datatypes.PERIOD_FUNC_CALL))
                     self.next_char()
             elif self.current_char in ("\"", "\'"):
-                quotation_mark = self.current_char
-                self.next_char()
-                string = Datatypes.String(self.gen_string())
-                if self.current_char != quotation_mark:
-                    raise SyntaxError(f"Expected {quotation_mark}")
-                tokens.append(Token(Datatypes.STRING, string))
+                tokens.append(self.gen_string())
                 self.next_char()
             else:
                 raise Exception(f"Illegal Character {self.current_char}")
@@ -104,9 +96,22 @@ class Lexer:
         return Token(Datatypes.NUMBER, float(number))
 
     # Will generate and return an identifier with multiple or one letter(s)
-    def gen_string(self):
-        string = ""
+    def gen_identifier(self):
+        identifier = ""
         while self.current_char is not None and self.current_char in (LETTERS + NUM_CHARS):
+            identifier += self.current_char
+            self.next_char()
+        # If the entered identifier is a keyword, it will be matched to its ID
+        kw_id = KEYWORD_DICT.get(identifier)
+        return Token(kw_id) if kw_id is not None else Token(Datatypes.IDENTIFIER, identifier)
+
+    def gen_string(self):
+        quotation_mark = self.current_char
+        self.next_char()
+        string = ""
+        while self.current_char is not None and self.current_char != quotation_mark:
             string += self.current_char
             self.next_char()
-        return string
+        if self.current_char != quotation_mark:
+            raise SyntaxError(f"Expected {quotation_mark}")
+        return Token(Datatypes.STRING, Datatypes.String(string))

@@ -8,10 +8,22 @@ import Datatypes
 # from the Datatypes.py file.
 class Parser:
     def __init__(self, statements):
-        self.statements = statements
+        self.statements = iter(statements)
         self.current_statement = None
         self.current_token = None
         self.current_token_type = None
+        self.next_statement()
+
+    def next_statement(self):
+        try:
+            self.current_statement = next(self.statements)
+        except StopIteration:
+            self.current_statement = None
+            self.current_token = None
+            self.current_token_type = None
+        else:
+            self.current_statement = iter(self.current_statement)
+            self.next_token()
 
     # Advances the iterator to the next token, returns None at the end of the list
     # The token type is defined separately to avoid errors being caused by "self.current_token.type" if
@@ -26,26 +38,19 @@ class Parser:
 
     def parse(self):
         ast_list = []
-        for statement in self.statements:
-            self.current_statement = iter(statement)
-            self.next_token()
-            ast_list.append(self.parse_statement())
+        while self.current_statement is not None:
+            # If there are no tokens, None will be returned
+            if self.current_token is None:
+                ast_list.append(None)
+            else:
+                ast_list.append(self.statement())
+            # If the parsing process is finished and there are still tokens left, the syntax is invalid:
+            # An example would be x = 2a
+            if self.current_token is not None:
+                raise SyntaxError(f"Reached the end of parsing, but there still is a Token of type"
+                                  f" {Datatypes.type_dict.get(self.current_token_type)} left.")
+            self.next_statement()
         return ast_list
-
-    # Will start and end the parsing process for single statements
-    def parse_statement(self):
-        # If there are no tokens, None will be returned
-        if self.current_token is None:
-            tree = None
-        else:
-            tree = self.statement()
-        # If the parsing process is finished and there are still tokens left, the syntax is invalid:
-        # An example would be x = 2a
-        if self.current_token is not None:
-            raise SyntaxError(f"Reached the end of parsing, but there still is a Token of type"
-                              f" {Datatypes.type_dict.get(self.current_token_type)} left.")
-        else:
-            return tree
 
     # Following, there are the valid elements of an expression, following the common order top-down.
     # These elements are grouped in "layers", which are statement, expression, term, "exponential" and factor
@@ -55,6 +60,18 @@ class Parser:
     # An "exponential" will have the exponentiation operator. The reason this has its own layer is that exponential
     # operations have to be evaluated before a term, but after a factor.
     # Finally, the factor can be a number, identifier or a statement between brackets.
+    def statement_block(self):
+        if self.current_token is not None:
+            return [self.statement()]
+        block = []
+        while self.current_token_type != Datatypes.BLOCK_END:
+            if self.current_statement is None:
+                return block
+            self.next_statement()
+            block.append(self.statement())
+        self.next_statement()
+        return block
+
     def statement(self):
         result = self.expression()
         while self.current_token_type == Datatypes.IF:
@@ -141,10 +158,32 @@ class Parser:
         elif self.current_token_type == Datatypes.FUNCTION_KEYWORD:
             self.next_token()
             return self.declare_function()
+        elif self.current_token_type == Datatypes.RETURN:
+            self.next_token()
+            return Datatypes.ReturnNode(statement=self.statement())
         # In case of the loop keyword REP, the parsing process will continue declare_function() function
         elif self.current_token_type == Datatypes.REP:
             self.next_token()
             return self.gen_rep()
+        elif self.current_token_type == Datatypes.FOR:
+            self.next_token()
+            return self.gen_for()
+        elif self.current_token_type == Datatypes.IF:
+            # TODO: rewrite this
+            self.next_token()
+            condition = self.expression()
+            if self.current_token_type != Datatypes.ARROW:
+                raise SyntaxError("Expected '=>' after if statement")
+            self.next_token()
+            else_expr = None
+            if_expr = self.statement_block()
+            if self.current_token_type == Datatypes.ELSE:
+                self.next_token()
+                if self.current_token_type != Datatypes.ARROW:
+                    raise SyntaxError("Expected '=>' after if statement")
+                self.next_token()
+                else_expr = self.statement_block()
+            return Datatypes.IfNode(if_expr=if_expr, else_expr=else_expr, condition=condition)
         elif token_type == Datatypes.TRUE:
             self.next_token()
             return Datatypes.Bool(True)
@@ -155,6 +194,9 @@ class Parser:
             self.next_token()
             return Datatypes.BooleanNegationNode(value=self.exponential())
         # Will handle unary plus und minus signs
+        elif token_type == Datatypes.PRINT:
+            self.next_token()
+            return Datatypes.PrintNode(statement=self.statement())
         elif token_type == Datatypes.PLUS_SIGN:
             self.next_token()
             return self.exponential()
@@ -179,11 +221,18 @@ class Parser:
         elif token_type == Datatypes.IDENTIFIER:
             identifier = token.value
             self.next_token()
-            if self.current_token is None or self.current_token_type not in (
-                    Datatypes.LPAREN, Datatypes.PERIOD_FUNC_CALL):
-                return Datatypes.VariableNode(identifier=identifier)
-            else:
+            if self.current_token_type == Datatypes.DOUBLE_PLUS:
+                self.next_token()
+                return Datatypes.AssignNode(identifier, Datatypes.AddNode(Datatypes.VariableNode(identifier), 1.0))
+            elif self.current_token_type == Datatypes.DOUBLE_MINUS:
+                self.next_token()
+                return Datatypes.AssignNode(identifier, Datatypes.SubNode(Datatypes.VariableNode(identifier), 1.0))
+            elif self.current_token_type in (Datatypes.LPAREN, Datatypes.PERIOD_FUNC_CALL):
                 return self.call_function(identifier)
+            else:
+                return Datatypes.VariableNode(identifier=identifier)
+        elif token_type == Datatypes.BLOCK_END:
+            return None
         else:
             raise SyntaxError("Invalid syntax")
 
@@ -203,7 +252,7 @@ class Parser:
             raise SyntaxError("Expected \"=>\"")
         else:
             self.next_token()
-            return Datatypes.FuncDeclareNode(identifier=identifier, arguments=arguments, body=self.statement())
+            return Datatypes.FuncDeclareNode(identifier=identifier, arguments=arguments, body=self.statement_block())
 
     # Will follow the pre-defined syntax of a function call linearly
     # and will throw exceptions if the syntax is incorrect
@@ -244,5 +293,21 @@ class Parser:
         if self.current_token_type != Datatypes.ARROW:
             raise SyntaxError("Expected \"=>\"")
         self.next_token()
-        loop_body = self.statement()
-        return Datatypes.RepNode(repetitions=loop_reps, expression=loop_body, count_identifier=count_identifier)
+        return Datatypes.RepNode(repetitions=loop_reps, count_identifier=count_identifier,
+                                 statements=self.statement_block())
+
+    def gen_for(self):
+        assignment = self.statement()
+        if self.current_token_type != Datatypes.COMMA:
+            raise SyntaxError("Expected comma after statement")
+        self.next_token()
+        condition = self.statement()
+        if self.current_token_type != Datatypes.COMMA:
+            raise SyntaxError("Expected comma after condition")
+        self.next_token()
+        increment = self.statement()
+        if self.current_token_type != Datatypes.ARROW:
+            raise SyntaxError("Expected '=>' after for statement")
+        self.next_token()
+        return Datatypes.ForNode(assignment=assignment, condition=condition, increment=increment,
+                                 statements=self.statement_block())
