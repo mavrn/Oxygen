@@ -5,7 +5,6 @@ import Datatypes
 from fractions import Fraction
 
 # TODO: add custom exceptions
-# TODO: turn into class
 
 
 class Interface:

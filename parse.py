@@ -13,6 +13,7 @@ class Parser:
         self.current_token = None
         self.current_token_type = None
         self.next_statement()
+        self.optional_open_blocks = 0
 
     def next_statement(self):
         try:
@@ -47,8 +48,11 @@ class Parser:
             # If the parsing process is finished and there are still tokens left, the syntax is invalid:
             # An example would be x = 2a
             if self.current_token is not None:
-                raise SyntaxError(f"Reached the end of parsing, but there still is a Token of type"
-                                  f" {Datatypes.type_dict.get(self.current_token_type)} left.")
+                if self.current_token.type in (Datatypes.BLOCK_END, Datatypes.RCURLY) and self.optional_open_blocks > 0:
+                    self.optional_open_blocks -= 1
+                else:
+                    raise SyntaxError(f"Reached the end of parsing, but there still is a Token of type"
+                                      f" {Datatypes.type_dict.get(self.current_token_type)} left.")
             self.next_statement()
         return ast_list
 
@@ -67,6 +71,7 @@ class Parser:
             block_starter = self.current_token_type
         self.next_token()
         if self.current_token is not None and block_starter == Datatypes.ARROW:
+            self.optional_open_blocks += 1
             return [self.statement()] if block_type == "normal" else self.statement()
         block_ender = Datatypes.BLOCK_END if block_starter == Datatypes.ARROW else Datatypes.RCURLY
         block = []
@@ -85,11 +90,11 @@ class Parser:
             result = Datatypes.IfNode()
             self.next_token()
             condition = self.statement()
-            result.add_block(Datatypes.IF, if_expr, condition)
+            result.add_block(Datatypes.IF, [if_expr], condition)
             if self.current_token_type == Datatypes.ELSE:
                 self.next_token()
                 else_expr = self.statement()
-                result.add_block(Datatypes.ELSE, else_expr)
+                result.add_block(Datatypes.ELSE, [else_expr])
         return result
 
     def expression(self):

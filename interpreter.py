@@ -8,9 +8,6 @@ KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factori
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 
 
-# TODO: make it possible to assign functions by assignnode
-
-
 class Interpreter:
     def __init__(self):
         # Define global and local fields, which emulate global and local (function) scope

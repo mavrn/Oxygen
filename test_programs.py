@@ -38,8 +38,8 @@ else =>
 x=1 <<
 x
 """
-test11 = """fn fizz_buzz i {
-     for x=1, x<=i, x++ {
+test11 = """fn fizz_buzz i => 
+     for x=1, x<=i, x++ => 
              if x%3 == 0 and x%5 == 0 =>
                      print("FizzBuzz")
              <<
@@ -52,8 +52,8 @@ test11 = """fn fizz_buzz i {
              else =>
                      print(x)
              <<
-     }
-}
+     <<
+<<
 fizz_buzz.10
 """
 test12 = """
@@ -62,4 +62,10 @@ return factorial.n / (factorial.k * factorial(n-k)) <<
 fn P x => bin_cof(n,x) * p^x * (1-p)^(n-x)
 n=100;p=0.5
 plot(P, 0, 100, 1)
+"""
+test13 = """
+fn x a =>
+    return "Yes" if a else "False"
+<<
+x.True
 """
