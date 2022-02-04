@@ -17,8 +17,7 @@ Example:
 
 ## Syntax
 
-**Note: The `>` at the beginning of the line will indicate user input, the following line will be the interpreter
-output.**
+**Note: The `>>` at the beginning of the line will indicate user input, all other lines will be interpreter output**
 
 ### **Declaring Variables**
 
@@ -28,18 +27,18 @@ Variables are assigned with the identifier on the left, an equals sign, and the 
 only consist of uppercase letters, lowercase letters and underscores.
 
 ```python
-> x = 3
+>> x = 3
 3
 ```
 
 Nested and chained assignments are also possible:
 
 ```python
-> x = y = 3
+>> x = y = 3
 3
-> x = 5 + (y=4)
+>> x = 5 + (y=4)
 9
-> y
+>> y
 4
 ```
 
@@ -55,13 +54,14 @@ The interpreter will be able to evaluate the following operations:
 - Operation assignment with +=, -=, *=, /= and %=
 - Modulus with %
 - Exponentiate with ^
+- Double plus and double minus ++ / -- after any variable to add or subtract 1
 
 Operator precedence will follow the common order:
 
 ```python
-> x = 2+3*4
+>> x = 2+3*4
 14
-> x = (2+3)*4
+>> x = (2+3)*4
 20
 ```
 
@@ -81,11 +81,11 @@ Numbers can be converted to bools too; 0 will be converted to False while any ot
 Other datatypes like functions can not be converted to bools.
 
 ```python
-> x = True
+>> x = True
 True
-> x = 2 > 3
+>> x = 2 > 3
 False
-> x = not 0
+>> x = not 0
 True
 ```
 
@@ -94,34 +94,34 @@ value first, which will prevent chaining of comparisons:
 
 ```python
 # 3<5<10 is a chained comparison. It will be evaluated to True, as (3<5) and (5<10) are True.
-> 3 < 5 < 10
+>> 3 < 5 < 10
 True
 # 5==5==5 is a chained comparison. It will be evaluated to True.
-> 5 == 5 == 5
+>> 5 == 5 == 5
 True
 # The brackets will cause (5 == 5) to be converted to a boolean, leaving "True == 5", which is false.
-> (5 == 5) == 5
+>> (5 == 5) == 5
 False
 ```
 
 When implicitly converting a boolean value to a number, `False` will be equal to 0 and `True` will be equal to 1.
 
 ```python
-> x = True
-> x == 1
+>> x = True
+>> x == 1
 True
 ```
 
-If-statements have to be one-liners like they are possible in python; following the
-syntax [expression + if + condition + else + expression]. Although not recommended for clarity reasons, if-statements
-can be nested.
+If-statements can be one-liners like they are possible in python; following the
+syntax [expression + if + condition + else + expression]. The conventional syntax is mentioned later. Although not
+recommended for clarity reasons, if-statements can be nested.
 
 ```python
-> 8 if 3<10 else 10
+>> 8 if 3<10 else 10
 8
-> x = False
+>> x = False
 False
-> y = 10 if x else 5
+>> y = 10 if x else 5
 5
 ```
 
@@ -134,7 +134,7 @@ Functions are declared using the keyword `fn`, the identifier, the arguments lis
 > Declaring the function "add" that takes two arguments and returns the sum:
 
 ```python
-> fn add x y => x + y
+>> fn add x y => x + y
 ```
 
 Functions are called using the identifier and the respective arguments in brackets; separated by commas. Function calls
@@ -142,7 +142,7 @@ can be nested.
 > Calling the "add" function:
 
 ```python
-> sum = add(7, 3)
+>> sum = add(7, 3)
 10
 ```
 
@@ -150,8 +150,8 @@ Alternatively, if a function takes exactly one argument, it is also callable wit
 argument.
 
 ```python
-> fn add_two x => x + 2
-> add_two.2
+>> fn add_two x => x + 2
+>> add_two.2
 4
 ```
 
@@ -160,8 +160,8 @@ precedence
 (emulating local and global scope).
 
 ```python
-> x = 5
-> add_two(4)
+>> x = 5
+>> add_two(4)
 6
 ```
 
@@ -180,15 +180,16 @@ Currently, there are the following usable built-in functions:
   context of a boolean expression*
 - `fraction` *This will attempt to convert anything into a fraction*
 - `plot`
+- `print`
 
 They are called just like normal functions: `keyword.factor` or `keyword(expression)`
 
 *Example:*
 
 ```python
-> sqrt.81
+>> sqrt.81
 9
-> sqrt(80+1)
+>> sqrt(80+1)
 9
 ```
 
@@ -196,8 +197,8 @@ There also are a few built-in mathematical constants: pi, e, h, and golden (for 
 > Example: Utilizing pi to declare a function which takes in some radius and returns the circumference of the circle
 
 ```python
-> fn get_circumference radius => 2 * pi * radius
-> get_circumference(2)
+>> fn get_circumference radius => 2 * pi * radius
+>> get_circumference(2)
 12.566370614359172
 ```
 
@@ -205,12 +206,12 @@ There also are a few built-in mathematical constants: pi, e, h, and golden (for 
 
 ---
 
-Currently, there is only one type of loop: A simple repetition. <br>
-It is used with the syntax (`rep` + repetitions + `=>` + statement).
+Currently, there are two types of loops: A simple repetition `rep` and the typical for loop `for`. <br>
+`rep` is used with the syntax (`rep` + repetitions + `=>` + statement).
 
 ```python
-> x = 0
-> rep 2 => x += 2
+>> x = 0
+>> rep 2 => x += 2
 2
 4
 ```
@@ -219,23 +220,110 @@ The repetition count while looping is automatically stored in the variable `_c`,
 the keyword `as`.
 
 ```python
-> rep 3 => _c
+>> rep 3 => _c
 0
 1
 2
-> rep 3 as i => i / 2
+>> rep 3 as i => i / 2
 0
 0.5
 1
 ```
 
+The `for` loop uses the syntax <br> `for`  Assignment expression, Condition, Increment expression
+`=>`  Statement
+
+```python
+>> for x=0, x<5, x++ => x
+0
+1
+2
+3
+4
+```
+
 To seperate statements, use `;`. All statements will be evaluated seperately from left to right.
 
 ```python
-> x = 4; x + 2; sqrt.x
+>> x = 4; x + 2; sqrt.x
 4
 6
 2
+```
+
+### **Multi-Line Blocks**
+
+---
+*Note: Multi-line blocks are not yet fully implemented, which means that the syntax is **not** consistent.*
+
+Loops, if statements and function declarations can all include multi-line blocks. <br>
+In the interpreter, a block is opened by having `=>` as the last token. As long as a block is open, the interpreter
+input string will change from `>>` to `..`. Blocks are closed with `<<`.
+
+```python
+>> rep 2 as i =>
+..     i + 1    
+..     i / 2
+.. <<      
+1
+0
+2
+0.5
+```
+
+Using multi-line statements like this will alter syntax a bit:
+
+1. When using multi-line blocks, blocks have to be closed. <br>
+   When using single-line-statements with `=>` the block doesn't have to be closed.
+2. When using multi-line blocks, `=>` and `<<` can be used interchangeably with `{` and `}`
+   Singe-line statements cannot use `{` and `}`.
+3. When using multi-line function-declarations, output will not be automatically printed. <br>
+   When calling a function, only statements inside `print` will be printed.
+4. When using single-line function declarations, the result will be automatically returned. When using multi-line
+   function declarations, anything can be manually returned using `return`.
+
+```python
+# 1: All three statements are the same thing
+>> rep 2 => 1
+>> rep 2 => 1 <<
+>> rep 2 =>
+..  1
+.. <<
+# 2
+# works
+>> rep 2 {
+..      1
+.. }
+# doesn't work
+>> rep 2 { 1 }
+# 3
+>> fn x =>
+..      1
+..      print(2)
+.. <<
+>> x()
+2
+# 4: Both are the same thing
+>> fn x a => a+1
+>> fn x a =>
+..      return a+1
+.. <<
+```
+
+Multi-line if statements are also possible and use the typical if - else if - else syntax, but with `or` instead of else
+if.
+
+```python
+>> if False =>
+..      1
+.. <<
+.. or False =>
+..      2
+.. <<
+.. else =>
+..      3
+<<
+3
 ```
 
 ### **Strings**
@@ -246,7 +334,7 @@ Strings are indicated by two quotation marks (which can be either `"` or `'`, li
 currently are no string operations.
 
 ```python
-> x = "Hello World"
+>> x = "Hello World"
 Hello World
 ```
 
@@ -262,8 +350,8 @@ the upper bound, using the given increment.
 > Defining a function f(x) = 0.5\*x³ + 2\*x² and plotting it using `plot()`
 
 ```python
-> fn f x => 0.5 * x^3 + 2 * x^2
-> plot(f, -4, 2)
+>> fn f x => 0.5 * x^3 + 2 * x^2
+>> plot(f, -4, 2)
 ``` 
 
 ![img.png](plotted_function.png)
@@ -285,17 +373,17 @@ Exceptions will be thrown for invalid Expressions. <br>
 *Some examples*:
 
 ```python
-> 4 + (4 + 1
+>> 4 + (4 + 1
 SyntaxError: Expected a closing parenthesis.
-> y + 1
+>> y + 1
 NameError: Name "y" is not defined.
-> fn add a b => a + b
-> add(5)
+>> fn add a b => a + b
+>> add(5)
 SyntaxError: Expected 2 arguments, got 1.
-> x = 2
-> x()
+>> x = 2
+>> x()
 TypeError: float object is not callable
-> fn add a b = a + b
+>> fn add a b = a + b
 SyntaxError: Expected "=>"
 ```
 
@@ -310,52 +398,66 @@ Any input preceded by `~` will be ignored.
 > Evaluating an expression and comparing it to 1
 
 ```python
-> 1 == (0.5 + 2 / 2^2)
+>> 1 == (0.5 + 2 / 2^2)
 True
 ```
 
 > Defining a function which can calculate c in a triangle according to the theorem of pythagoras
 
 ```python
-> fn get_c a b => sqrt(a^2+b^2)
-> get_c(3,4)
+>> fn get_c a b => sqrt(a^2+b^2)
+>> get_c(3,4)
 5
 ```
 
 > Defining a function that reverses a boolean value
 
 ```python
-> fn reverse boolean_value => !boolean_value
-> reverse(1==1)
+>> fn reverse boolean_value => !boolean_value
+>> reverse(1==1)
 False
 ```
 
 > Defining a function which takes the arguments a, b and x and returns True if x is between a and b (and vice versa)
 
 ```python
-> fn is_in_range a b x => a<x<b
-> is_in_range(0, 5, 3)
+>> fn is_in_range a b x => a<x<b
+>> is_in_range(0, 5, 3)
 True
-> is_in_range(-2, 2, -4)
+>> is_in_range(-2, 2, -4)
 False
 ```
 
 > Defining a function which takes an argument x and returns x divided by 2 only if x is divisible by 2. If not, x is not changed.
 
 ```python
-> fn divide_by_two x => x/2 if x%2 == 0 else x
-> divide_by_two.12
+>> fn divide_by_two x => x/2 if x%2 == 0 else x
+>> divide_by_two.12
 6
-> divide_by_two.13
+>> divide_by_two.13
 13
 ```
 
 > Coding FizzBuzz
 
 ```python
-> fn fizz_buzz i => rep i as c=> "FizzBuzz" if c % 3 == 0 and c % 5 == 0 else "Fizz" if c % 3 == 0 else "Buzz" if c % 5 == 0 else c
-fizz_buzz.10
-FizzBuzz
+>> fn fizz_buzz i => 
+..      for x=1, x<=i, x++ => 
+..              if x%3 == 0 and x%5 == 0 =>
+..                      print("FizzBuzz")
+..              <<
+..              or x%5 == 0 =>
+..                      print("Buzz")
+..              <<
+..              or x%3 == 0 =>
+..                      print("Fizz")
+..              <<
+..              else =>
+..                      print(x)
+..              <<
+..      <<
+.. <<
+>> fizz_buzz.10
 1
 2
 Fizz
@@ -365,14 +467,15 @@ Fizz
 7
 8
 Fizz
+Buzz
 ```
 
 > Calculating P in a binomial distribution
 
 ```python
-> fn bin_cof n k => factorial.n / (factorial.k * factorial(n-k))
-> fn P p n x => bin_cof(n,x) * p^x * (1-p)^(n-x)
-> P(0.3, 20, 6)
+>> fn bin_cof n k => factorial.n / (factorial.k * factorial(n-k))
+>> fn P p n x => bin_cof(n,x) * p^x * (1-p)^(n-x)
+>> P(0.3, 20, 6)
 0.19163898275344238
 ```
 
