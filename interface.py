@@ -7,98 +7,108 @@ from fractions import Fraction
 # TODO: add custom exceptions
 # TODO: turn into class
 
-inp_msg = ">> "
-interpreter = Interpreter()
 
+class Interface:
+    def __init__(self, debug=False, quit_after_exceptions=False):
+        self.inp_msg = ">> "
+        self.interpreter = Interpreter()
+        self.debug = debug
+        self.quit_after_exceptions = quit_after_exceptions
+        self.tokens_list = []
+        self.open_blocks = 0
+        self.active_if = False
+        self.inp = ""
 
-# debug: Will print lexer output and parser output additionally
-# quit_after_exceptions: Will prevent program from quitting after reaching an exception.
-def start_session(debug=False, quit_after_exceptions=False):
-    global inp_msg
-    while True:
-        inp = input(inp_msg)
-        if quit_after_exceptions:
-            out = get_out(inp, debug)
-            print_output(out)
+    # debug: Will print lexer output and parser output additionally
+    # quit_after_exceptions: Will prevent program from quitting after reaching an exception.
+    def start_session(self):
+        while True:
+            self.inp = input(self.inp_msg)
+            if self.quit_after_exceptions:
+                out = self.get_out()
+                self.print_output(out)
+            else:
+                # This will do the same exact thing as the block above, but will catch any exceptions coming through
+                # To make this possible, all fields are backed up, so they can be reverted to their original states
+                # in case of an exception
+                self.interpreter.backup_fields = self.interpreter.fields.copy()
+                try:
+                    out = self.get_out()
+                except Exception as e:
+                    self.interpreter.rollback()
+                    print(f"{type(e).__name__}: {e}")
+                    self.print_output([None])
+                else:
+                    self.print_output(out)
+
+    def get_out(self):
+        lexer = Lexer(self.inp)
+        tokens = lexer.gen_tokens()
+        for token in tokens:
+            self.tokens_list.append(token)
+        if len(tokens) == 0:
+            self.inp_msg = ">> "
+            self.active_if = False
+            self.open_blocks = 0
         else:
-            # This will do the same exact thing as the block above, but will catch any exceptions coming through
-            # To make this possible, all fields are backed up, so they can be reverted to their original states
-            # in case of an exception
-            interpreter.backup_fields = interpreter.fields.copy()
-            try:
-                out = get_out(inp, debug)
-            except Exception as e:
-                interpreter.rollback()
-                print(f"{type(e).__name__}: {e}")
-                print_output([None])
+            for token in tokens[0]:
+                if token.type in (Datatypes.ARROW, Datatypes.LCURLY):
+                    if token.type == Datatypes.ARROW and tokens[0][-1].type != Datatypes.ARROW:
+                        continue
+                    else:
+                        self.open_blocks += 1
+                elif token.type in (Datatypes.BLOCK_END, Datatypes.RCURLY):
+                    self.open_blocks -= 1
+                elif token.type == Datatypes.IF:
+                    self.active_if = True
+            if self.open_blocks > 0 or self.active_if:
+                self.inp_msg = ".. "
+                return [None]
             else:
-                print_output(out)
+                self.inp_msg = ">> "
+        if self.debug:
+            for tokens in self.tokens_list:
+                print(tokens)
+        parser = Parser(self.tokens_list)
+        ast_list = parser.parse()
+        if self.debug:
+            print(ast_list)
+        self.tokens_list = []
+        return self.interpreter.get_output(ast_list)
 
+    # Instead of starting an interpreter session, this function will simply
+    # get the output from any input string and print the output
 
-def get_out(inp, debug):
-    global inp_msg
-    tokens_list = []
-    open_blocks = 0
-    lexer = Lexer(inp)
-    tokens = lexer.gen_tokens()
-    for token in tokens:
-        tokens_list.append(token)
-    if len(tokens) == 0:
-        inp_msg = ">> "
-        for _ in range(open_blocks):
-            tokens_list[-1].append(Datatypes.Token(Datatypes.BLOCK_END))
-    else:
-        if tokens[0][0].type == Datatypes.ELSE and open_blocks > 0:
-            open_blocks -= 1
-            tokens_list[-2].append(Datatypes.Token(Datatypes.BLOCK_END))
-        if tokens[-1][-1].type == Datatypes.BLOCK_END:
-            open_blocks -= 1
-            inp_msg = ">> "
-        if tokens[-1][-1].type == Datatypes.ARROW:
-            open_blocks += 1
-        if open_blocks > 0:
-            inp_msg = ".. "
-            return
-    if debug:
-        for tokens in tokens_list:
-            print(tokens)
-    parser = Parser(tokens_list)
-    ast_list = parser.parse()
-    if debug:
-        print(ast_list)
-    return interpreter.get_output(ast_list)
-# Instead of starting an interpreter session, this function will simply
-# get the output from any input string and print the output
-def run(input_string, debug=False):
-    interpreter = Interpreter()
-    lexer = Lexer(input_string)
-    tokens_list = lexer.gen_tokens()
-    if debug:
-        for tokens in tokens_list:
-            print(tokens)
-    parser = Parser(tokens_list)
-    ast_list = parser.parse()
-    if debug:
-        print(ast_list)
-    output_lines = interpreter.get_output(ast_list)
-    print_output(output_lines)
+    def run(self, input_string):
+        interpreter = Interpreter()
+        lexer = Lexer(input_string)
+        tokens_list = lexer.gen_tokens()
+        if self.debug:
+            for tokens in tokens_list:
+                print(tokens)
+        parser = Parser(tokens_list)
+        ast_list = parser.parse()
+        if self.debug:
+            print(ast_list)
+        output_lines = interpreter.get_output(ast_list)
+        self.print_output(output_lines)
 
-
-def print_output(output_lines):
-    # Printing the result
-    # Won't print anything if the result is None
-    for line in output_lines:
-        if line is not None:
-            # Running some instance checks to make sure that the right thing is printed to the console
-            if isinstance(line, Fraction):
-                print(str(line))
-            elif isinstance(line, float):
-                print(Datatypes.String(line))
-            elif isinstance(line, (Datatypes.Bool, Datatypes.String)):
-                print(line)
-            else:
-                print(repr(line))
+    def print_output(self, output_lines):
+        # Printing the result
+        # Won't print anything if the result is None
+        for line in output_lines:
+            if line is not None:
+                # Running some instance checks to make sure that the right thing is printed to the console
+                if isinstance(line, Fraction):
+                    print(str(line))
+                elif isinstance(line, float):
+                    print(Datatypes.String(line))
+                elif isinstance(line, (Datatypes.Bool, Datatypes.String)):
+                    print(line)
+                else:
+                    print(repr(line))
 
 
 if __name__ == '__main__':
-    start_session()
+    interface = Interface()
+    interface.start_session()

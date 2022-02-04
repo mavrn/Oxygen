@@ -60,28 +60,36 @@ class Parser:
     # An "exponential" will have the exponentiation operator. The reason this has its own layer is that exponential
     # operations have to be evaluated before a term, but after a factor.
     # Finally, the factor can be a number, identifier or a statement between brackets.
-    def statement_block(self):
-        if self.current_token is not None:
-            return [self.statement()]
+    def statement_block(self, block_type="normal"):
+        if self.current_token_type not in (Datatypes.ARROW, Datatypes.LCURLY):
+            raise SyntaxError("Expected '{' or '=>'")
+        else:
+            block_starter = self.current_token_type
+        self.next_token()
+        if self.current_token is not None and block_starter == Datatypes.ARROW:
+            return [self.statement()] if block_type == "normal" else self.statement()
+        block_ender = Datatypes.BLOCK_END if block_starter == Datatypes.ARROW else Datatypes.RCURLY
         block = []
-        while self.current_token_type != Datatypes.BLOCK_END:
+        while self.current_token_type != block_ender:
             if self.current_statement is None:
                 return block
             self.next_statement()
             block.append(self.statement())
-        self.next_statement()
+        self.next_token()
         return block
 
     def statement(self):
         result = self.expression()
         while self.current_token_type == Datatypes.IF:
-            else_expr = None
+            if_expr = result
+            result = Datatypes.IfNode()
             self.next_token()
             condition = self.statement()
+            result.add_block(Datatypes.IF, if_expr, condition)
             if self.current_token_type == Datatypes.ELSE:
                 self.next_token()
                 else_expr = self.statement()
-            result = Datatypes.IfNode(if_expr=result, condition=condition, else_expr=else_expr)
+                result.add_block(Datatypes.ELSE, else_expr)
         return result
 
     def expression(self):
@@ -120,7 +128,6 @@ class Parser:
                                              Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN):
                 # Will first make a check if assign operator comes after a variable , then will match the operator
                 # and return assign nodes accordingly
-                # TODO: make this less confusing
                 if type(result).__name__ == "VariableNode":
                     operator_node = Datatypes.OPERATOR_NODE_DICT[self.current_token_type]
                     self.next_token()
@@ -169,21 +176,25 @@ class Parser:
             self.next_token()
             return self.gen_for()
         elif self.current_token_type == Datatypes.IF:
-            # TODO: rewrite this
+            if_node = Datatypes.IfNode()
             self.next_token()
-            condition = self.expression()
-            if self.current_token_type != Datatypes.ARROW:
-                raise SyntaxError("Expected '=>' after if statement")
-            self.next_token()
-            else_expr = None
-            if_expr = self.statement_block()
-            if self.current_token_type == Datatypes.ELSE:
+            condition = self.statement()
+            block = self.statement_block()
+            if_node.add_block(Datatypes.IF, block, condition)
+            self.next_statement()
+            while self.current_token_type in (Datatypes.OR, Datatypes.ELSE):
+                keyword = self.current_token_type
                 self.next_token()
-                if self.current_token_type != Datatypes.ARROW:
-                    raise SyntaxError("Expected '=>' after if statement")
-                self.next_token()
-                else_expr = self.statement_block()
-            return Datatypes.IfNode(if_expr=if_expr, else_expr=else_expr, condition=condition)
+                if keyword != Datatypes.ELSE:
+                    condition = self.statement()
+                else:
+                    condition = None
+                block = self.statement_block()
+                if_node.add_block(keyword, block, condition)
+                if keyword == Datatypes.ELSE:
+                    break
+                self.next_statement()
+            return if_node
         elif token_type == Datatypes.TRUE:
             self.next_token()
             return Datatypes.Bool(True)
@@ -231,8 +242,8 @@ class Parser:
                 return self.call_function(identifier)
             else:
                 return Datatypes.VariableNode(identifier=identifier)
-        elif token_type == Datatypes.BLOCK_END:
-            return None
+        elif token_type in (Datatypes.BLOCK_END, Datatypes.RCURLY):
+            return
         else:
             raise SyntaxError("Invalid syntax")
 
@@ -248,11 +259,9 @@ class Parser:
         while self.current_token_type == Datatypes.IDENTIFIER:
             arguments.append(self.current_token.value)
             self.next_token()
-        if self.current_token_type != Datatypes.ARROW:
-            raise SyntaxError("Expected \"=>\"")
         else:
-            self.next_token()
-            return Datatypes.FuncDeclareNode(identifier=identifier, arguments=arguments, body=self.statement_block())
+            return Datatypes.FuncDeclareNode(identifier=identifier, arguments=arguments,
+                                             body=self.statement_block(block_type="function"))
 
     # Will follow the pre-defined syntax of a function call linearly
     # and will throw exceptions if the syntax is incorrect
@@ -290,9 +299,6 @@ class Parser:
             else:
                 count_identifier = self.current_token.value
                 self.next_token()
-        if self.current_token_type != Datatypes.ARROW:
-            raise SyntaxError("Expected \"=>\"")
-        self.next_token()
         return Datatypes.RepNode(repetitions=loop_reps, count_identifier=count_identifier,
                                  statements=self.statement_block())
 
@@ -306,8 +312,5 @@ class Parser:
             raise SyntaxError("Expected comma after condition")
         self.next_token()
         increment = self.statement()
-        if self.current_token_type != Datatypes.ARROW:
-            raise SyntaxError("Expected '=>' after for statement")
-        self.next_token()
         return Datatypes.ForNode(assignment=assignment, condition=condition, increment=increment,
                                  statements=self.statement_block())

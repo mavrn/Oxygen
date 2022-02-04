@@ -3,6 +3,8 @@ from collections import namedtuple
 
 # CUSTOM BOOLEAN DATACLASS
 # Exists to make the Interpreter Bools customizable
+
+
 class Bool:
     def __init__(self, value=None):
         if isinstance(value, bool):
@@ -66,6 +68,23 @@ class Token:
         return f"TOKEN({type_dict.get(self.type)}" + (f", VALUE = {self.value})" if self.value is not None else ")")
 
 
+class IfNode:
+    def __init__(self):
+        self.blocks = []
+
+    def add_block(self, keyword, statements, condition=None):
+        self.blocks.append({"keyword": keyword, "condition": condition, "statements": statements})
+
+    def __repr__(self):
+        repr = ""
+        for block in self.blocks:
+            kw = block["keyword"]
+            condition = block["condition"]
+            statements = block["statements"]
+            repr += f"{type_dict.get(kw)} {condition} {statements}; "
+        return repr
+
+
 # TOKEN TYPE IDs
 NUMBER = 0
 PLUS_SIGN = 1
@@ -109,6 +128,8 @@ DOUBLE_PLUS = 38
 BLOCK_END = 39
 RETURN = 40
 PRINT = 41
+LCURLY = 42
+RCURLY = 43
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -125,7 +146,6 @@ ComparisonNode = namedtuple("ComparisonNode", ["a", "b", "operator"])
 BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])
 BooleanConversionNode = namedtuple("BooleanConversionNode", ["value"])
 LogicalOperationNode = namedtuple("LogicalOperationNode", ["a", "b", "operation"])
-IfNode = namedtuple("IfNode", ["if_expr", "condition", "else_expr"])
 RepNode = namedtuple("RepNode", ["repetitions", "count_identifier", "statements"])
 ForNode = namedtuple("ForNode", ["assignment", "condition", "increment", "statements"])
 ReturnNode = namedtuple("ReturnNode", ["statement"])
@@ -180,5 +200,7 @@ type_dict = {
     DOUBLE_PLUS: "DOUBLE_PLUS",
     BLOCK_END: "BLOCK_END",
     RETURN: "RETURN",
-    PRINT: "PRINT"
+    PRINT: "PRINT",
+    LCURLY: "LCURLY",
+    RCURLY: "RCURLY",
 }

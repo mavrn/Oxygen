@@ -69,14 +69,20 @@ class Interpreter:
                 return Datatypes.Bool(
                     Datatypes.Bool(self.evaluate(node.a)) or Datatypes.Bool(self.evaluate(node.b)))
         elif node_type == "IfNode":
-            condition = bool(self.evaluate(node.condition))
             out = []
-            if condition:
-                for statement in node.if_expr:
+            if_expr = node.blocks[0]
+            if bool(self.evaluate(if_expr["condition"])):
+                for statement in if_expr["statements"]:
                     out.append(self.evaluate(statement))
-            elif len(node.else_expr) is not None:
-                for statement in node.else_expr:
-                    out.append(self.evaluate(statement))
+            else:
+                for block in node.blocks[1:]:
+                    if block["keyword"] == Datatypes.ELSE or bool(self.evaluate(block["condition"])):
+                        for statement in block["statements"]:
+                            out.append(self.evaluate(statement))
+                            break
+                        else:
+                            continue
+                        break
             return out
         elif node_type == "VariableNode":
             # Will check for a local field first, then a global one, and finally raise an exception if
@@ -271,7 +277,6 @@ class Interpreter:
         func_arg_arr = array(func_args)
         plt.rcParams["figure.autolayout"] = True
         plt.grid(visible=True, which="major", axis="both")
-        plt.axis("equal")
         plt.plot(arg_arr, func_arg_arr, c="orange", label=f"f(x)={function}(x)")
         plt.axvline(x=0)
         plt.axhline(y=0)

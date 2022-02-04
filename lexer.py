@@ -10,7 +10,8 @@ OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datat
                  "&": Datatypes.AND, "|": Datatypes.OR, "==": Datatypes.COMP_EQUALS, "!=": Datatypes.COMP_NOT_EQUALS,
                  "<": Datatypes.LESS_THAN, ">": Datatypes.GREATER_THAN, "<=": Datatypes.LESS_OR_EQUALS,
                  ">=": Datatypes.GREATER_OR_EQUALS, "=>": Datatypes.ARROW, "=": Datatypes.EQUALS, "!": Datatypes.NOT,
-                 "--": Datatypes.DOUBLE_MINUS, "++": Datatypes.DOUBLE_PLUS, "<<": Datatypes.BLOCK_END
+                 "--": Datatypes.DOUBLE_MINUS, "++": Datatypes.DOUBLE_PLUS, "<<": Datatypes.BLOCK_END,
+                 "{": Datatypes.LCURLY, "}": Datatypes.RCURLY
                  }
 KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD,
                 "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
@@ -74,7 +75,6 @@ class Lexer:
                     self.next_char()
             elif self.current_char in ("\"", "\'"):
                 tokens.append(self.gen_string())
-                self.next_char()
             else:
                 raise Exception(f"Illegal Character {self.current_char}")
         if len(tokens) > 0:
@@ -114,4 +114,5 @@ class Lexer:
             self.next_char()
         if self.current_char != quotation_mark:
             raise SyntaxError(f"Expected {quotation_mark}")
+        self.next_char()
         return Token(Datatypes.STRING, Datatypes.String(string))
