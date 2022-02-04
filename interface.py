@@ -79,7 +79,6 @@ class Interface:
     # get the output from any input string and print the output
 
     def run(self, input_string):
-        interpreter = Interpreter()
         lexer = Lexer(input_string)
         tokens_list = lexer.gen_tokens()
         if self.debug:
@@ -89,8 +88,13 @@ class Interface:
         ast_list = parser.parse()
         if self.debug:
             print(ast_list)
-        output_lines = interpreter.get_output(ast_list)
+        output_lines = self.interpreter.get_output(ast_list)
         self.print_output(output_lines)
+
+    def run_from_txt(self):
+        with open('program.txt') as program:
+            program = program.read()
+        self.run(program)
 
     def print_output(self, output_lines):
         # Printing the result

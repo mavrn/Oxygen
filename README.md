@@ -7,11 +7,11 @@ You will need [numpy](https://pypi.org/project/numpy/) v1.22.1+ and [matplotlib]
 v3.5.1+ for plotting purposes. <br>
 When running main.py, you can specify the following arguments:
 
-| Argument              | Function                                                                                 | Default |
-|-----------------------|------------------------------------------------------------------------------------------|---------|
-| quit_after_exceptions | Will quit the program if an exception occurs. Might be more stable and less error-prone. | False   |
-| debug                 | In addition to the expression result, will print the output of both Lexer and Parser     | False   |
-
+| Argument              | Function                                                                                 | Default  |
+|-----------------------|------------------------------------------------------------------------------------------|----------|
+| quit_after_exceptions | Will quit the program if an exception occurs. Might be more stable and less error-prone. | False    |
+| debug                 | In addition to the expression result, will print the output of both Lexer and Parser     | False    |
+| run                   | Instead of opening the interpreter, will run whatever is in "program.txt".               | False    |
 Example:
 `python main.py quit_after_exceptions`
 

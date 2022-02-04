@@ -1,0 +1,17 @@
+fn fizz_buzz i => 
+     for x=1, x<=i, x++ => 
+             if x%3 == 0 and x%5 == 0 =>
+                     print("FizzBuzz")
+             <<
+             or x%5 == 0 =>
+                     print("Buzz")
+             <<
+             or x%3 == 0 =>
+                     print("Fizz")
+             <<
+             else =>
+                     print(x)
+             <<
+     <<
+<<
+fizz_buzz.10
