@@ -140,6 +140,12 @@ x.2
 x.11
 """
 t14 = "6 if False else 5 if False else 4 if False else 3"
+t15 = "x=4; x+2; sqrt.x"
+t16 = """rep 2 as i =>
+    i+1
+    1/2
+<<
+"""
 
 test1 = Test("Test 1", t1, [Bool(True)])
 test2 = Test("Test 2", t2, [5.0])
