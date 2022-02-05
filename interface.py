@@ -78,7 +78,7 @@ class Interface:
     # Instead of starting an interpreter session, this function will simply
     # get the output from any input string and print the output
 
-    def run(self, input_string):
+    def run(self, input_string, return_out=False):
         lexer = Lexer(input_string)
         tokens_list = lexer.gen_tokens()
         if self.debug:
@@ -89,7 +89,10 @@ class Interface:
         if self.debug:
             print(ast_list)
         output_lines = self.interpreter.get_output(ast_list)
-        self.print_output(output_lines)
+        if return_out:
+            return output_lines
+        else:
+            self.print_output(output_lines)
 
     def run_from_txt(self):
         with open('program.txt') as program:

@@ -30,6 +30,11 @@ class Bool:
     def __bool__(self):
         return self.boolean_value
 
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        return False
+
     def reverse(self):
         self.boolean_value = not self.boolean_value
 
@@ -46,6 +51,11 @@ class String:
 
     def __repr__(self):
         return self.str
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        return False
 
 
 # Defines a function consisting of the arguments and the body
@@ -76,12 +86,13 @@ class IfNode:
         self.blocks.append({"keyword": keyword, "condition": condition, "statements": statements})
 
     def __repr__(self):
-        repr = ""
+        repr = "IfNode("
         for block in self.blocks:
-            kw = block["keyword"]
+            kw = type_dict.get(block["keyword"])
             condition = block["condition"]
             statements = block["statements"]
-            repr += f"{type_dict.get(kw)} {condition} {statements}; "
+            repr += f"keyword = {kw}, condition = {condition}, statements = {statements}"
+        repr += ")"
         return repr
 
 

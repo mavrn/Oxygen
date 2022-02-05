@@ -41,9 +41,7 @@ class Parser:
         ast_list = []
         while self.current_statement is not None:
             # If there are no tokens, None will be returned
-            if self.current_token is None:
-                ast_list.append(None)
-            else:
+            if self.current_token is not None:
                 ast_list.append(self.statement())
             # If the parsing process is finished and there are still tokens left, the syntax is invalid:
             # An example would be x = 2a

@@ -12,6 +12,7 @@ When running main.py, you can specify the following arguments:
 | quit_after_exceptions | Will quit the program if an exception occurs. Might be more stable and less error-prone. | False    |
 | debug                 | In addition to the expression result, will print the output of both Lexer and Parser     | False    |
 | run                   | Instead of opening the interpreter, will run whatever is in "program.txt".               | False    |
+
 Example:
 `python main.py quit_after_exceptions`
 

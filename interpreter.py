@@ -1,11 +1,27 @@
 import math
 import Datatypes
-from numpy import array
+import numpy as np
 from matplotlib import pyplot as plt
 from fractions import Fraction
 
 KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial", "bool", "plot", "fraction"]
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
+
+
+# TODO: FIX BUG; interpreter will output multidimensional lists for nested one-line statements
+
+
+def standardize(val):
+    if isinstance(val, list):
+        return val
+    else:
+        return [val]
+
+
+def merge(output_list, list_to_append):
+    for item in list_to_append:
+        if item is not None:
+            output_list.append(item)
 
 
 class Interpreter:
@@ -22,12 +38,8 @@ class Interpreter:
     def get_output(self, ast_list):
         self.output_lines = []
         for ast in ast_list:
-            out = self.evaluate(ast)
-            if isinstance(out, list):
-                for line in out:
-                    self.output_lines.append(line)
-            else:
-                self.output_lines.append(out)
+            out = standardize(self.evaluate(ast))
+            merge(self.output_lines, out)
         return self.output_lines
 
     # Will evaluate the ast (parser output) recursively
@@ -70,12 +82,14 @@ class Interpreter:
             if_expr = node.blocks[0]
             if bool(self.evaluate(if_expr["condition"])):
                 for statement in if_expr["statements"]:
-                    out.append(self.evaluate(statement))
+                    lines = standardize(self.evaluate(statement))
+                    merge(out, lines)
             else:
                 for block in node.blocks[1:]:
                     if block["keyword"] == Datatypes.ELSE or bool(self.evaluate(block["condition"])):
                         for statement in block["statements"]:
-                            out.append(self.evaluate(statement))
+                            lines = standardize(self.evaluate(statement))
+                            merge(out, lines)
                             break
                         else:
                             continue
@@ -83,6 +97,7 @@ class Interpreter:
             return out
         elif node_type == "VariableNode":
             # Will check for a local field first, then a global one, and finally raise an exception if
+            # both fields are nonexistent
             global_value = self.fields["global"].get(node.identifier)
             local_value = self.fields[self.scope].get(node.identifier)
             if local_value is not None:
@@ -99,20 +114,24 @@ class Interpreter:
             for i in range(int(reps)):
                 self.fields["global"][node.count_identifier] = float(i)
                 for statement in node.statements:
-                    out.append(self.evaluate(statement))
+                    lines = standardize(self.evaluate(statement))
+                    merge(out, lines)
             return out
         elif node_type == "ForNode":
             self.evaluate(node.assignment)
             out = []
             while bool(self.evaluate(node.condition)):
                 for statement in node.statements:
-                    out.append(self.evaluate(statement))
+                    lines = standardize(self.evaluate(statement))
+                    merge(out, lines)
                 self.evaluate(node.increment)
             return out
         elif node_type == "KeywordNode":
             return self.keyword_handler(node)
         elif node_type == "PrintNode":
-            self.output_lines.append(Datatypes.String(self.evaluate(node.statement)))
+            lines = standardize(self.evaluate(node.statement))
+            lines_to_str = [Datatypes.String(line) for line in lines]
+            merge(self.output_lines, lines_to_str)
         elif node_type == "ReturnNode":
             self.return_value = self.evaluate(node.statement)
         else:
@@ -158,6 +177,7 @@ class Interpreter:
                 if self.return_value is not None:
                     result = self.return_value
                     self.return_value = None
+                    break
         else:
             result = self.evaluate(func.body)
         # Local fields will be cleared after the function ends, just like in any other language
@@ -270,8 +290,8 @@ class Interpreter:
             func_args = [self.function_call_handler(Datatypes.FuncCallNode(function, [arg])) for arg in args]
         except TypeError:
             raise TypeError("Only functions with exactly one argument can be plotted.")
-        arg_arr = array(args)
-        func_arg_arr = array(func_args)
+        arg_arr = np.array(args)
+        func_arg_arr = np.array(func_args)
         plt.rcParams["figure.autolayout"] = True
         plt.grid(visible=True, which="major", axis="both")
         plt.plot(arg_arr, func_arg_arr, c="orange", label=f"f(x)={function}(x)")
