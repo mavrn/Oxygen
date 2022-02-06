@@ -8,9 +8,6 @@ KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factori
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 
 
-# TODO: FIX BUG; interpreter will output multidimensional lists for nested one-line statements
-
-
 def standardize(val):
     if isinstance(val, list):
         return val
@@ -140,6 +137,8 @@ class Interpreter:
     def rollback(self):
         self.fields = self.backup_fields
         self.scope = "global"
+        self.return_value = None
+        self.output_lines = []
 
     # Will handle all nodes of type FuncCallNode
     def function_call_handler(self, node):

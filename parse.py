@@ -248,7 +248,10 @@ class Parser:
         elif token_type in (Datatypes.BLOCK_END, Datatypes.RCURLY):
             return
         else:
-            raise SyntaxError("Invalid syntax")
+            msg = f"Invalid syntax at token type {Datatypes.type_dict.get(token_type)}"
+            if token.value is not None:
+                msg += token.value
+            raise SyntaxError(msg)
 
     # Will follow the pre-defined syntax of a function declaration linearly
     # and will throw exceptions if the syntax is incorrect

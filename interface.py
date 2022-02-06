@@ -4,7 +4,7 @@ from interpreter import Interpreter
 import Datatypes
 from fractions import Fraction
 
-# TODO: add custom exceptions
+# TODO: add custom and more precise exceptions (i.e. store token positions)
 
 
 class Interface:
@@ -36,7 +36,9 @@ class Interface:
                 except Exception as e:
                     self.interpreter.rollback()
                     print(f"{type(e).__name__}: {e}")
-                    self.print_output([None])
+                    self.tokens_list = []
+                    self.active_if = False
+                    self.open_blocks = 0
                 else:
                     self.print_output(out)
 
