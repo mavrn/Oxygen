@@ -1,5 +1,5 @@
-fn fizz_buzz i => 
-     for x=1, x<=i, x++ => 
+fn fizz_buzz i =>
+     for x=1, x<=i, x++ =>
              if x%3 == 0 and x%5 == 0 =>
                      print("FizzBuzz")
              <<

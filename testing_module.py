@@ -38,7 +38,7 @@ class TestGroup:
         exceptions = []
         print(f"Running {self.test_count} tests.")
         for i, test in enumerate(self.tests):
-            print(f"Running test {i}/{self.test_count}...")
+            print(f"Running test {i + 1}/{self.test_count}...")
             test_passed = test.run()
             if test_passed == 1:
                 passed_tests += 1
@@ -143,8 +143,27 @@ t14 = "6 if False else 5 if False else 4 if False else 3"
 t15 = "x=4; x+2; sqrt.x"
 t16 = """rep 2 as i =>
     i+1
-    1/2
+    i/2
 <<
+"""
+t17 = """if False =>
+    3
+<<
+or True =>
+    4
+<<
+else =>
+    5
+<<
+if False =>
+    6
+<<
+else =>
+    7
+<<"""
+t18 = """
+x = 2
+y = 2x
 """
 
 test1 = Test("Test 1", t1, [Bool(True)])
@@ -163,6 +182,11 @@ test11 = Test("Test 11", t11, [String(1), String(2), String("Fizz"), String(4), 
 test12 = Test("Test 12", t12, [String("Yes")])
 test13 = Test("Test 13", t13, [String("Negative number"), String("Positive number"), String("Greater than 10")])
 test14 = Test("Test 14", t14, [3.0])
+test15 = Test("Test 15", t15, [4.0, 6.0, 2.0])
+test16 = Test("Test 16", t16, [1.0, 0.0, 2.0, 0.5])
+test17 = Test("Test 17", t17, [4.0, 7.0])
+test18 = Test("Test 18", t18, [2.0, 4.0])
 
-tests = [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11, test12, test13, test14]
+tests = [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11, test12, test13, test14, test15,
+         test16, test17, test18]
 test_group = TestGroup(tests)

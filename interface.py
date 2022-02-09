@@ -62,6 +62,8 @@ class Interface:
                     self.open_blocks -= 1
                 elif token.type == Datatypes.IF:
                     self.active_if = True
+                elif token.type == Datatypes.ELSE:
+                    self.active_if = False
             if self.open_blocks > 0 or self.active_if:
                 self.inp_msg = ".. "
                 return [None]

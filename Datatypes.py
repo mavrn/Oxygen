@@ -82,16 +82,16 @@ class IfNode:
     def __init__(self):
         self.blocks = []
 
-    def add_block(self, keyword, statements, condition=None):
-        self.blocks.append({"keyword": keyword, "condition": condition, "statements": statements})
+    def add_block(self, keyword, body, condition=None):
+        self.blocks.append({"keyword": keyword, "condition": condition, "body": body})
 
     def __repr__(self):
         repr = "IfNode("
         for block in self.blocks:
             kw = type_dict.get(block["keyword"])
             condition = block["condition"]
-            statements = block["statements"]
-            repr += f"keyword = {kw}, condition = {condition}, statements = {statements}"
+            body = block["body"]
+            repr += f"[keyword = {kw}, condition = {condition}, body = {body}]"
         repr += ")"
         return repr
 
@@ -138,9 +138,9 @@ DOUBLE_MINUS = 37
 DOUBLE_PLUS = 38
 BLOCK_END = 39
 RETURN = 40
-PRINT = 41
-LCURLY = 42
-RCURLY = 43
+LCURLY = 41
+RCURLY = 42
+SOLVE_ASSIGN = 43
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -161,6 +161,7 @@ RepNode = namedtuple("RepNode", ["repetitions", "count_identifier", "statements"
 ForNode = namedtuple("ForNode", ["assignment", "condition", "increment", "statements"])
 ReturnNode = namedtuple("ReturnNode", ["statement"])
 PrintNode = namedtuple("PrintNode", ["statement"])
+SolveNode = namedtuple("SolveNode", ["left_side", "right_side"])
 
 # Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
@@ -211,7 +212,7 @@ type_dict = {
     DOUBLE_PLUS: "DOUBLE_PLUS",
     BLOCK_END: "BLOCK_END",
     RETURN: "RETURN",
-    PRINT: "PRINT",
     LCURLY: "LCURLY",
     RCURLY: "RCURLY",
+    SOLVE_ASSIGN: "SOLVE_ASSIGN"
 }

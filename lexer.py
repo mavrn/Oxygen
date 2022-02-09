@@ -11,12 +11,12 @@ OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datat
                  "<": Datatypes.LESS_THAN, ">": Datatypes.GREATER_THAN, "<=": Datatypes.LESS_OR_EQUALS,
                  ">=": Datatypes.GREATER_OR_EQUALS, "=>": Datatypes.ARROW, "=": Datatypes.EQUALS, "!": Datatypes.NOT,
                  "--": Datatypes.DOUBLE_MINUS, "++": Datatypes.DOUBLE_PLUS, "<<": Datatypes.BLOCK_END,
-                 "{": Datatypes.LCURLY, "}": Datatypes.RCURLY
+                 "{": Datatypes.LCURLY, "}": Datatypes.RCURLY, "?=": Datatypes.SOLVE_ASSIGN, "?": None
                  }
 KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD,
                 "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
                 "and": Datatypes.AND, "rep": Datatypes.REP, "as": Datatypes.AS, "for": Datatypes.FOR,
-                "return": Datatypes.RETURN, "print": Datatypes.PRINT}
+                "return": Datatypes.RETURN}
 
 
 # TODO: replace this with a regex lexer

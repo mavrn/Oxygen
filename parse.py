@@ -12,8 +12,9 @@ class Parser:
         self.current_statement = None
         self.current_token = None
         self.current_token_type = None
-        self.next_statement()
         self.optional_open_blocks = 0
+        self.ast_list = []
+        self.next_statement()
 
     def next_statement(self):
         try:
@@ -25,6 +26,8 @@ class Parser:
         else:
             self.current_statement = iter(self.current_statement)
             self.next_token()
+            if self.current_token is None:
+                self.next_statement()
 
     # Advances the iterator to the next token, returns None at the end of the list
     # The token type is defined separately to avoid errors being caused by "self.current_token.type" if
@@ -34,25 +37,24 @@ class Parser:
             self.current_token = next(self.current_statement)
             self.current_token_type = self.current_token.type
         except StopIteration:
-            self.current_token = None
-            self.current_token_type = None
+            self.next_statement()
 
     def parse(self):
-        ast_list = []
         while self.current_statement is not None:
             # If there are no tokens, None will be returned
             if self.current_token is not None:
-                ast_list.append(self.statement())
-            # If the parsing process is finished and there are still tokens left, the syntax is invalid:
-            # An example would be x = 2a
-            if self.current_token is not None:
-                if self.current_token.type in (Datatypes.BLOCK_END, Datatypes.RCURLY) and self.optional_open_blocks > 0:
-                    self.optional_open_blocks -= 1
-                else:
-                    raise SyntaxError(f"Reached the end of parsing, but there still is a Token of type"
-                                      f" {Datatypes.type_dict.get(self.current_token_type)} left.")
+                self.ast_list.append(self.statement())
+                # If the parsing process is finished and there are still tokens left, the syntax is invalid:
+                # An example would be x = 2a
+                if self.current_token is not None and not self.skip_iterator:
+                    if self.current_token.type in (
+                            Datatypes.BLOCK_END, Datatypes.RCURLY) and self.optional_open_blocks > 0:
+                        self.optional_open_blocks -= 1
+                    else:
+                        raise SyntaxError(f"Reached the end of parsing, but there still is a Token of type"
+                                          f" {Datatypes.type_dict.get(self.current_token_type)} left.")
             self.next_statement()
-        return ast_list
+        return self.ast_list
 
     # Following, there are the valid elements of an expression, following the common order top-down.
     # These elements are grouped in "layers", which are statement, expression, term, "exponential" and factor
@@ -74,8 +76,6 @@ class Parser:
         block_ender = Datatypes.BLOCK_END if block_starter == Datatypes.ARROW else Datatypes.RCURLY
         block = []
         while self.current_token_type != block_ender:
-            if self.current_statement is None:
-                return block
             self.next_statement()
             block.append(self.statement())
         self.next_token()
@@ -163,19 +163,21 @@ class Parser:
         # Will return the float value for a number token
         if token_type in (Datatypes.NUMBER, Datatypes.STRING):
             self.next_token()
+            if self.current_token_type == Datatypes.IDENTIFIER:
+                return Datatypes.MultNode(token.value, self.exponential())
             return token.value
         # In case of a FUNCTION_KEYWORD, the parsing process will continue declare_function() function
-        elif self.current_token_type == Datatypes.FUNCTION_KEYWORD:
+        elif token_type == Datatypes.FUNCTION_KEYWORD:
             self.next_token()
             return self.declare_function()
         elif self.current_token_type == Datatypes.RETURN:
             self.next_token()
             return Datatypes.ReturnNode(statement=self.statement())
         # In case of the loop keyword REP, the parsing process will continue declare_function() function
-        elif self.current_token_type == Datatypes.REP:
+        elif token_type == Datatypes.REP:
             self.next_token()
             return self.gen_rep()
-        elif self.current_token_type == Datatypes.FOR:
+        elif token_type == Datatypes.FOR:
             self.next_token()
             return self.gen_for()
         elif self.current_token_type == Datatypes.IF:
@@ -194,9 +196,8 @@ class Parser:
                     condition = None
                 block = self.statement_block()
                 if_node.add_block(keyword, block, condition)
-                if keyword == Datatypes.ELSE:
-                    break
                 self.next_statement()
+            self.skip_iterator = True
             return if_node
         elif token_type == Datatypes.TRUE:
             self.next_token()
@@ -208,9 +209,6 @@ class Parser:
             self.next_token()
             return Datatypes.BooleanNegationNode(value=self.exponential())
         # Will handle unary plus und minus signs
-        elif token_type == Datatypes.PRINT:
-            self.next_token()
-            return Datatypes.PrintNode(statement=self.statement())
         elif token_type == Datatypes.PLUS_SIGN:
             self.next_token()
             return self.exponential()

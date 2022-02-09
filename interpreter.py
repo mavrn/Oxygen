@@ -3,8 +3,10 @@ import Datatypes
 import numpy as np
 from matplotlib import pyplot as plt
 from fractions import Fraction
+import node_solver
 
-KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial", "bool", "plot", "fraction"]
+KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial", "bool", "plot", "fraction",
+            "print"]
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 
 
@@ -58,6 +60,10 @@ class Interpreter:
             else:
                 self.fields[self.scope][node.identifier] = assignment_value
             return assignment_value
+        elif node_type == "SolveNode":
+            variable, expression = node_solver.solve(node.left_side, node.right_side)
+            result = self.evaluate(expression)
+            return self.evaluate(Datatypes.AssignNode(variable.identifier, result))
         elif node_type == "ComparisonNode":
             return self.comparison_handler(node)
         elif node_type == "BooleanNegationNode":
@@ -78,13 +84,13 @@ class Interpreter:
             out = []
             if_expr = node.blocks[0]
             if bool(self.evaluate(if_expr["condition"])):
-                for statement in if_expr["statements"]:
+                for statement in if_expr["body"]:
                     lines = standardize(self.evaluate(statement))
                     merge(out, lines)
             else:
                 for block in node.blocks[1:]:
                     if block["keyword"] == Datatypes.ELSE or bool(self.evaluate(block["condition"])):
-                        for statement in block["statements"]:
+                        for statement in block["body"]:
                             lines = standardize(self.evaluate(statement))
                             merge(out, lines)
                             break
@@ -125,10 +131,6 @@ class Interpreter:
             return out
         elif node_type == "KeywordNode":
             return self.keyword_handler(node)
-        elif node_type == "PrintNode":
-            lines = standardize(self.evaluate(node.statement))
-            lines_to_str = [Datatypes.String(line) for line in lines]
-            merge(self.output_lines, lines_to_str)
         elif node_type == "ReturnNode":
             self.return_value = self.evaluate(node.statement)
         else:
@@ -192,10 +194,9 @@ class Interpreter:
                 raise TypeError(f"Expected 3 to 4 arguments for function {keyword}, got {arg_count}.")
             args = [node.arguments[0].identifier, *[self.evaluate(arg) for arg in node.arguments[1:]]]
             return self.plot_handler(*args)
-        else:
-            if arg_count != 1:
-                raise TypeError(f"Expected 1 argument for function {keyword}, got {arg_count}.")
-            arg = self.evaluate(node.arguments[0])
+        elif arg_count != 1 and keyword != "print":
+            raise TypeError(f"Expected 1 argument for function {keyword}, got {arg_count}.")
+        arg = self.evaluate(node.arguments[0])
         # Will match the identifier to the pre-defined keywords and operate accordingly
         if keyword == "sqrt":
             return math.sqrt(arg)
@@ -222,6 +223,13 @@ class Interpreter:
             return Datatypes.Bool(arg)
         elif keyword == "fraction":
             return Fraction(arg).limit_denominator()
+        elif keyword == "print":
+            lines = []
+            for arg in node.arguments:
+                lines.append(standardize(self.evaluate(arg)))
+            for line in lines:
+                lines_to_str = [Datatypes.String(item) for item in line]
+                merge(self.output_lines, lines_to_str)
         else:
             raise Exception(f"Unknown exception occurred while handling the keyword {keyword}")
 
