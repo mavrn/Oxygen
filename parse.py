@@ -7,53 +7,39 @@ import Datatypes
 # Is responsible for recursively generating a tree of operations based on the lexer output using the pre-defined Nodes
 # from the Datatypes.py file.
 class Parser:
-    def __init__(self, statements):
-        self.statements = iter(statements)
-        self.current_statement = None
+    def __init__(self, tokens):
+        self.tokens = iter(tokens)
         self.current_token = None
         self.current_token_type = None
         self.optional_open_blocks = 0
         self.ast_list = []
-        self.next_statement()
-
-    def next_statement(self):
-        try:
-            self.current_statement = next(self.statements)
-        except StopIteration:
-            self.current_statement = None
-            self.current_token = None
-            self.current_token_type = None
-        else:
-            self.current_statement = iter(self.current_statement)
-            self.next_token()
-            if self.current_token is None:
-                self.next_statement()
+        self.skipped_linebreak = False
+        self.next_token()
 
     # Advances the iterator to the next token, returns None at the end of the list
     # The token type is defined separately to avoid errors being caused by "self.current_token.type" if
     # the current token is None.
     def next_token(self):
         try:
-            self.current_token = next(self.current_statement)
+            self.current_token = next(self.tokens)
             self.current_token_type = self.current_token.type
         except StopIteration:
-            self.next_statement()
+            self.current_token = None
+            self.current_token_type = None
 
     def parse(self):
-        while self.current_statement is not None:
+        while self.current_token is not None:
+            while self.current_token_type == Datatypes.LINEBREAK:
+                self.next_token()
             # If there are no tokens, None will be returned
             if self.current_token is not None:
                 self.ast_list.append(self.statement())
                 # If the parsing process is finished and there are still tokens left, the syntax is invalid:
                 # An example would be x = 2a
-                if self.current_token is not None and not self.skip_iterator:
-                    if self.current_token.type in (
-                            Datatypes.BLOCK_END, Datatypes.RCURLY) and self.optional_open_blocks > 0:
-                        self.optional_open_blocks -= 1
-                    else:
-                        raise SyntaxError(f"Reached the end of parsing, but there still is a Token of type"
-                                          f" {Datatypes.type_dict.get(self.current_token_type)} left.")
-            self.next_statement()
+            if self.current_token_type not in (Datatypes.LINEBREAK, None) and not self.skipped_linebreak:
+                raise SyntaxError(f"Expected end of statement, got token type"
+                                  f" {Datatypes.type_dict.get(self.current_token_type)}")
+            self.skipped_linebreak = False
         return self.ast_list
 
     # Following, there are the valid elements of an expression, following the common order top-down.
@@ -64,26 +50,30 @@ class Parser:
     # An "exponential" will have the exponentiation operator. The reason this has its own layer is that exponential
     # operations have to be evaluated before a term, but after a factor.
     # Finally, the factor can be a number, identifier or a statement between brackets.
-    def statement_block(self, block_type="normal"):
+    def statement_block(self, func_block=False):
         if self.current_token_type not in (Datatypes.ARROW, Datatypes.LCURLY):
             raise SyntaxError("Expected '{' or '=>'")
         else:
             block_starter = self.current_token_type
         self.next_token()
-        if self.current_token is not None and block_starter == Datatypes.ARROW:
-            self.optional_open_blocks += 1
-            return [self.statement()] if block_type == "normal" else self.statement()
+        if self.current_token_type != Datatypes.LINEBREAK and block_starter == Datatypes.ARROW:
+            return self.statement() if func_block else [self.statement()]
         block_ender = Datatypes.BLOCK_END if block_starter == Datatypes.ARROW else Datatypes.RCURLY
         block = []
-        while self.current_token_type != block_ender:
-            self.next_statement()
+        while self.current_token_type not in (block_ender, None):
+            while self.current_token_type == Datatypes.LINEBREAK:
+                self.next_token()
             block.append(self.statement())
+            if self.current_token_type is None:
+                raise SyntaxError("Expected expression")
+        if self.current_token_type != block_ender:
+            raise SyntaxError(f"Expected block ending operator")
         self.next_token()
         return block
 
     def statement(self):
         result = self.expression()
-        while self.current_token_type == Datatypes.IF:
+        while self.current_token_type == Datatypes.IF and not self.skipped_linebreak:
             if_expr = result
             result = Datatypes.IfNode()
             self.next_token()
@@ -181,24 +171,7 @@ class Parser:
             self.next_token()
             return self.gen_for()
         elif self.current_token_type == Datatypes.IF:
-            if_node = Datatypes.IfNode()
-            self.next_token()
-            condition = self.statement()
-            block = self.statement_block()
-            if_node.add_block(Datatypes.IF, block, condition)
-            self.next_statement()
-            while self.current_token_type in (Datatypes.OR, Datatypes.ELSE):
-                keyword = self.current_token_type
-                self.next_token()
-                if keyword != Datatypes.ELSE:
-                    condition = self.statement()
-                else:
-                    condition = None
-                block = self.statement_block()
-                if_node.add_block(keyword, block, condition)
-                self.next_statement()
-            self.skip_iterator = True
-            return if_node
+            return self.gen_if()
         elif token_type == Datatypes.TRUE:
             self.next_token()
             return Datatypes.Bool(True)
@@ -265,7 +238,7 @@ class Parser:
             self.next_token()
         else:
             return Datatypes.FuncDeclareNode(identifier=identifier, arguments=arguments,
-                                             body=self.statement_block(block_type="function"))
+                                             body=self.statement_block(func_block=True))
 
     # Will follow the pre-defined syntax of a function call linearly
     # and will throw exceptions if the syntax is incorrect
@@ -318,3 +291,23 @@ class Parser:
         increment = self.statement()
         return Datatypes.ForNode(assignment=assignment, condition=condition, increment=increment,
                                  statements=self.statement_block())
+
+    def gen_if(self):
+        if_node = Datatypes.IfNode()
+        self.next_token()
+        condition = self.statement()
+        block = self.statement_block()
+        if_node.add_block(Datatypes.IF, block, condition)
+        self.next_token()
+        while self.current_token_type in (Datatypes.OR, Datatypes.ELSE):
+            keyword = self.current_token_type
+            self.next_token()
+            if keyword != Datatypes.ELSE:
+                condition = self.statement()
+            else:
+                condition = None
+            block = self.statement_block()
+            if_node.add_block(keyword, block, condition)
+            self.next_token()
+        self.skipped_linebreak = True
+        return if_node

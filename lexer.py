@@ -42,7 +42,6 @@ class Lexer:
     # Generates a list of tokens
     def gen_tokens(self):
         tokens = []
-        tokens_list = []
         while self.current_char is not None:
             # Skips whitespace entirely
             if self.current_char in [" ", "\t"]:
@@ -52,8 +51,7 @@ class Lexer:
                 break
             # Concludes current token list and starts a new one after the statement separator ";"
             elif self.current_char in ";\n":
-                tokens_list.append(tokens)
-                tokens = []
+                tokens.append(Token(Datatypes.LINEBREAK))
                 self.next_char()
             # For some characters, there needs to be a check for other characters after them
             elif self.current_char in OPERATOR_DICT:
@@ -77,9 +75,7 @@ class Lexer:
                 tokens.append(self.gen_string())
             else:
                 raise Exception(f"Illegal Character {self.current_char}")
-        if len(tokens) > 0:
-            tokens_list.append(tokens)
-        return tokens_list
+        return tokens
 
     # Will generate and return a number with multiple or one digit(s)
     def gen_number(self):

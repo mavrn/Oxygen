@@ -82,21 +82,15 @@ class Interpreter:
                     Datatypes.Bool(self.evaluate(node.a)) or Datatypes.Bool(self.evaluate(node.b)))
         elif node_type == "IfNode":
             out = []
-            if_expr = node.blocks[0]
-            if bool(self.evaluate(if_expr["condition"])):
-                for statement in if_expr["body"]:
-                    lines = standardize(self.evaluate(statement))
-                    merge(out, lines)
-            else:
-                for block in node.blocks[1:]:
-                    if block["keyword"] == Datatypes.ELSE or bool(self.evaluate(block["condition"])):
-                        for statement in block["body"]:
-                            lines = standardize(self.evaluate(statement))
-                            merge(out, lines)
-                            break
-                        else:
-                            continue
-                        break
+            results = []
+            for block in node.blocks:
+                if (block["keyword"] in (Datatypes.IF, Datatypes.OR) and bool(self.evaluate(block["condition"]))) or \
+                        block["keyword"] == Datatypes.ELSE:
+                    results = standardize(self.evaluate(block["body"]))
+                    break
+            for statement in results:
+                line = standardize(self.evaluate(statement))
+                merge(out, line)
             return out
         elif node_type == "VariableNode":
             # Will check for a local field first, then a global one, and finally raise an exception if

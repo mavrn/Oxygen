@@ -47,14 +47,15 @@ class Interface:
         tokens = lexer.gen_tokens()
         for token in tokens:
             self.tokens_list.append(token)
+        self.tokens_list.append(Datatypes.Token(Datatypes.LINEBREAK))
         if len(tokens) == 0:
             self.inp_msg = ">> "
             self.active_if = False
             self.open_blocks = 0
         else:
-            for token in tokens[0]:
+            for token in tokens:
                 if token.type in (Datatypes.ARROW, Datatypes.LCURLY):
-                    if token.type == Datatypes.ARROW and tokens[0][-1].type != Datatypes.ARROW:
+                    if token.type == Datatypes.ARROW and tokens[-1].type != Datatypes.ARROW:
                         continue
                     else:
                         self.open_blocks += 1
@@ -84,11 +85,15 @@ class Interface:
 
     def run(self, input_string, return_out=False):
         lexer = Lexer(input_string)
-        tokens_list = lexer.gen_tokens()
+        tokens = lexer.gen_tokens()
         if self.debug:
-            for tokens in tokens_list:
-                print(tokens)
-        parser = Parser(tokens_list)
+            for token in tokens:
+                if token.type == Datatypes.LINEBREAK:
+                    print()
+                else:
+                    print(token, "; ", end="")
+            print()
+        parser = Parser(tokens)
         ast_list = parser.parse()
         if self.debug:
             print(ast_list)

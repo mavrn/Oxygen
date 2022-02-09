@@ -141,6 +141,7 @@ RETURN = 40
 LCURLY = 41
 RCURLY = 42
 SOLVE_ASSIGN = 43
+LINEBREAK = 44
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -214,5 +215,6 @@ type_dict = {
     RETURN: "RETURN",
     LCURLY: "LCURLY",
     RCURLY: "RCURLY",
-    SOLVE_ASSIGN: "SOLVE_ASSIGN"
+    SOLVE_ASSIGN: "SOLVE_ASSIGN",
+    LINEBREAK: "LINEBREAK"
 }

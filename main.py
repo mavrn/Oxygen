@@ -5,7 +5,7 @@ import testing_module
 
 def main():
     args = sys.argv[1:]
-    interface_args = {"debug": False, "quit_after_exceptions": True, "run": False, "run_tests": False}
+    interface_args = {"debug": False, "quit_after_exceptions": False, "run": False, "run_tests": False}
     for arg in args:
         if arg in interface_args:
             interface_args[arg] = True
@@ -23,4 +23,3 @@ if __name__ == '__main__':
     main()
 
 # TODO: Look into bug at plot(f , -6, 6)
-# TODO: Fix bug for if-statements / rework parser
