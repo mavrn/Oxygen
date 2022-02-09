@@ -66,6 +66,14 @@ Operator precedence will follow the common order:
 20
 ```
 
+If a number is written directly before an identifier, it will be interpreted as number*identifier.
+
+```python
+>> y = 2
+>> x = 2y
+4
+```
+
 ### **Bools**
 
 ---
@@ -279,14 +287,13 @@ Using multi-line statements like this will alter syntax a bit:
 2. When using multi-line blocks, `=>` and `<<` can be used interchangeably with `{` and `}`
    Singe-line statements cannot use `{` and `}`.
 3. When using multi-line function-declarations, output will not be automatically printed. <br>
-   When calling a function, only statements inside `print` will be printed.
-4. When using single-line function declarations, the result will be automatically returned. When using multi-line
+   Only statements inside `print` will be printed.
+4. When using single-line function declarations, the result will be automatically returned. <br>When using multi-line
    function declarations, anything can be manually returned using `return`.
 
 ```python
-# 1: All three statements are the same thing
+# 1: Both statements are the same thing
 >> rep 2 => 1
->> rep 2 => 1 <<
 >> rep 2 =>
 ..  1
 .. <<
@@ -365,6 +372,27 @@ Output for a valid expression will be the result of the expression.<br>
 Output for a valid function declaration will be nothing. <br>
 Output for input consisting entirely of whitespace will be nothing. <br>
 A warning will be displayed if the user tries to override a built-in function.
+
+### **Linear Equation Solving**
+
+---
+
+The interpreter is capable of solving simple linear equations with one variable. <br>
+`?` will solve the equation and print the result of the variable. <br>
+`?=` will solve the equation and assign the result to the variable specified. <br>
+The solver only currently supports linear equations with +, -, *, / and squared numbers/variables.
+
+```python
+>> 2x - 3 ? 5
+4
+>> x/10 ?= 2
+20
+>> x
+20
+```
+
+*Note: The solver currently can only solve equations where the variable occurs only once. Equations like `x + x ? x - 1`
+won't work (yet).*
 
 ### **Errors**
 

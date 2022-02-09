@@ -73,21 +73,30 @@ class Parser:
 
     def statement(self):
         result = self.expression()
-        while self.current_token_type == Datatypes.IF and not self.skipped_linebreak:
-            if_expr = result
-            result = Datatypes.IfNode()
-            self.next_token()
-            condition = self.statement()
-            result.add_block(Datatypes.IF, [if_expr], condition)
-            if self.current_token_type == Datatypes.ELSE:
+        while self.current_token_type in (Datatypes.IF, Datatypes.SOLVE_ASSIGN,
+                                          Datatypes.SOLVE) and not self.skipped_linebreak:
+            if self.current_token_type == Datatypes.SOLVE:
                 self.next_token()
-                else_expr = self.statement()
-                result.add_block(Datatypes.ELSE, [else_expr])
+                result = Datatypes.SolveNode(result, self.expression())
+            elif self.current_token_type == Datatypes.SOLVE_ASSIGN:
+                self.next_token()
+                result = Datatypes.SolveAssignNode(result, self.expression())
+            else:
+                if_expr = result
+                result = Datatypes.IfNode()
+                self.next_token()
+                condition = self.statement()
+                result.add_block(Datatypes.IF, [if_expr], condition)
+                if self.current_token_type == Datatypes.ELSE:
+                    self.next_token()
+                    else_expr = self.statement()
+                    result.add_block(Datatypes.ELSE, [else_expr])
         return result
 
     def expression(self):
         result = self.term()
-        while self.current_token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN, Datatypes.AND, Datatypes.OR):
+        while self.current_token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN, Datatypes.AND,
+                                          Datatypes.OR) and not self.skipped_linebreak:
             if self.current_token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN):
                 token_type = self.current_token_type
                 self.next_token()
@@ -105,7 +114,7 @@ class Parser:
                                           Datatypes.MULT_ASSIGN, Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN,
                                           Datatypes.COMP_EQUALS, Datatypes.COMP_NOT_EQUALS, Datatypes.GREATER_THAN,
                                           Datatypes.LESS_THAN, Datatypes.GREATER_OR_EQUALS, Datatypes.LESS_OR_EQUALS
-                                          ):
+                                          ) and not self.skipped_linebreak:
             if self.current_token_type in (Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN):
                 token_type = self.current_token_type
                 self.next_token()
@@ -219,7 +228,7 @@ class Parser:
         elif token_type in (Datatypes.BLOCK_END, Datatypes.RCURLY):
             return
         else:
-            msg = f"Invalid syntax at token type {Datatypes.type_dict.get(token_type)}"
+            msg = f"Expected any factor, got {Datatypes.type_dict.get(token_type)}"
             if token.value is not None:
                 msg += token.value
             raise SyntaxError(msg)

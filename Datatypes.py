@@ -141,7 +141,8 @@ RETURN = 40
 LCURLY = 41
 RCURLY = 42
 SOLVE_ASSIGN = 43
-LINEBREAK = 44
+SOLVE = 44
+LINEBREAK = 45
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -163,6 +164,7 @@ ForNode = namedtuple("ForNode", ["assignment", "condition", "increment", "statem
 ReturnNode = namedtuple("ReturnNode", ["statement"])
 PrintNode = namedtuple("PrintNode", ["statement"])
 SolveNode = namedtuple("SolveNode", ["left_side", "right_side"])
+SolveAssignNode = namedtuple("SolveAssignNode", ["left_side", "right_side"])
 
 # Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
@@ -216,5 +218,6 @@ type_dict = {
     LCURLY: "LCURLY",
     RCURLY: "RCURLY",
     SOLVE_ASSIGN: "SOLVE_ASSIGN",
+    SOLVE: "SOLVE",
     LINEBREAK: "LINEBREAK"
 }

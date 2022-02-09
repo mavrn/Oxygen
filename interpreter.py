@@ -3,7 +3,7 @@ import Datatypes
 import numpy as np
 from matplotlib import pyplot as plt
 from fractions import Fraction
-import node_solver
+import equation_solver
 
 KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial", "bool", "plot", "fraction",
             "print"]
@@ -61,7 +61,10 @@ class Interpreter:
                 self.fields[self.scope][node.identifier] = assignment_value
             return assignment_value
         elif node_type == "SolveNode":
-            variable, expression = node_solver.solve(node.left_side, node.right_side)
+            _, expression = equation_solver.solve(node.left_side, node.right_side)
+            return self.evaluate(expression)
+        elif node_type == "SolveAssignNode":
+            variable, expression = equation_solver.solve(node.left_side, node.right_side)
             result = self.evaluate(expression)
             return self.evaluate(Datatypes.AssignNode(variable.identifier, result))
         elif node_type == "ComparisonNode":
