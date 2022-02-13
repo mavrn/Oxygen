@@ -63,6 +63,7 @@ class Parser:
         while self.current_token_type not in (block_ender, None):
             while self.current_token_type == Datatypes.LINEBREAK:
                 self.next_token()
+            self.skipped_linebreak = False
             block.append(self.statement())
             if self.current_token_type is None:
                 raise SyntaxError("Expected expression")

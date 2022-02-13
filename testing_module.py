@@ -180,6 +180,14 @@ for i=1, i<=15, i++ =>
     print(i, fib.i)
 <<
 """
+t20 = """fn x a =>
+    if a == 1 =>
+        return 2
+    <<
+    return x(a-1)
+<<
+x.10
+"""
 
 test1 = Test("Test 1", t1, [Bool(True)])
 test2 = Test("Test 2", t2, [5.0])
@@ -204,7 +212,8 @@ test18 = Test("Test 18", t18, [2.0, 4.0])
 test19 = Test("Test 19", t19, [String("1 0"), String("2 1"), String("3 1"), String("4 2"), String("5 3"), String("6 5"),
                                String("7 8"), String("8 13"), String("9 21"), String("10 34"), String("11 55"),
                                String("12 89"), String("13 144"), String("14 233"), String("15 377")])
+test20 = Test("Test 20", t20, [2.0])
 
 tests = [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11, test12, test13, test14, test15,
-         test16, test17, test18, test19]
+         test16, test17, test18, test19, test20]
 test_group = TestGroup(tests)
