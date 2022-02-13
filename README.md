@@ -146,8 +146,7 @@ Functions are declared using the keyword `fn`, the identifier, the arguments lis
 >> fn add x y => x + y
 ```
 
-Functions are called using the identifier and the respective arguments in brackets; separated by commas. Function calls
-can be nested.
+Functions are called using the identifier and the respective arguments in brackets; separated by commas.
 > Calling the "add" function:
 
 ```python
@@ -173,6 +172,8 @@ precedence
 >> add_two(4)
 6
 ```
+
+Nested and recursive function calls are possible too.
 
 ### **Built-in functions and constants**
 
@@ -497,6 +498,40 @@ Fizz
 8
 Fizz
 Buzz
+```
+
+> Utilizing recursion to calculate the fibonacci sequence
+
+```python
+fn fib n =>
+    if n == 1 =>
+        return 0
+    <<
+    or n == 2 =>
+        return 1
+    <<
+    else =>
+        return fib(n-1) + fib(n-2)
+    <<
+<<
+for i=1, i<=15, i++ =>
+    print(i, fib.i)
+<<
+1 0
+2 1
+3 1
+4 2
+5 3
+6 5
+7 8
+8 13
+9 21
+10 34
+11 55
+12 89
+13 144
+14 233
+15 377
 ```
 
 > Calculating P in a binomial distribution

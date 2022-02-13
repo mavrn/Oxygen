@@ -30,8 +30,8 @@ class Interpreter:
         self.fields = {"global": self.global_fields}
         self.backup_fields = {}
         self.scope = "global"
-        self.prev_scope = ""
-        self.return_value = None
+        self.nested_scopes = []
+        self.nest_layer = 0
         self.output_lines = []
 
     def get_output(self, ast_list):
@@ -89,7 +89,7 @@ class Interpreter:
             for block in node.blocks:
                 if (block["keyword"] in (Datatypes.IF, Datatypes.OR) and bool(self.evaluate(block["condition"]))) or \
                         block["keyword"] == Datatypes.ELSE:
-                    results = standardize(self.evaluate(block["body"]))
+                    results = standardize(block["body"])  ####### RIGHT HERE
                     break
             for statement in results:
                 line = standardize(self.evaluate(statement))
@@ -129,14 +129,15 @@ class Interpreter:
         elif node_type == "KeywordNode":
             return self.keyword_handler(node)
         elif node_type == "ReturnNode":
-            self.return_value = self.evaluate(node.statement)
+            self.fields[self.scope]["__return__"] = self.evaluate(node.statement)
         else:
             return node
 
     def rollback(self):
         self.fields = self.backup_fields
         self.scope = "global"
-        self.return_value = None
+        self.nested_scopes = []
+        self.nest_layer = 0
         self.output_lines = []
 
     # Will handle all nodes of type FuncCallNode
@@ -162,24 +163,27 @@ class Interpreter:
         # The arguments the function was called with are now assigned
         # to the identifiers in the order they were previously defined in the function.
         # The arguments will be assigned to the local fields
-        self.fields[node.identifier] = {}
+        self.nest_layer += 1
+        self.fields[node.identifier + str(self.nest_layer)] = {}
         for i, argument in enumerate(arguments):
-            self.fields[node.identifier][func.arguments[i]] = self.evaluate(argument)
-        self.prev_scope = self.scope
-        self.scope = node.identifier
+            self.fields[node.identifier + str(self.nest_layer)][func.arguments[i]] = self.evaluate(argument)
+        self.nested_scopes.append(self.scope)
+        self.scope = node.identifier + str(self.nest_layer)
         # Now that the variables are assigned, the function body can be evaluated
         result = None
         if isinstance(func.body, list):
             for statement in func.body:
                 self.evaluate(statement)
-                if self.return_value is not None:
-                    result = self.return_value
-                    self.return_value = None
+                if self.fields[self.scope].get("__return__") is not None:
+                    result = self.fields[self.scope]["__return__"]
+                    self.fields[self.scope]["__return__"] = None
                     break
         else:
             result = self.evaluate(func.body)
         # Local fields will be cleared after the function ends, just like in any other language
-        self.scope = self.prev_scope
+        self.fields[self.scope].clear()
+        self.scope = self.nested_scopes.pop()
+        self.nest_layer -= 1
         return result
 
     # Will handle all built-in functions
@@ -223,10 +227,13 @@ class Interpreter:
         elif keyword == "print":
             lines = []
             for arg in node.arguments:
-                lines.append(standardize(self.evaluate(arg)))
+                lines.append(self.evaluate(arg))
+            out = ""
             for line in lines:
-                lines_to_str = [Datatypes.String(item) for item in line]
-                merge(self.output_lines, lines_to_str)
+                out += str(Datatypes.String(line)) + " "
+            out = out.strip()
+            out = [Datatypes.String(out)]
+            merge(self.output_lines, out)
         else:
             raise Exception(f"Unknown exception occurred while handling the keyword {keyword}")
 

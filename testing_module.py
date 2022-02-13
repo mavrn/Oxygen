@@ -165,6 +165,21 @@ t18 = """
 x = 2
 y = 2x
 """
+t19 = """fn fib n =>
+    if n == 1 =>
+        return 0
+    <<
+    or n == 2 =>
+        return 1
+    <<
+    else =>
+        return fib(n-1) + fib(n-2)
+    <<
+<<
+for i=1, i<=15, i++ =>
+    print(i, fib.i)
+<<
+"""
 
 test1 = Test("Test 1", t1, [Bool(True)])
 test2 = Test("Test 2", t2, [5.0])
@@ -186,7 +201,10 @@ test15 = Test("Test 15", t15, [4.0, 6.0, 2.0])
 test16 = Test("Test 16", t16, [1.0, 0.0, 2.0, 0.5])
 test17 = Test("Test 17", t17, [4.0, 7.0])
 test18 = Test("Test 18", t18, [2.0, 4.0])
+test19 = Test("Test 19", t19, [String("1 0"), String("2 1"), String("3 1"), String("4 2"), String("5 3"), String("6 5"),
+                               String("7 8"), String("8 13"), String("9 21"), String("10 34"), String("11 55"),
+                               String("12 89"), String("13 144"), String("14 233"), String("15 377")])
 
 tests = [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11, test12, test13, test14, test15,
-         test16, test17, test18]
+         test16, test17, test18, test19]
 test_group = TestGroup(tests)

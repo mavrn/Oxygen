@@ -1,17 +1,14 @@
-fn fizz_buzz i =>
-     for x=1, x<=i, x++ =>
-             if x%3 == 0 and x%5 == 0 =>
-                     print("FizzBuzz")
-             <<
-             or x%5 == 0 =>
-                     print("Buzz")
-             <<
-             or x%3 == 0 =>
-                     print("Fizz")
-             <<
-             else =>
-                     print(x)
-             <<
-     <<
+fn fib n =>
+    if n == 1 =>
+        return 0
+    <<
+    or n == 2 =>
+        return 1
+    <<
+    else =>
+        return fib(n-1) + fib(n-2)
+    <<
 <<
-fizz_buzz.10
+for i=1, i<=15, i++ =>
+    print(i, fib.i)
+<<
