@@ -31,7 +31,6 @@ class Interpreter:
         self.backup_fields = {}
         self.scope = "global"
         self.nested_scopes = []
-        self.nest_layer = 0
         self.output_lines = []
 
     def get_output(self, ast_list):
@@ -89,11 +88,14 @@ class Interpreter:
             for block in node.blocks:
                 if (block["keyword"] in (Datatypes.IF, Datatypes.OR) and bool(self.evaluate(block["condition"]))) or \
                         block["keyword"] == Datatypes.ELSE:
-                    results = standardize(block["body"])  ####### RIGHT HERE
+                    results = standardize(block["body"])
                     break
             for statement in results:
                 line = standardize(self.evaluate(statement))
                 merge(out, line)
+                if "__return__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope] \
+                        or "__break__" in self.fields[self.scope]:
+                    return out
             return out
         elif node_type == "VariableNode":
             # Will check for a local field first, then a global one, and finally raise an exception if
@@ -115,7 +117,18 @@ class Interpreter:
                 self.fields["global"][node.count_identifier] = float(i)
                 for statement in node.statements:
                     lines = standardize(self.evaluate(statement))
+                    if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                        break
+                    if "__return__" in self.fields[self.scope]:
+                        return out
                     merge(out, lines)
+                else:
+                    continue
+                if "__break__" in self.fields[self.scope]:
+                    self.fields[self.scope].pop("__break__")
+                    break
+                elif "__continue__" in self.fields[self.scope]:
+                    self.fields[self.scope].pop("__continue__")
             return out
         elif node_type == "ForNode":
             self.evaluate(node.assignment)
@@ -124,12 +137,27 @@ class Interpreter:
                 for statement in node.statements:
                     lines = standardize(self.evaluate(statement))
                     merge(out, lines)
+                    if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                        break
+                    if "__return__" in self.fields[self.scope]:
+                        return out
+                if "__break__" in self.fields[self.scope]:
+                    self.fields[self.scope].pop("__break__")
+                    break
+                elif "__continue__" in self.fields[self.scope]:
+                    self.fields[self.scope].pop("__continue__")
                 self.evaluate(node.increment)
             return out
         elif node_type == "KeywordNode":
             return self.keyword_handler(node)
         elif node_type == "ReturnNode":
+            if self.scope == "global":
+                raise SyntaxError("Return statement outside function")
             self.fields[self.scope]["__return__"] = self.evaluate(node.statement)
+        elif node_type == "BreakNode":
+            self.fields[self.scope]["__break__"] = Datatypes.Bool(True)
+        elif node_type == "ContinueNode":
+            self.fields[self.scope]["__continue__"] = Datatypes.Bool(True)
         else:
             return node
 
@@ -137,7 +165,6 @@ class Interpreter:
         self.fields = self.backup_fields
         self.scope = "global"
         self.nested_scopes = []
-        self.nest_layer = 0
         self.output_lines = []
 
     # Will handle all nodes of type FuncCallNode
@@ -163,27 +190,24 @@ class Interpreter:
         # The arguments the function was called with are now assigned
         # to the identifiers in the order they were previously defined in the function.
         # The arguments will be assigned to the local fields
-        self.nest_layer += 1
-        self.fields[node.identifier + str(self.nest_layer)] = {}
+        self.fields[node.identifier + str(len(self.nested_scopes) + 1)] = {}
         for i, argument in enumerate(arguments):
-            self.fields[node.identifier + str(self.nest_layer)][func.arguments[i]] = self.evaluate(argument)
+            self.fields[node.identifier + str(len(self.nested_scopes) + 1)][func.arguments[i]] = self.evaluate(argument)
         self.nested_scopes.append(self.scope)
-        self.scope = node.identifier + str(self.nest_layer)
+        self.scope = node.identifier + str(len(self.nested_scopes))
         # Now that the variables are assigned, the function body can be evaluated
         result = None
         if isinstance(func.body, list):
             for statement in func.body:
                 self.evaluate(statement)
-                if self.fields[self.scope].get("__return__") is not None:
+                if "__return__" in self.fields[self.scope]:
                     result = self.fields[self.scope]["__return__"]
-                    self.fields[self.scope]["__return__"] = None
                     break
         else:
             result = self.evaluate(func.body)
         # Local fields will be cleared after the function ends, just like in any other language
         self.fields[self.scope].clear()
         self.scope = self.nested_scopes.pop()
-        self.nest_layer -= 1
         return result
 
     # Will handle all built-in functions

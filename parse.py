@@ -172,8 +172,17 @@ class Parser:
             return self.declare_function()
         elif self.current_token_type == Datatypes.RETURN:
             self.next_token()
-            return Datatypes.ReturnNode(statement=self.statement())
+            if self.current_token_type == Datatypes.LINEBREAK:
+                return Datatypes.ReturnNode(statement=None)
+            else:
+                return Datatypes.ReturnNode(statement=self.statement())
         # In case of the loop keyword REP, the parsing process will continue declare_function() function
+        elif token_type == Datatypes.BREAK:
+            self.next_token()
+            return Datatypes.BreakNode()
+        elif token_type == Datatypes.CONTINUE:
+            self.next_token()
+            return Datatypes.ContinueNode()
         elif token_type == Datatypes.REP:
             self.next_token()
             return self.gen_rep()

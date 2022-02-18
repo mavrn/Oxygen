@@ -16,7 +16,7 @@ OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datat
 KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD,
                 "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
                 "and": Datatypes.AND, "rep": Datatypes.REP, "as": Datatypes.AS, "for": Datatypes.FOR,
-                "return": Datatypes.RETURN}
+                "return": Datatypes.RETURN, "break": Datatypes.BREAK, "continue": Datatypes.CONTINUE}
 
 
 # TODO: replace this with a regex lexer
