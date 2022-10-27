@@ -21,5 +21,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# TODO: Look into bug at plot(f , -6, 6)

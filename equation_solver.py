@@ -17,7 +17,6 @@ def solve(left_expr, right_expr):
         return left_expr, right_expr
     elif right_type == "VariableNode":
         return right_expr, left_expr
-    side = "right" if left_type == "float" else "left"
     if left_type != "float":
         if left_type == "ExpNode" and left_expr.b == 2:
             return solve(left_expr.a, Datatypes.FuncCallNode("sqrt", [right_expr]))

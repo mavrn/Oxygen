@@ -11,12 +11,14 @@ OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datat
                  "<": Datatypes.LESS_THAN, ">": Datatypes.GREATER_THAN, "<=": Datatypes.LESS_OR_EQUALS,
                  ">=": Datatypes.GREATER_OR_EQUALS, "=>": Datatypes.ARROW, "=": Datatypes.EQUALS, "!": Datatypes.NOT,
                  "--": Datatypes.DOUBLE_MINUS, "++": Datatypes.DOUBLE_PLUS, "<<": Datatypes.BLOCK_END,
-                 "{": Datatypes.LCURLY, "}": Datatypes.RCURLY, "?=": Datatypes.SOLVE_ASSIGN, "?": Datatypes.SOLVE
+                 "{": Datatypes.LCURLY, "}": Datatypes.RCURLY, "?=": Datatypes.SOLVE_ASSIGN, "?": Datatypes.SOLVE,
+                 "[": Datatypes.LBRACKET, "]": Datatypes.RBRACKET, ">>": Datatypes.ARRAYAPPLY
                  }
 KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD,
                 "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
                 "and": Datatypes.AND, "rep": Datatypes.REP, "as": Datatypes.AS, "for": Datatypes.FOR,
-                "return": Datatypes.RETURN, "break": Datatypes.BREAK, "continue": Datatypes.CONTINUE}
+                "return": Datatypes.RETURN, "break": Datatypes.BREAK, "continue": Datatypes.CONTINUE, "in": Datatypes.IN,
+                "iter": Datatypes.ITERATE}
 
 
 # TODO: replace this with a regex lexer
@@ -63,22 +65,32 @@ class Lexer:
                     self.next_char()
                 else:
                     tokens.append(Token(OPERATOR_DICT[char]))
+                if self.current_char == ".":
+                    tokens.append(Token(Datatypes.PERIOD_CALL))
+                    self.next_char()
             elif self.current_char in (NUM_CHARS + "."):
-                tokens.append(self.gen_number())
+                num, add_period_call = self.gen_number()
+                tokens.append(num)
+                if add_period_call:
+                    tokens.append(Token(Datatypes.PERIOD_CALL))
             elif self.current_char in LETTERS:
                 tokens.append(self.gen_identifier())
                 # Will recognize when a function is called with a period after the identifier
                 if self.current_char == ".":
-                    tokens.append(Token(Datatypes.PERIOD_FUNC_CALL))
+                    tokens.append(Token(Datatypes.PERIOD_CALL))
                     self.next_char()
             elif self.current_char in ("\"", "\'"):
                 tokens.append(self.gen_string())
+                if self.current_char == ".":
+                    tokens.append(Token(Datatypes.PERIOD_CALL))
+                    self.next_char()
             else:
                 raise Exception(f"Illegal Character {self.current_char}")
         return tokens
 
     # Will generate and return a number with multiple or one digit(s)
     def gen_number(self):
+        add_period_call = False
         number = ""
         while self.current_char is not None and self.current_char in (NUM_CHARS + "."):
             number += self.current_char
@@ -86,10 +98,12 @@ class Lexer:
         # Will change ie. ".5" to "0.5"
         if number.startswith("."):
             number = "0" + number
+        if number.endswith("."):
+            add_period_call = True
         # A number with multiple periods will raise an exception
         if number.count(".") > 1:
             raise ValueError(f"Illegal number {number}")
-        return Token(Datatypes.NUMBER, float(number))
+        return Token(Datatypes.NUMBER, float(number)), add_period_call
 
     # Will generate and return an identifier with multiple or one letter(s)
     def gen_identifier(self):

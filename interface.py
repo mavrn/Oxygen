@@ -114,14 +114,7 @@ class Interface:
         for line in output_lines:
             if line is not None:
                 # Running some instance checks to make sure that the right thing is printed to the console
-                if isinstance(line, Fraction):
-                    print(str(line))
-                elif isinstance(line, float):
-                    print(Datatypes.String(line))
-                elif isinstance(line, (Datatypes.Bool, Datatypes.String)):
-                    print(line)
-                else:
-                    print(repr(line))
+                print(line)
 
 
 if __name__ == '__main__':

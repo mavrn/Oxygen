@@ -1,0 +1,21 @@
+# array.flatten()
+# array.
+#webopen
+#refactor builtins
+#fileopen
+#redo exceptions
+#dicts
+
+
+
+
+testmodules to add
+
+solving
+percent
+comments
+complex arr op
+2d arr
+apply nums, strings
+string concat
+iter

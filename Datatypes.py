@@ -1,9 +1,71 @@
 from collections import namedtuple
+from sqlite3 import DatabaseError
 
+class String:
+    def __init__(self, value=None):
+        if isinstance(value, float) and value % 1 == 0:
+            self.str = str(int(value))
+        else:
+            self.str = str(value)
 
-# CUSTOM BOOLEAN DATACLASS
-# Exists to make the Interpreter Bools customizable
+    def __len__(self):
+        return len(self.str)
 
+    def __str__(self):
+        return self.str
+
+    def __repr__(self):
+        return self.str
+
+    def __iter__(self):
+        self.n = 0
+        self.max = len(self)
+        return self
+
+    def __next__(self):
+        if self.n < self.max:
+            res = self.str[self.n]
+            self.n += 1
+            return String(res)
+        else:
+            raise StopIteration  
+    
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        return False
+    
+    def __add__(self, other):
+        return String(str(self) + str(other))
+
+    def __mul__(self, num):
+        if isinstance(num, float) and num%1==0:
+            num = int(num)
+        if num<1:
+            raise TypeError("Cannot divide arrays.")
+        if not isinstance (num, int):
+            raise TypeError(f"Cannot multiply Array with {type(num).__name__}")
+        self.str*=num
+        return self       
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def __getitem__(self, index):
+        if isinstance(index, float) and index%1 == 0:
+            index = int(index)
+        return String(self.str[index])
+
+    def __setitem__(self, index, val):
+        lst = list(self.str)
+        if isinstance(index, float) and index%1 == 0:
+            index = int(index)
+        lst[index] = str(String(val))
+        self.str = "".join(lst)
+    
+    def reverse(self):
+        self.str = self.str[::-1]
+        return self
 
 class Bool:
     def __init__(self, value=None):
@@ -26,6 +88,9 @@ class Bool:
             return "False"
         if self.boolean_value is True:
             return "True"
+    
+    def __string__(self):
+        return self.__repr__()
 
     def __bool__(self):
         return self.boolean_value
@@ -39,24 +104,117 @@ class Bool:
         self.boolean_value = not self.boolean_value
 
 
-class String:
-    def __init__(self, value=None):
-        if isinstance(value, float) and value % 1 == 0:
-            self.str = str(int(value))
-        else:
-            self.str = str(value)
-
+class Array:
+    def __init__(self, contents):
+        self.contents = contents
+    
     def __str__(self):
-        return self.str
+        if len(self) ==0:
+            return "[]"
+        repr = "["
+        for c in self.contents:
+            repr += String(c).str + ", "
+        repr = repr[:-2]
+        repr += "]"
+        return repr
+    
+    def __len__(self):
+        return len(self.contents)
 
+    def __iter__(self):
+        self.n = 0
+        return self
+
+    def __add__(self, elem):
+        self.contents.append(elem)
+        return self
+    
+    def __mul__(self, num):
+        if isinstance(num, float) and num%1==0:
+            num = int(num)
+        if num<1:
+            raise TypeError("Cannot divide arrays.")
+        if not isinstance (num, int):
+            raise TypeError(f"Cannot multiply Array with {type(num).__name__}")
+        self.contents*=num
+        return self        
+    
+    def __sub__(self, elem):
+        for i in reversed(range(len(self))):
+            if self[i] == elem:
+                del self[i]
+        return self        
+
+    def __next__(self):
+        if self.n < len(self):
+            res = self.contents[self.n]
+            self.n += 1
+            return res
+        else:
+            raise StopIteration        
+        
     def __repr__(self):
-        return self.str
+        return self.__str__()
 
     def __eq__(self, other):
-        if type(other) is type(self):
-            return self.__dict__ == other.__dict__
-        return False
+        try:
+            if len(self) != len(other):
+                return Bool(False)
+            _ = iter(other)
+            eq = True
+            for i, v in enumerate(self):
+                if v != other[i]:
+                    eq = False
+            return Bool(eq)
+        except TypeError:
+            raise TypeError(f"{type(other).__name__} object is not iterable.")         
 
+    def __getitem__(self, index):
+        if isinstance(index, float) and index%1 == 0:
+            index = int(index)
+        return self.contents[index]
+
+    def __contains__(self, elem):
+        return elem in self.contents
+
+    def __setitem__(self, index, val):
+        self.contents[index] = val
+
+    def __delitem__(self, index):
+        del self.contents[index]
+
+    def intersection(self, other):
+        new = []
+        for elem in self:
+            if elem in other:
+                new.append(elem)
+        self.contents = new
+        return self
+    
+    def union(self, other):
+        for elem in other:
+            if elem not in self:
+                self + elem
+        return self
+    
+    def join(self):
+        return String("".join([str(s) for s in self.contents]))
+    
+    def sum(self):
+        s = 0
+        for el in self.contents:
+            if isinstance(el, float):
+                s += el
+            elif isinstance(el, Array):
+                s += el.sum()
+            else:
+                raise TypeError(f"Cannot add item of type {type(el).__name__} to sum")
+        return s
+    
+    def reverse(self):
+        self.contents.reverse()
+        return self
+            
 
 # Defines a function consisting of the arguments and the body
 class Function:
@@ -115,7 +273,7 @@ EQUALS = 14
 EXP = 15
 ARROW = 16
 FUNCTION_KEYWORD = 17
-PERIOD_FUNC_CALL = 18
+PERIOD_CALL = 18
 COMMA = 19
 COMP_EQUALS = 20
 COMP_NOT_EQUALS = 21
@@ -145,6 +303,11 @@ SOLVE = 44
 LINEBREAK = 45
 BREAK = 46
 CONTINUE = 47
+LBRACKET = 48
+RBRACKET = 49
+ARRAYAPPLY = 50
+IN = 51
+ITERATE = 52
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -169,6 +332,12 @@ SolveNode = namedtuple("SolveNode", ["left_side", "right_side"])
 SolveAssignNode = namedtuple("SolveAssignNode", ["left_side", "right_side"])
 BreakNode = namedtuple("BreakNode", [])
 ContinueNode = namedtuple("ContinueNode", [])
+ArrayCallNode = namedtuple("ArrayCallNode", ["identifier", "index"])
+ArrayApplyNode = namedtuple("ArrayApplyNode", ["identifier", "function"])
+PeriodCallNode = namedtuple("PeriodCallNode", ["left_side", "right_side"])
+ForEachNode = namedtuple("ForEachNode", ["item", "iterable", "statements"])
+ContainsNode = namedtuple("ContainsNode", ["iterable", "item"])
+IterateNode = namedtuple("IterateNode", ["iterable", "items", "statements"])
 
 # Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
@@ -196,7 +365,7 @@ type_dict = {
     EXP: "EXPONENTIAL_SIGN",
     ARROW: "ARROW",
     FUNCTION_KEYWORD: "FUNCTION_KEYWORD",
-    PERIOD_FUNC_CALL: "PERIOD_FUNC_CALL",
+    PERIOD_CALL: "PERIOD_FUNC_CALL",
     COMMA: "COMMA",
     COMP_EQUALS: "COMP_EQUALS",
     COMP_NOT_EQUALS: "COMP_NOT_EQUALS",
@@ -225,5 +394,10 @@ type_dict = {
     SOLVE: "SOLVE",
     LINEBREAK: "LINEBREAK",
     BREAK: "BREAK",
-    CONTINUE: "CONTINUE"
+    CONTINUE: "CONTINUE",
+    LBRACKET: "LBRACKET",
+    RBRACKET: "RBRACKET",
+    ARRAYAPPLY: "ARRAYAPPLY",
+    IN: "IN",
+    ITERATE: "ITERATE"
 }

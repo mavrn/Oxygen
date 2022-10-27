@@ -114,7 +114,8 @@ class Parser:
                                           Datatypes.EQUALS, Datatypes.PLUS_ASSIGN, Datatypes.MINUS_ASSIGN,
                                           Datatypes.MULT_ASSIGN, Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN,
                                           Datatypes.COMP_EQUALS, Datatypes.COMP_NOT_EQUALS, Datatypes.GREATER_THAN,
-                                          Datatypes.LESS_THAN, Datatypes.GREATER_OR_EQUALS, Datatypes.LESS_OR_EQUALS
+                                          Datatypes.LESS_THAN, Datatypes.GREATER_OR_EQUALS, Datatypes.LESS_OR_EQUALS,
+                                          Datatypes.IN
                                           ) and not self.skipped_linebreak:
             if self.current_token_type in (Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN):
                 token_type = self.current_token_type
@@ -140,6 +141,9 @@ class Parser:
                                                       self.expression()))
                 else:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
+            elif self.current_token_type == Datatypes.IN:
+                self.next_token()           
+                result = Datatypes.ContainsNode(iterable=self.exponential(), item=result)
             else:
                 comparison_type = self.current_token_type
                 self.next_token()
@@ -149,11 +153,18 @@ class Parser:
 
     def exponential(self):
         result = self.factor()
-        if self.current_token_type == Datatypes.EXP:
-            self.next_token()
-            return Datatypes.ExpNode(a=result, b=self.factor())
-        else:
-            return result
+        while self.current_token_type in(Datatypes.EXP, Datatypes.PERIOD_CALL, Datatypes.ARRAYAPPLY):
+            if self.current_token_type == Datatypes.EXP:
+                self.next_token()
+                result = Datatypes.ExpNode(a=result, b=self.factor())
+            elif self.current_token_type == Datatypes.PERIOD_CALL:
+                self.next_token()
+                right_side = self.factor()
+                result = Datatypes.PeriodCallNode(left_side=result, right_side=right_side)
+            else:
+                self.next_token()
+                result = Datatypes.ArrayApplyNode(identifier=result, function=self.statement())            
+        return result
 
     def factor(self):
         token = self.current_token
@@ -165,6 +176,9 @@ class Parser:
             self.next_token()
             if self.current_token_type == Datatypes.IDENTIFIER:
                 return Datatypes.MultNode(token.value, self.exponential())
+            elif self.current_token_type == Datatypes.MODULUS_SIGN:
+                self.next_token()
+                return Datatypes.DivNode(token.value, 100)
             return token.value
         # In case of a FUNCTION_KEYWORD, the parsing process will continue declare_function() function
         elif token_type == Datatypes.FUNCTION_KEYWORD:
@@ -189,8 +203,14 @@ class Parser:
         elif token_type == Datatypes.FOR:
             self.next_token()
             return self.gen_for()
-        elif self.current_token_type == Datatypes.IF:
+        elif token_type == Datatypes.IF:
             return self.gen_if()
+        elif token_type == Datatypes.ITERATE:
+            return self.gen_iterate()
+        elif token_type == Datatypes.LBRACKET:
+            arr = self.gen_arr()
+            self.next_token()
+            return arr
         elif token_type == Datatypes.TRUE:
             self.next_token()
             return Datatypes.Bool(True)
@@ -206,7 +226,7 @@ class Parser:
             return self.exponential()
         elif token_type == Datatypes.MINUS_SIGN:
             self.next_token()
-            return Datatypes.MultNode(a=-1.0, b=self.exponential())
+            return Datatypes.MultNode(a=-1.0, b=self.factor())
         # Will handle parentheses and throw an exception in case of a missing parenthesis
         elif token_type == Datatypes.LPAREN:
             self.next_token()
@@ -231,8 +251,10 @@ class Parser:
             elif self.current_token_type == Datatypes.DOUBLE_MINUS:
                 self.next_token()
                 return Datatypes.AssignNode(identifier, Datatypes.SubNode(Datatypes.VariableNode(identifier), 1.0))
-            elif self.current_token_type in (Datatypes.LPAREN, Datatypes.PERIOD_FUNC_CALL):
+            elif self.current_token_type == Datatypes.LPAREN:
                 return self.call_function(identifier)
+            elif self.current_token_type == Datatypes.LBRACKET:
+                return self.gen_arrcall(Datatypes.VariableNode(identifier))
             else:
                 return Datatypes.VariableNode(identifier=identifier)
         elif token_type in (Datatypes.BLOCK_END, Datatypes.RCURLY):
@@ -263,27 +285,17 @@ class Parser:
     # and will throw exceptions if the syntax is incorrect
     def call_function(self, identifier):
         arguments = []
-        # Will handle a function call by brackets
-        if self.current_token_type == Datatypes.LPAREN:
-            self.next_token()
-            while self.current_token is not None and self.current_token_type != Datatypes.RPAREN:
-                arguments.append(self.statement())
-                if self.current_token_type == Datatypes.COMMA:
-                    self.next_token()
-                elif self.current_token_type != Datatypes.RPAREN:
-                    raise SyntaxError("Expected comma or closing parenthesis")
-            if self.current_token_type != Datatypes.RPAREN:
-                raise SyntaxError("Expected closing parenthesis")
-            self.next_token()
-            return Datatypes.FuncCallNode(identifier=identifier, arguments=arguments)
-        # Will handle a function call by period
-        elif self.current_token_type == Datatypes.PERIOD_FUNC_CALL:
-            self.next_token()
-            arguments.append(self.exponential())
-            return Datatypes.FuncCallNode(identifier=identifier, arguments=arguments)
-        # The program should never reach this point
-        else:
-            raise Exception("An unknown error occurred")
+        self.next_token()
+        while self.current_token is not None and self.current_token_type != Datatypes.RPAREN:
+            arguments.append(self.statement())
+            if self.current_token_type == Datatypes.COMMA:
+                self.next_token()
+            elif self.current_token_type != Datatypes.RPAREN:
+                raise SyntaxError("Expected comma or closing parenthesis")
+        if self.current_token_type != Datatypes.RPAREN:
+            raise SyntaxError("Expected closing parenthesis")
+        self.next_token()
+        return Datatypes.FuncCallNode(identifier=identifier, arguments=arguments)
 
     def gen_rep(self):
         count_identifier = "_c"
@@ -300,17 +312,33 @@ class Parser:
 
     def gen_for(self):
         assignment = self.statement()
-        if self.current_token_type != Datatypes.COMMA:
-            raise SyntaxError("Expected comma after statement")
-        self.next_token()
-        condition = self.statement()
-        if self.current_token_type != Datatypes.COMMA:
-            raise SyntaxError("Expected comma after condition")
-        self.next_token()
-        increment = self.statement()
-        return Datatypes.ForNode(assignment=assignment, condition=condition, increment=increment,
-                                 statements=self.statement_block())
+        if self.current_token_type == Datatypes.COMMA:
+            self.next_token()
+            condition = self.statement()
+            if self.current_token_type != Datatypes.COMMA:
+                raise SyntaxError("Expected comma after condition")
+            self.next_token()
+            increment = self.statement()
+            return Datatypes.ForNode(assignment=assignment, condition=condition, increment=increment,
+                                    statements=self.statement_block())
+        elif type(assignment).__name__ == "ContainsNode":
+            return Datatypes.ForEachNode(item=assignment.item.identifier, iterable=assignment.iterable, statements=self.statement_block())
+        else:
+            raise SyntaxError("Expected comma or \"in\" after statement")
 
+    def gen_iterate(self):
+        self.next_token()
+        iterable = self.exponential()
+
+        items = []
+        if self.current_token_type == Datatypes.AS:
+            self.next_token()
+            items.append(self.factor())
+            if self.current_token_type == Datatypes.COMMA:
+                self.next_token()
+                items.append(self.factor())
+        return Datatypes.IterateNode(iterable=iterable,items=[item.identifier for item in items],statements=self.statement_block())
+            
     def gen_if(self):
         if_node = Datatypes.IfNode()
         self.next_token()
@@ -330,3 +358,29 @@ class Parser:
             self.next_token()
         self.skipped_linebreak = True
         return if_node
+
+    def gen_arr(self):
+        self.next_token()
+        contents = []
+        while self.current_token is not None and self.current_token_type != Datatypes.RBRACKET:
+                contents.append(self.statement())
+                if self.current_token_type == Datatypes.COMMA:
+                    self.next_token()
+                elif self.current_token_type != Datatypes.RBRACKET:
+                    raise SyntaxError("Expected comma or closing parenthesis")
+        if self.current_token_type != Datatypes.RBRACKET:
+            raise SyntaxError("Expected closing parenthesis")
+        return Datatypes.Array(contents)
+
+    def gen_arrcall(self, identifier):
+        indexes = []
+        while True:
+            self.next_token()
+            index = self.statement()
+            if self.current_token_type != Datatypes.RBRACKET:
+                raise SyntaxError("Excpected ]")
+            self.next_token()
+            indexes.append(index)
+            if self.current_token_type != Datatypes.LBRACKET:
+                break
+        return Datatypes.ArrayCallNode(identifier = identifier, index = indexes)
