@@ -1,12 +1,15 @@
 import math
 import Datatypes
 import numpy as np
+import webbrowser
 from matplotlib import pyplot as plt
 from fractions import Fraction
 import equation_solver
 
 KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial", "bool", "plot", "fraction",
-            "print"]
+            "p", "midn", "rick", "leet", "type", "arr", "apply", "append", "union", "intersection", "l", "join",
+            "rev"
+            ]
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 
 
@@ -16,6 +19,19 @@ def standardize(val):
     else:
         return [val]
 
+def leet(message):
+    charMapping = {
+    'a': '4', 'c': '(', 'd': '|)', 'e': '3',
+    'f': 'ph', 'h': '|-|', 'i': '1', 'k': ']<',
+    'o': '0', 's': '$', 't': '7', 'u': '|_|',
+    'v': '\\/'}
+    leetspeak = ''
+    for char in message:  # Check each character:
+        if char.lower() in charMapping:
+            leetspeak += charMapping[char.lower()]
+        else:
+            leetspeak += char
+    return Datatypes.String(leetspeak)
 
 def merge(output_list, list_to_append):
     for item in list_to_append:
@@ -33,10 +49,17 @@ class Interpreter:
         self.nested_scopes = []
         self.output_lines = []
 
+    def stringify(self, elem):
+        if isinstance(elem, float) and elem%1 == 0:
+            elem = int(elem)
+        return str(elem)
+        
+
     def get_output(self, ast_list):
         self.output_lines = []
         for ast in ast_list:
             out = standardize(self.evaluate(ast))
+            out = [self.stringify(o) for o in out if o is not None]
             merge(self.output_lines, out)
         return self.output_lines
 
@@ -49,6 +72,8 @@ class Interpreter:
                 return Datatypes.String(f"Warning: Built-in function {node.identifier} has been overridden.")
         elif node_type == "FuncCallNode":
             return self.function_call_handler(node)
+        elif node_type == "PeriodCallNode":
+            return self.period_call_handler(node)
         elif node_type in OPERATIONAL_NODES:
             return self.operation_handler(node)
         elif node_type == "AssignNode":
@@ -66,6 +91,24 @@ class Interpreter:
             variable, expression = equation_solver.solve(node.left_side, node.right_side)
             result = self.evaluate(expression)
             return self.evaluate(Datatypes.AssignNode(variable.identifier, result))
+        elif node_type == "ArrayCallNode":
+            arr = self.evaluate(node.identifier)
+            for index in node.index:
+                arr = arr[self.evaluate(index)]
+            return arr
+        elif node_type == "ArrayApplyNode":
+            arr = self.evaluate(node.identifier)
+            self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function)
+            if hasattr(arr, "__iter__"):
+                for i, elem in enumerate(arr):
+                    res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, i, arr]))
+                    if isinstance(res, list):
+                        arr[i] = res[0]
+                    else:
+                        arr[i] = res
+                return arr
+            else:
+                return self.evaluate(Datatypes.AssignNode(node.identifier, self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [arr, 0, arr]))))
         elif node_type == "ComparisonNode":
             return self.comparison_handler(node)
         elif node_type == "BooleanNegationNode":
@@ -75,6 +118,8 @@ class Interpreter:
             return custom_bool
         elif node_type == "BooleanConversionNode":
             return Datatypes.Bool(self.evaluate(node.value))
+        elif node_type == "ContainsNode":
+            return Datatypes.Bool(self.evaluate(node.item) in self.evaluate(node.iterable))
         elif node_type == "LogicalOperationNode":
             if node.operation == Datatypes.AND:
                 return Datatypes.Bool(
@@ -103,11 +148,18 @@ class Interpreter:
             global_value = self.fields["global"].get(node.identifier)
             local_value = self.fields[self.scope].get(node.identifier)
             if local_value is not None:
-                return local_value
+                result = local_value
             elif global_value is not None:
-                return global_value
+                result = global_value
+            elif node.identifier in KEYWORDS:
+                return self.function_call_handler(Datatypes.FuncCallNode(node.identifier, []))
             else:
                 raise NameError(f"Name \"{node.identifier}\" is not defined.")
+
+            if type(result).__name__ == "Function" and len(result.arguments) == 0:
+                return self.function_call_handler(Datatypes.FuncCallNode(node.identifier, []))
+            else:
+                return result
         elif node_type == "RepNode":
             reps = self.evaluate(node.repetitions)
             if not isinstance(reps, float) or reps < 0 or reps % 1 != 0:
@@ -129,6 +181,7 @@ class Interpreter:
                     break
                 elif "__continue__" in self.fields[self.scope]:
                     self.fields[self.scope].pop("__continue__")
+                self.fields[self.scope].pop(node.count_identifier)
             return out
         elif node_type == "ForNode":
             self.evaluate(node.assignment)
@@ -147,9 +200,57 @@ class Interpreter:
                 elif "__continue__" in self.fields[self.scope]:
                     self.fields[self.scope].pop("__continue__")
                 self.evaluate(node.increment)
+            self.fields[self.scope].pop(node.assignment.identifier)
             return out
-        elif node_type == "KeywordNode":
-            return self.keyword_handler(node)
+        elif node_type == "ForEachNode":
+            out = []
+            id = node.item
+            iterable = self.evaluate(node.iterable)
+            for element in iterable:
+                self.evaluate(Datatypes.AssignNode(id, element))
+                for statement in node.statements:
+                    lines = standardize(self.evaluate(statement))
+                    merge(out, lines)
+                    if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                        break
+                    if "__return__" in self.fields[self.scope]:
+                        return out
+                if "__break__" in self.fields[self.scope]:
+                    self.fields[self.scope].pop("__break__")
+                    break
+                elif "__continue__" in self.fields[self.scope]:
+                    self.fields[self.scope].pop("__continue__")
+            self.fields[self.scope].pop(id)
+            return out
+        elif node_type == "IterateNode":
+            out=[]
+            if len(node.items) == 2:
+                id = node.items[1]
+                index_id = node.items[0]
+            elif len(node.items) == 1:
+                id = node.items[0]
+                index_id = "_i"
+            elif len(node.items) == 0:
+                id = "_c"
+                index_id = "_i"
+            iterable = self.evaluate(node.iterable)
+            for i, element in enumerate(iterable):
+                self.evaluate(Datatypes.AssignNode(id, element))
+                self.evaluate(Datatypes.AssignNode(index_id, i))
+                for statement in node.statements:
+                    lines = standardize(self.evaluate(statement))
+                    merge(out, lines)
+                    if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                        break
+                    if "__return__" in self.fields[self.scope]:
+                        return out
+                if "__break__" in self.fields[self.scope]:
+                    self.fields[self.scope].pop("__break__")
+                    break
+                elif "__continue__" in self.fields[self.scope]:
+                    self.fields[self.scope].pop("__continue__")
+            self.fields[self.scope].pop(id)
+            return out
         elif node_type == "ReturnNode":
             if self.scope == "global":
                 raise SyntaxError("Return statement outside function")
@@ -214,12 +315,90 @@ class Interpreter:
     def keyword_handler(self, node):
         keyword = node.identifier
         arg_count = len(node.arguments)
+
+        if len(node.arguments) == 1:
+            pot_object = self.evaluate(node.arguments[0])
+        elif len(node.arguments) > 1:
+            pot_object, *args =  [self.evaluate(arg) for arg in node.arguments]
+
         if keyword == "plot":
             if arg_count not in (3, 4):
                 raise TypeError(f"Expected 3 to 4 arguments for function {keyword}, got {arg_count}.")
             args = [node.arguments[0].identifier, *[self.evaluate(arg) for arg in node.arguments[1:]]]
             return self.plot_handler(*args)
-        elif arg_count != 1 and keyword != "print":
+        elif keyword == "p":
+            lines = []
+            for arg in node.arguments:
+                lines.append(self.evaluate(arg))
+            out = ""
+            for line in lines:
+                out += str(Datatypes.String(line)) + " "
+            out = out.strip()
+            out = [self.stringify(Datatypes.String(out))]
+            merge(self.output_lines, out)
+            return
+        elif keyword == "midn":
+            if arg_count != 3:
+                raise TypeError(f"Expected 3 arguments for function {keyword}, got {arg_count}.")
+            a, b, c = [self.evaluate(arg) for arg in node.arguments]
+            sol = []
+            if a == 0 and b == 0:
+                return []
+            elif a == 0:
+                return [(-c)/b]      
+            try:
+                x1 = (-b + math.sqrt(b**2 - 4*a*c))/(2*a)
+                sol.append(x1)
+                x2 = (-b - math.sqrt(b**2 - 4*a*c))/(2*a)
+                if(x1 != x2):
+                    sol.append(x2)
+            except ValueError:
+                pass
+            return sol
+        elif keyword == "rick":
+            webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+            return
+        elif keyword == "arr":
+            return Datatypes.Array(list(pot_object))
+        elif keyword == "apply":
+            if len(args) != 1:
+                raise TypeError(f"Expected one argument for function apply, got {len(args)}")
+            for i, elem in enumerate(pot_object):
+                res = self.function_call_handler(Datatypes.FuncCallNode(node.arguments[1].identifier, [elem]))
+                if isinstance(res, list):
+                    pot_object[i] = res[0]
+                else:
+                    pot_object[i] = res
+            return pot_object
+        elif keyword == "append":
+            for arg in args:
+                pot_object += self.evaluate(arg)
+        elif keyword == "union":
+            for arg in args:
+                temp = self.evaluate(arg)
+                if type(temp).__name__ != "Array":
+                    raise TypeError(f"Cannot use union with type {type(temp).__name__}")
+                pot_object.union(temp)
+            return pot_object
+        elif keyword == "intersection":
+            for arg in args:
+                temp = self.evaluate(arg)
+                if type(temp).__name__ != "Array":
+                    raise TypeError(f"Cannot use union with type {type(temp).__name__}")
+                pot_object.intersection(temp)
+            return pot_object
+        elif keyword == "l":
+            return len(pot_object)
+        elif keyword == "join":
+            return pot_object.join()
+        elif keyword == "sum":
+            return pot_object.sum()
+        elif keyword == "rev":
+            return pot_object.reverse()
+        elif keyword == "openurl":
+            webbrowser.open(str(pot_object)) 
+
+        if arg_count != 1:
             raise TypeError(f"Expected 1 argument for function {keyword}, got {arg_count}.")
         arg = self.evaluate(node.arguments[0])
         # Will match the identifier to the pre-defined keywords and operate accordingly
@@ -248,16 +427,11 @@ class Interpreter:
             return Datatypes.Bool(arg)
         elif keyword == "fraction":
             return Fraction(arg).limit_denominator()
-        elif keyword == "print":
-            lines = []
-            for arg in node.arguments:
-                lines.append(self.evaluate(arg))
-            out = ""
-            for line in lines:
-                out += str(Datatypes.String(line)) + " "
-            out = out.strip()
-            out = [Datatypes.String(out)]
-            merge(self.output_lines, out)
+        elif keyword == "leet":
+            return leet(str(arg))
+        elif keyword == "type":
+            return type(arg).__name__
+        
         else:
             raise Exception(f"Unknown exception occurred while handling the keyword {keyword}")
 
@@ -266,21 +440,22 @@ class Interpreter:
         node_type = type(node).__name__
         a = self.evaluate(node.a)
         b = self.evaluate(node.b)
-        for operand in [a, b]:
-            if not isinstance(operand, float):
-                raise TypeError("Cannot use mathematical operations on object of type " + type(operand).__name__)
-        if node_type == "AddNode":
-            return a + b
-        elif node_type == "SubNode":
-            return a - b
-        elif node_type == "MultNode":
-            return a * b
-        elif node_type == "DivNode":
-            return a / b
-        elif node_type == "ModulusNode":
-            return a % b
-        elif node_type == "ExpNode":
-            return a ** b
+        try:
+            if node_type == "AddNode":
+                return a + b
+            elif node_type == "SubNode":
+                return a - b
+            elif node_type == "MultNode":
+                return a * b
+            elif node_type == "DivNode":
+                return a / b
+            elif node_type == "ModulusNode":
+                return a % b
+            elif node_type == "ExpNode":
+                return a ** b
+        except TypeError as e:
+            print(e)
+            raise TypeError("Cannot use this mathematical operation on object of type " + type(a).__name__ + " and " + type(b).__name__)
 
     # Will handle any type of simple comparison
     def comparison_handler(self, node):
@@ -313,6 +488,15 @@ class Interpreter:
             raise Exception("An unknown error occurred")
         return result
 
+    def period_call_handler(self, node):
+        if type(node.right_side).__name__ == "FuncCallNode":
+            return self.function_call_handler(Datatypes.FuncCallNode(node.right_side.identifier, [node.left_side, *node.right_side.arguments]))
+        elif type(node.right_side).__name__ == "VariableNode" and (node.right_side.identifier in KEYWORDS or type(self.fields["global"].get(node.right_side.identifier)).__name__ == "Function"):
+            return self.function_call_handler(Datatypes.FuncCallNode(node.right_side.identifier, [node.left_side]))
+        else:
+            return "pos1"
+            
+            
     def plot_handler(self, function, lower_rng, upper_rng, increment=0.001):
         if increment < 0.0001:
             raise ValueError("Plotting increment can not be less than 0.0001")
