@@ -15,19 +15,21 @@ class String:
         return self.str
 
     def __repr__(self):
-        return self.str
+        return "\"" + self.str + "\""
 
     def __iter__(self):
         self.n = 0
         self.max = len(self)
+        self.str_arr = list(self.str)
         return self
 
     def __next__(self):
         if self.n < self.max:
-            res = self.str[self.n]
+            res = self.str_arr[self.n]
             self.n += 1
             return String(res)
         else:
+            self.str = str(Array(self.str_arr).join(""))
             raise StopIteration  
     
     def __eq__(self, other):
@@ -60,12 +62,19 @@ class String:
         lst = list(self.str)
         if isinstance(index, float) and index%1 == 0:
             index = int(index)
-        lst[index] = str(String(val))
+        try:
+            lst[index] = str(String(val))
+        except IndexError:
+            pass
+        self.str_arr[index] = str(String(val))
         self.str = "".join(lst)
     
     def reverse(self):
         self.str = self.str[::-1]
         return self
+
+    def split(self, delimiter):
+        return Array([String(s) for s in self.str.split(delimiter)])
 
 class Bool:
     def __init__(self, value=None):
@@ -89,7 +98,7 @@ class Bool:
         if self.boolean_value is True:
             return "True"
     
-    def __string__(self):
+    def __str__(self):
         return self.__repr__()
 
     def __bool__(self):
@@ -107,6 +116,7 @@ class Bool:
 class Array:
     def __init__(self, contents):
         self.contents = contents
+        self.n = []
     
     def __str__(self):
         if len(self) ==0:
@@ -122,12 +132,12 @@ class Array:
         return len(self.contents)
 
     def __iter__(self):
-        self.n = 0
+        self.n.append(0)
+        self.max = len(self)
         return self
 
     def __add__(self, elem):
-        self.contents.append(elem)
-        return self
+        return Array(self.contents.copy() +[elem])
     
     def __mul__(self, num):
         if isinstance(num, float) and num%1==0:
@@ -146,11 +156,12 @@ class Array:
         return self        
 
     def __next__(self):
-        if self.n < len(self):
-            res = self.contents[self.n]
-            self.n += 1
+        if self.n[-1] < self.max:
+            res = self.contents[self.n[-1]]
+            self.n[-1] += 1
             return res
         else:
+            self.n.pop()
             raise StopIteration        
         
     def __repr__(self):
@@ -178,10 +189,9 @@ class Array:
         return elem in self.contents
 
     def __setitem__(self, index, val):
+        if isinstance(index, float) and index%1 == 0:
+            index = int(index)
         self.contents[index] = val
-
-    def __delitem__(self, index):
-        del self.contents[index]
 
     def intersection(self, other):
         new = []
@@ -194,11 +204,23 @@ class Array:
     def union(self, other):
         for elem in other:
             if elem not in self:
-                self + elem
+                self.contents.append(elem)
         return self
     
-    def join(self):
-        return String("".join([str(s) for s in self.contents]))
+    def delete(self):
+        del self.contents[self.n[-1]-1]
+        self.n[-1] -= 1
+        self.max -= 1
+        return self
+    
+    def remove(self, element):
+        self.n[-1] -= 1
+        self.max -= 1
+        self.contents.remove(element)
+        return self
+    
+    def join(self, delimiter):
+        return String(str(delimiter).join([str(s) for s in self.contents]))
     
     def sum(self):
         s = 0
@@ -211,6 +233,12 @@ class Array:
                 raise TypeError(f"Cannot add item of type {type(el).__name__} to sum")
         return s
     
+    def min(self):
+        return min(self.contents)
+
+    def max(self):
+        return max(self.contents)
+
     def reverse(self):
         self.contents.reverse()
         return self
@@ -308,6 +336,7 @@ RBRACKET = 49
 ARRAYAPPLY = 50
 IN = 51
 ITERATE = 52
+DEL = 53
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -399,5 +428,6 @@ type_dict = {
     RBRACKET: "RBRACKET",
     ARRAYAPPLY: "ARRAYAPPLY",
     IN: "IN",
-    ITERATE: "ITERATE"
+    ITERATE: "ITERATE",
+    DEL: "DEL"
 }

@@ -1,21 +1,16 @@
 # array.flatten()
 # array.
-#webopen
-#refactor builtins
 #fileopen
 #redo exceptions
+#update comments
 #dicts
+#if one liners rem else req
 
 
 
 
 testmodules to add
 
-solving
-percent
-comments
-complex arr op
-2d arr
-apply nums, strings
 string concat
 iter
+join, split

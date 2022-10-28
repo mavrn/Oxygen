@@ -126,6 +126,9 @@ class Parser:
                 if type(result).__name__ == "VariableNode":
                     self.next_token()
                     result = Datatypes.AssignNode(identifier=result.identifier, value=self.statement())
+                elif type(result).__name__ == "ArrayCallNode":
+                    self.next_token()
+                    result = Datatypes.AssignNode(identifier=result, value=self.statement())
                 else:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
             elif self.current_token_type in (Datatypes.PLUS_ASSIGN, Datatypes.MINUS_ASSIGN, Datatypes.MULT_ASSIGN,
@@ -139,6 +142,13 @@ class Parser:
                                                   value=operator_node(
                                                       Datatypes.VariableNode(result.identifier),
                                                       self.expression()))
+                elif type(result).__name__ == "ArrayCallNode":
+                    operator_node = Datatypes.OPERATOR_NODE_DICT[self.current_token_type]
+                    self.next_token()
+                    result = Datatypes.AssignNode(identifier=result,
+                                                    value=operator_node(
+                                                    result,
+                                                    self.expression()))
                 else:
                     raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
             elif self.current_token_type == Datatypes.IN:
@@ -252,11 +262,14 @@ class Parser:
                 self.next_token()
                 return Datatypes.AssignNode(identifier, Datatypes.SubNode(Datatypes.VariableNode(identifier), 1.0))
             elif self.current_token_type == Datatypes.LPAREN:
-                return self.call_function(identifier)
+                return self.gen_funccall(identifier)
             elif self.current_token_type == Datatypes.LBRACKET:
                 return self.gen_arrcall(Datatypes.VariableNode(identifier))
             else:
                 return Datatypes.VariableNode(identifier=identifier)
+        elif token_type == Datatypes.DEL:
+            self.next_token()
+            return token
         elif token_type in (Datatypes.BLOCK_END, Datatypes.RCURLY):
             return
         else:
@@ -283,7 +296,7 @@ class Parser:
 
     # Will follow the pre-defined syntax of a function call linearly
     # and will throw exceptions if the syntax is incorrect
-    def call_function(self, identifier):
+    def gen_funccall(self, identifier):
         arguments = []
         self.next_token()
         while self.current_token is not None and self.current_token_type != Datatypes.RPAREN:

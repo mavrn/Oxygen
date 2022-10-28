@@ -195,12 +195,8 @@ fn y a => a^2
 x.apply(y)
 x >> x+1
 """
-#x=[0,1]
-#fn y a => a+1
-#x.apply(y)
 t22 = """fn x =>
-return 0
-<<
+return 0 <<
 x
 """
 t23= """fn sum_of_positive arr =>
@@ -209,7 +205,7 @@ return (arr >> 0 if x<0 else x).sum
 [0,1,2,3,4,5,-2].sum_of_positive
 """
 t24= """fn get_neg num =>
-return -num.abs
+return -abs(num)
 <<
 1.get_neg
 -5.get_neg
@@ -235,8 +231,36 @@ ct++
 <<
 return ct
 <<
-vowel_ct."hallo test"
-vowel_ct."haaaloooo"
+"hallo test".vowel_ct
+"haaaloooo".vowel_ct
+"""
+t28="""2x ? 10
+10x - 20/19 ? 100
+2y ?= 4
+"""
+t29="""
+~test comment
+100% + 20% ~this comment is a comment
+2 * 20%
+~~~ hi
+"""
+t30="""
+x = [[0,1], [2,[3,4]]]
+x[0]
+x[1][0]
+x[1][1][0]
+"""
+t31="""
+10 >> x/2
+"hallo" >> " " if x in "aeiou" else x
+"lol" >> 1
+"abcdefg" >> i
+"""
+t32 ="""fn add_spaces str => (str.arr >> x+" ").join
+"hallo".add_spaces
+"""
+t33="""
+"Remove all vowels" >> "" if x in "aeiou" else x
 """
 
 test1 = Test("Test 1", t1, ["True"])
@@ -246,7 +270,7 @@ test4 = Test("Test 4", t4, ["True", "False"])
 test5 = Test("Test 5", t5, ["6", "13"])
 test6 = Test("Test 6", t6, ["FizzBuzz", "1", "2", "Fizz", "4", "Buzz", "Fizz", "7", "8", "Fizz"])
 test7 = Test("Test 7", t7, ["0.19163898275344238"])
-test8 = Test("Test 8", t8, ["10", "True", "False"])
+test8 = Test("Test 8", t8, ["10", "Warning: Built-in function n has been overridden.", "True", "False"])
 test9 = Test("Test 9", t9, ["1", "2", "-1"])
 test10 = Test("Test 10", t10, ["1", "1"])
 test11 = Test("Test 11", t11, ["1", "2", "Fizz", "4", "Buzz", "Fizz", "7", "8", "Fizz", "Buzz"])
@@ -262,9 +286,20 @@ test19 = Test("Test 19", t19, ["1 0", "2 1", "3 1", "4 2", "5 3", "6 5",
                                "12 89", "13 144", "14 233", "15 377"])
 test20 = Test("Test 20", t20, ["2"])
 test21 = Test("Test 21", t21, ["[0, 1, 2, 3, 4, 5, 6]", "[1, 2, 3, 4, 10, 102, 0, 5, 6]","[3, 4, 5]","[0, 1, 4, 9, 16, 25, 36]","[1, 2, 5, 10, 17, 26, 37]"])
-test22 = Test("Test22", t22, ["0"])
+test22 = Test("Test 22", t22, ["0"])
+test23 = Test("Test 23", t23, ["15"])
+test24 = Test("Test 24", t24, ["-1", "-5", "0"])
+test25 = Test("Test 25", t25, ["ollah"])
+test26 = Test("Test 26", t26, ["emove these char"])
+test27 = Test("Test 27", t27, ["3", "7"])
+test28 = Test("Test 28", t28, ["5", "10.105263157894736", "2"])
+test29 = Test("Test 29", t29, ["1.2", "0.4"])
+test30 = Test("Test 30", t30, ["[[0, 1], [2, [3, 4]]]", "[0, 1]", "2", "3"])
+test31 = Test("Test 31", t31, ["5", "h ll ", "111", "0123456"])
+test32 = Test("Test 32", t32, ["h a l l o "])
 
 tests = [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11, test12, test13, test14, test15,
-         test16, test17, test18, test19, test20, test21,test22]
+         test16, test17, test18, test19, test20, test21,test22, test23, test24, test25, test26, test27, test28, test29, test30,
+         test31, test32]
 
 test_group = TestGroup(tests)

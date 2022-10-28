@@ -18,7 +18,7 @@ KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNC
                 "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
                 "and": Datatypes.AND, "rep": Datatypes.REP, "as": Datatypes.AS, "for": Datatypes.FOR,
                 "return": Datatypes.RETURN, "break": Datatypes.BREAK, "continue": Datatypes.CONTINUE, "in": Datatypes.IN,
-                "iter": Datatypes.ITERATE}
+                "iter": Datatypes.ITERATE, "del": Datatypes.DEL}
 
 
 # TODO: replace this with a regex lexer
@@ -32,6 +32,7 @@ class Lexer:
     def __init__(self, text):
         self.text = iter(text)
         self.current_char = None
+        self.ignore = False
         self.next_char()
 
     # Advances the iterator to the next character, returns None at the end of the text
@@ -45,16 +46,18 @@ class Lexer:
     def gen_tokens(self):
         tokens = []
         while self.current_char is not None:
+            # Concludes current token list and starts a new one after the statement separator ";"
+            if self.current_char in ";\n":
+                self.ignore = False
+                tokens.append(Token(Datatypes.LINEBREAK))
+                self.next_char()
             # Skips whitespace entirely
-            if self.current_char in [" ", "\t"]:
+            elif self.current_char in [" ", "\t"] or self.ignore:
                 self.next_char()
             # Ignores any input after "~"
             elif self.current_char == "~":
-                break
-            # Concludes current token list and starts a new one after the statement separator ";"
-            elif self.current_char in ";\n":
-                tokens.append(Token(Datatypes.LINEBREAK))
                 self.next_char()
+                self.ignore = True
             # For some characters, there needs to be a check for other characters after them
             elif self.current_char in OPERATOR_DICT:
                 char = self.current_char

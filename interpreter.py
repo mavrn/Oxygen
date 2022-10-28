@@ -5,10 +5,11 @@ import webbrowser
 from matplotlib import pyplot as plt
 from fractions import Fraction
 import equation_solver
+import builtins
 
 KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial", "bool", "plot", "fraction",
             "p", "midn", "rick", "leet", "type", "arr", "apply", "append", "union", "intersection", "l", "join",
-            "rev"
+            "rev", "sum", "openurl", "min", "max", "s", "split", "n"
             ]
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 
@@ -18,20 +19,6 @@ def standardize(val):
         return val
     else:
         return [val]
-
-def leet(message):
-    charMapping = {
-    'a': '4', 'c': '(', 'd': '|)', 'e': '3',
-    'f': 'ph', 'h': '|-|', 'i': '1', 'k': ']<',
-    'o': '0', 's': '$', 't': '7', 'u': '|_|',
-    'v': '\\/'}
-    leetspeak = ''
-    for char in message:  # Check each character:
-        if char.lower() in charMapping:
-            leetspeak += charMapping[char.lower()]
-        else:
-            leetspeak += char
-    return Datatypes.String(leetspeak)
 
 def merge(output_list, list_to_append):
     for item in list_to_append:
@@ -78,11 +65,16 @@ class Interpreter:
             return self.operation_handler(node)
         elif node_type == "AssignNode":
             assignment_value = self.evaluate(node.value)
-            global_value = self.fields["global"].get(node.identifier)
-            if global_value is not None:
-                self.fields["global"][node.identifier] = assignment_value
+            if type(node.identifier).__name__ == "ArrayCallNode":
+                last_index = node.identifier.index.pop()
+                arr = self.evaluate(node.identifier)
+                arr[last_index] = assignment_value
             else:
-                self.fields[self.scope][node.identifier] = assignment_value
+                global_value = self.fields["global"].get(node.identifier)
+                if global_value is not None:
+                    self.fields["global"][node.identifier] = assignment_value
+                else:
+                    self.fields[self.scope][node.identifier] = assignment_value
             return assignment_value
         elif node_type == "SolveNode":
             _, expression = equation_solver.solve(node.left_side, node.right_side)
@@ -103,9 +95,17 @@ class Interpreter:
                 for i, elem in enumerate(arr):
                     res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, i, arr]))
                     if isinstance(res, list):
-                        arr[i] = res[0]
+                        if len(res) == 0:
+                            continue
+                        elif type(res[0]).__name__ == "Token" and res[0].type == Datatypes.DEL:
+                            arr.delete()
+                        else:
+                            arr[i] = res[0]
                     else:
-                        arr[i] = res
+                        if type(res).__name__ == "Token" and res.type == Datatypes.DEL:
+                            arr.delete()
+                        else:
+                            arr[i] = res
                 return arr
             else:
                 return self.evaluate(Datatypes.AssignNode(node.identifier, self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [arr, 0, arr]))))
@@ -231,7 +231,7 @@ class Interpreter:
                 id = node.items[0]
                 index_id = "_i"
             elif len(node.items) == 0:
-                id = "_c"
+                id = "_x"
                 index_id = "_i"
             iterable = self.evaluate(node.iterable)
             for i, element in enumerate(iterable):
@@ -259,6 +259,10 @@ class Interpreter:
             self.fields[self.scope]["__break__"] = Datatypes.Bool(True)
         elif node_type == "ContinueNode":
             self.fields[self.scope]["__continue__"] = Datatypes.Bool(True)
+        elif node_type == "Array":
+            for i, elem in enumerate(node):
+                node[i] = self.evaluate(elem)
+            return node
         else:
             return node
 
@@ -317,9 +321,10 @@ class Interpreter:
         arg_count = len(node.arguments)
 
         if len(node.arguments) == 1:
-            pot_object = self.evaluate(node.arguments[0])
+            pot_object, args = self.evaluate(node.arguments[0]), []
         elif len(node.arguments) > 1:
             pot_object, *args =  [self.evaluate(arg) for arg in node.arguments]
+        
 
         if keyword == "plot":
             if arg_count not in (3, 4):
@@ -389,15 +394,27 @@ class Interpreter:
             return pot_object
         elif keyword == "l":
             return len(pot_object)
+        elif keyword == "s":
+            return Datatypes.String(pot_object)
+        elif keyword == "n":
+            return float(pot_object)
+        elif keyword == "min":
+            return pot_object.min()
+        elif keyword == "max":
+            return pot_object.max()
         elif keyword == "join":
-            return pot_object.join()
+            delimiter = "" if len(args) == 0 else args[0]
+            return pot_object.join(delimiter)
         elif keyword == "sum":
             return pot_object.sum()
+        elif keyword == "split":
+            delimiter = " " if len(args) == 0 else args[0]
+            return pot_object.split(delimiter)
         elif keyword == "rev":
             return pot_object.reverse()
         elif keyword == "openurl":
             webbrowser.open(str(pot_object)) 
-
+            return
         if arg_count != 1:
             raise TypeError(f"Expected 1 argument for function {keyword}, got {arg_count}.")
         arg = self.evaluate(node.arguments[0])
@@ -428,7 +445,7 @@ class Interpreter:
         elif keyword == "fraction":
             return Fraction(arg).limit_denominator()
         elif keyword == "leet":
-            return leet(str(arg))
+            return builtins.leet(str(arg))
         elif keyword == "type":
             return type(arg).__name__
         
