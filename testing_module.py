@@ -16,15 +16,14 @@ class Test:
             print("An exception occured during the test")
             print(e)
             return 2
+        if actual_output == self.expected_output:
+            print(f"{self.name} passed.")
+            return 1
         else:
-            if actual_output == self.expected_output:
-                print(f"{self.name} passed.")
-                return 1
-            else:
-                print(f"{self.name} didnt pass.")
-                print(f"Expected output: {self.expected_output}")
-                print(f"Actual output: {actual_output}")
-                return 0
+            print(f"{self.name} didnt pass.")
+            print(f"Expected output: {self.expected_output}")
+            print(f"Actual output: {actual_output}")
+            return 0
 
 
 class TestGroup:
@@ -262,6 +261,80 @@ t32 ="""fn add_spaces str => (str.arr >> x+" ").join
 t33="""
 "Remove all vowels" >> "" if x in "aeiou" else x
 """
+t34="""fn x a =>
+     odd_nums = a >> del if x%2==0
+     a.diff(odd_nums)
+     return odd_nums[0] if odd_nums.l == 1 else a[0]
+<<
+[160, 3, 1719, 19, 11, 13, -21].x
+"""
+t35="""fn repl str =>
+     str >>> "" if not (x in alphabet)
+     return str.nummap().join(" ")
+<<
+"The sunset sets at twelve o' clock.".repl
+"""
+t36="""fn order str =>
+    a = str.split()
+    new =[""]*a.l
+    iter a as i, word =>
+        num = 0
+        for char in word =>
+            if char in numbers => num = char.n
+        <<
+        new[num-1] = word
+    <<
+    return new.join(" ")
+<<
+p("4of Fo1r pe6ople g3ood th5e the2".order)"""
+t37="""fn uni str =>
+    new = [str[0]]
+    iter str =>
+            if _x != new[-1] and _i >0 =>
+                    new+=_x
+            <<
+    <<
+    return new
+<<
+'AAAABBBCCDAABBB'.uni.p
+[1,2,2,3,3].uni.p"""
+t38="""fn narc int => 
+    spl = int.s.arr >> x.n
+    range = ([0]*10) >> i+1
+    iter range as i=>
+        sum = 0
+        iter spl as x=>
+            sum += x^i
+        <<
+        if sum == int => return True
+    <<
+    return False
+<<
+153.narc.p
+371.narc.p
+4887.narc.p"""
+t39="""fn score st => (st.capitalize.nummap >> x.n).sum
+fn highes str => 
+    h = ""
+    hs = 0
+    iter str.split() =>
+        sc = _x.score
+        if sc > hs =>
+            hs = sc
+            h = _x
+        <<
+    <<
+    return h
+<<
+'what time are we climbing up the volcano'.highes"""
+t40="""fn spl arr =>
+    zeroes = arr.count(0)
+    arr >>> del if x == 0
+    rep zeroes => arr += 0
+    return arr
+<<
+[9, 0, 0, 9, 1, 2, 0, 1, 0, 1, 0, 3, 0, 1, 9, 0, 0, 0, 0, 9].spl.p"""
+
 
 test1 = Test("Test 1", t1, ["True"])
 test2 = Test("Test 2", t2, ["5"])
@@ -297,9 +370,17 @@ test29 = Test("Test 29", t29, ["1.2", "0.4"])
 test30 = Test("Test 30", t30, ["[[0, 1], [2, [3, 4]]]", "[0, 1]", "2", "3"])
 test31 = Test("Test 31", t31, ["5", "h ll ", "111", "0123456"])
 test32 = Test("Test 32", t32, ["h a l l o "])
+test33 = Test("Test 33", t33, ["Rmv ll vwls"])
+test34 = Test("Test 34", t34, ["160"])
+test35 = Test("Test 35", t35, ["20 8 5 19 21 14 19 5 20 19 5 20 19 1 20 20 23 5 12 22 5 15 3 12 15 3 11"])
+test36 = Test("Test 36", t36, ["Fo1r the2 g3ood 4of th5e pe6ople"])
+test37 = Test("Test 37", t37, ["[A, B, C, D, A, B]", "[1, 2, 3]"])
+test38 = Test("Test 38", t38, ["True", "True", "False"])
+test39 = Test("Test 39", t39, ["volcano"])
+test40 = Test("Test 40", t40, ["[9, 9, 1, 2, 1, 1, 3, 1, 9, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]"])
 
 tests = [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11, test12, test13, test14, test15,
          test16, test17, test18, test19, test20, test21,test22, test23, test24, test25, test26, test27, test28, test29, test30,
-         test31, test32]
+         test31, test32, test33, test34, test35, test36, test37, test38, test39, test40]
 
 test_group = TestGroup(tests)

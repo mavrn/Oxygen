@@ -15,3 +15,5 @@ __pycache__/testing_module.cpython-310.pyc
 Interpreter.lnk
 start.bat
 .vscode/launch.json
+.vscode/settings.json
+__pycache__/builtinfunctions.cpython-310.pyc

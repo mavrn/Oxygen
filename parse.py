@@ -113,9 +113,9 @@ class Parser:
         while self.current_token_type in (Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN,
                                           Datatypes.EQUALS, Datatypes.PLUS_ASSIGN, Datatypes.MINUS_ASSIGN,
                                           Datatypes.MULT_ASSIGN, Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN,
-                                          Datatypes.COMP_EQUALS, Datatypes.COMP_NOT_EQUALS, Datatypes.GREATER_THAN,
-                                          Datatypes.LESS_THAN, Datatypes.GREATER_OR_EQUALS, Datatypes.LESS_OR_EQUALS,
-                                          Datatypes.IN
+                                          Datatypes.ARRAYAPPLY_ASSIGN, Datatypes.COMP_EQUALS, Datatypes.COMP_NOT_EQUALS,
+                                          Datatypes.GREATER_THAN, Datatypes.LESS_THAN, Datatypes.GREATER_OR_EQUALS,
+                                          Datatypes.LESS_OR_EQUALS, Datatypes.IN, Datatypes.NOT, Datatypes.ARRAYAPPLY
                                           ) and not self.skipped_linebreak:
             if self.current_token_type in (Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN):
                 token_type = self.current_token_type
@@ -126,13 +126,11 @@ class Parser:
                 if type(result).__name__ == "VariableNode":
                     self.next_token()
                     result = Datatypes.AssignNode(identifier=result.identifier, value=self.statement())
-                elif type(result).__name__ == "ArrayCallNode":
+                else:
                     self.next_token()
                     result = Datatypes.AssignNode(identifier=result, value=self.statement())
-                else:
-                    raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
             elif self.current_token_type in (Datatypes.PLUS_ASSIGN, Datatypes.MINUS_ASSIGN, Datatypes.MULT_ASSIGN,
-                                             Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN):
+                                             Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN, Datatypes.ARRAYAPPLY_ASSIGN):
                 # Will first make a check if assign operator comes after a variable , then will match the operator
                 # and return assign nodes accordingly
                 if type(result).__name__ == "VariableNode":
@@ -141,19 +139,27 @@ class Parser:
                     result = Datatypes.AssignNode(identifier=result.identifier,
                                                   value=operator_node(
                                                       Datatypes.VariableNode(result.identifier),
-                                                      self.expression()))
-                elif type(result).__name__ == "ArrayCallNode":
+                                                      self.statement()))
+                else:
                     operator_node = Datatypes.OPERATOR_NODE_DICT[self.current_token_type]
                     self.next_token()
                     result = Datatypes.AssignNode(identifier=result,
                                                     value=operator_node(
                                                     result,
-                                                    self.expression()))
-                else:
-                    raise SyntaxError(f"Couldn't assign to type {type(result).__name__}")
+                                                    self.statement()))
+            elif self.current_token_type == Datatypes.ARRAYAPPLY:
+                self.next_token()
+                result = Datatypes.ArrayApplyNode(identifier=result, function=self.statement())        
             elif self.current_token_type == Datatypes.IN:
                 self.next_token()           
                 result = Datatypes.ContainsNode(iterable=self.exponential(), item=result)
+            elif self.current_token_type == Datatypes.NOT:
+                self.next_token()
+                if self.current_token_type == Datatypes.IN:
+                    self.next_token()
+                    result = Datatypes.BooleanNegationNode(Datatypes.ContainsNode(iterable=self.exponential(), item=result))
+                else:
+                    Datatypes.ComparisonNode(a=result, b=self.exponential(), operator=Datatypes.COMP_NOT_EQUALS)
             else:
                 comparison_type = self.current_token_type
                 self.next_token()
@@ -163,7 +169,7 @@ class Parser:
 
     def exponential(self):
         result = self.factor()
-        while self.current_token_type in(Datatypes.EXP, Datatypes.PERIOD_CALL, Datatypes.ARRAYAPPLY):
+        while self.current_token_type in(Datatypes.EXP, Datatypes.PERIOD_CALL):
             if self.current_token_type == Datatypes.EXP:
                 self.next_token()
                 result = Datatypes.ExpNode(a=result, b=self.factor())
@@ -171,9 +177,7 @@ class Parser:
                 self.next_token()
                 right_side = self.factor()
                 result = Datatypes.PeriodCallNode(left_side=result, right_side=right_side)
-            else:
-                self.next_token()
-                result = Datatypes.ArrayApplyNode(identifier=result, function=self.statement())            
+                
         return result
 
     def factor(self):
@@ -229,7 +233,7 @@ class Parser:
             return Datatypes.Bool(False)
         elif token_type == Datatypes.NOT:
             self.next_token()
-            return Datatypes.BooleanNegationNode(value=self.exponential())
+            return Datatypes.BooleanNegationNode(value=self.term())
         # Will handle unary plus und minus signs
         elif token_type == Datatypes.PLUS_SIGN:
             self.next_token()
@@ -381,6 +385,8 @@ class Parser:
                     self.next_token()
                 elif self.current_token_type != Datatypes.RBRACKET:
                     raise SyntaxError("Expected comma or closing parenthesis")
+                while self.current_token_type == Datatypes.LINEBREAK:
+                    self.next_token()
         if self.current_token_type != Datatypes.RBRACKET:
             raise SyntaxError("Expected closing parenthesis")
         return Datatypes.Array(contents)

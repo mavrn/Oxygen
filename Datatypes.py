@@ -1,5 +1,8 @@
-from collections import namedtuple
-from sqlite3 import DatabaseError
+from collections import namedtuple, Counter
+from itertools import combinations, permutations, combinations_with_replacement
+
+ALPHABET_MAP = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6, "G": 7, "H":8 , "I":9, "J":10, "K":11, "L":12, "M":13,
+                "N":14, "O":15, "P":16, "Q":17, "R":18, "S":19, "T":20, "U":21, "V":22, "W":23, "X":24, "Y":25, "Z":26}
 
 class String:
     def __init__(self, value=None):
@@ -7,6 +10,9 @@ class String:
             self.str = str(int(value))
         else:
             self.str = str(value)
+        self.str_arr = []
+        self.n = []
+
 
     def __len__(self):
         return len(self.str)
@@ -17,19 +23,23 @@ class String:
     def __repr__(self):
         return "\"" + self.str + "\""
 
+    def copy(self):
+        return String(self.str)
+
     def __iter__(self):
-        self.n = 0
+        self.n.append(0)
         self.max = len(self)
-        self.str_arr = list(self.str)
+        self.str_arr.append(list(self.str))
         return self
 
     def __next__(self):
-        if self.n < self.max:
-            res = self.str_arr[self.n]
-            self.n += 1
+        if self.n[-1] < self.max:
+            res = self.str_arr[-1][self.n[-1]]
+            self.n[-1] += 1
             return String(res)
         else:
-            self.str = str(Array(self.str_arr).join(""))
+            self.str = str(Array(self.str_arr.pop()).join(""))
+            self.n.pop()
             raise StopIteration  
     
     def __eq__(self, other):
@@ -38,7 +48,10 @@ class String:
         return False
     
     def __add__(self, other):
-        return String(str(self) + str(other))
+        return String(str(self) + str(String(other)))
+    
+    def __radd__(self, other):
+        return String(str(self) + str(String(other)))
 
     def __mul__(self, num):
         if isinstance(num, float) and num%1==0:
@@ -66,15 +79,98 @@ class String:
             lst[index] = str(String(val))
         except IndexError:
             pass
-        self.str_arr[index] = str(String(val))
+        self.str_arr[-1][index] = str(String(val))
         self.str = "".join(lst)
     
+    def nummap(self):
+        new = Array([])
+        for char in self.str:
+            if char.capitalize() in ALPHABET_MAP:
+                new += str(ALPHABET_MAP[char.capitalize()])
+            else:
+                new += char
+        return new  
+    
+    def delete(self):
+        del self.str_arr[-1][self.n[-1]-1]
+        self.n[-1] -= 1
+        self.max -= 1
+        return self
+
+    def posof(self, value):
+        return self.str.index(value)
+
+    def lower(self):
+        return String(self.str.lower())
+    
+    def upper(self):
+        return String(self.str.upper())
+    
+    def capitalize(self):
+        return String(self.str.capitalize())
+    
+    def strip(self, chars=" "):
+        return String(self.str.strip(chars))
+    
+    def replace(self, old, new):
+        return String(self.str.replace(str(old), str(new)))
+    
+    def isupper(self):
+        return Bool(self.str.isupper())
+    
+    def islower(self):
+        return Bool(self.str.islower())
+    
+    def iscapitalized(self):
+        return Bool(self.str.istitle())
+        
+    def count(self, elem):
+        return float(self.str.count(str(elem)))
+    
+    def mostcommon(self, num):
+        c = Counter(list([str(s) for s in self.str]))
+        results = []
+        for tup in c.most_common(int(num)):
+            results.append(Array(list(tup)))
+        return Array(results)
+
+    def combinations(self, length):
+        temp = []
+        for comb in combinations(self.str, int(length)):
+            temp.append(Array(list(comb)))
+        return Array(temp)
+
+    def allcombinations(self):
+        temp = []
+        for length in range(len(self.str) +1):
+            for subset in combinations(self.str, length):
+                temp.append(Array(list(subset)))
+        return Array(temp)
+    
+    def multicombinations(self, length):
+        temp = []
+        for comb in combinations_with_replacement(self.str, int(length)):
+            temp.append(Array(list(comb)))
+        return Array(temp)
+
+    def permutations(self):
+        temp = []
+        for comb in permutations(self.str):
+            temp.append(Array(list(comb)))
+        return Array(temp)
+
     def reverse(self):
         self.str = self.str[::-1]
         return self
 
-    def split(self, delimiter):
-        return Array([String(s) for s in self.str.split(delimiter)])
+    def split(self, delimiters):
+        if len(delimiters) == 0:
+            return Array([String(s) for s in self.str.split()])
+        new = self.str.replace(r" ", " ")
+        master = str(delimiters[0])
+        for i in range(1, len(delimiters)):
+            new = new.replace(str(delimiters[i]), master)
+        return Array([String(s) for s in new.split(str(master))])
 
 class Bool:
     def __init__(self, value=None):
@@ -139,6 +235,9 @@ class Array:
     def __add__(self, elem):
         return Array(self.contents.copy() +[elem])
     
+    def copy(self):
+        return Array(self.contents.copy())
+
     def __mul__(self, num):
         if isinstance(num, float) and num%1==0:
             num = int(num)
@@ -193,6 +292,31 @@ class Array:
             index = int(index)
         self.contents[index] = val
 
+    def combinations(self, length):
+        temp = []
+        for comb in combinations(self.contents, int(length)):
+            temp.append(Array(list(comb)))
+        return Array(temp)
+        
+    def allcombinations(self):
+        temp = []
+        for length in range(len(self.contents) +1):
+            for subset in combinations(self.contents, length):
+                temp.append(Array(list(subset)))
+        return Array(list(temp))
+
+    def multicombinations(self, length):
+        temp = []
+        for comb in combinations_with_replacement(self.contents, int(length)):
+            temp.append(Array(list(comb)))
+        return Array(temp)
+    
+    def permutations(self):
+        temp = []
+        for comb in permutations(self.contents):
+            temp.append(Array(list(comb)))
+        return Array(temp)
+
     def intersection(self, other):
         new = []
         for elem in self:
@@ -207,12 +331,41 @@ class Array:
                 self.contents.append(elem)
         return self
     
+    def mostcommon(self, num):
+        new = []
+        for element in self.contents:
+            if type(element).__name__ == "Array":
+                new.append(element.contents)
+            elif type(element).__name__ == "String":
+                new.append(element.str)
+            elif type(element).__name__ == "Bool":
+                new.append(element.boolean_value)
+            else:
+                new+=element
+        c = Counter(new)
+        results = []
+        for tup in c.most_common(int(num)):
+            results.append(Array(list(tup)))
+        return Array(results)
+    
+    def difference(self, other):
+        for elem in other:
+            if elem in self:
+                    self.contents.remove(elem)
+        return self
+
+    def count(self, elem):
+        return float(self.contents.count(elem))
+    
     def delete(self):
         del self.contents[self.n[-1]-1]
-        self.n[-1] -= 1
+        self.n = [n-1 for n in self.n]
         self.max -= 1
         return self
     
+    def posof(self, value):
+        return self.contents.index(value)
+
     def remove(self, element):
         self.n[-1] -= 1
         self.max -= 1
@@ -232,6 +385,10 @@ class Array:
             else:
                 raise TypeError(f"Cannot add item of type {type(el).__name__} to sum")
         return s
+    
+    def sort(self):
+        self.contents.sort()
+        return self
     
     def min(self):
         return min(self.contents)
@@ -334,9 +491,10 @@ CONTINUE = 47
 LBRACKET = 48
 RBRACKET = 49
 ARRAYAPPLY = 50
-IN = 51
-ITERATE = 52
-DEL = 53
+ARRAYAPPLY_ASSIGN = 51
+IN = 52
+ITERATE = 53
+DEL = 54
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -371,7 +529,7 @@ IterateNode = namedtuple("IterateNode", ["iterable", "items", "statements"])
 # Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
                       MODULUS_SIGN: ModulusNode, EQUALS: AssignNode, PLUS_ASSIGN: AddNode, MINUS_ASSIGN: SubNode,
-                      MULT_ASSIGN: MultNode, DIV_ASSIGN: DivNode, MODULUS_ASSIGN: ModulusNode}
+                      MULT_ASSIGN: MultNode, DIV_ASSIGN: DivNode, MODULUS_ASSIGN: ModulusNode, ARRAYAPPLY_ASSIGN: ArrayApplyNode}
 
 # Debug
 # Helps to make tokens more readable
@@ -429,5 +587,6 @@ type_dict = {
     ARRAYAPPLY: "ARRAYAPPLY",
     IN: "IN",
     ITERATE: "ITERATE",
-    DEL: "DEL"
+    DEL: "DEL",
+    ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN"
 }

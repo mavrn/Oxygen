@@ -1,3 +1,4 @@
+import imp
 import math
 import Datatypes
 import numpy as np
@@ -5,13 +6,18 @@ import webbrowser
 from matplotlib import pyplot as plt
 from fractions import Fraction
 import equation_solver
-import builtins
+import builtinfunctions
 
 KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factorial", "bool", "plot", "fraction",
             "p", "midn", "rick", "leet", "type", "arr", "apply", "append", "union", "intersection", "l", "join",
-            "rev", "sum", "openurl", "min", "max", "s", "split", "n"
+            "rev", "sum", "openurl", "min", "max", "s", "split", "n", "diff", "count", "nummap", "lower", "upper",
+            "capitalize", "strip", "replace", "isupper", "islower", "iscapitalized", "input", "sort", "posof",
+            "combinations", "allcombinations", "permutations", "mostcommon", "multicombinations"
             ]
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
+
+BUILT_IN_FIELDS =  {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * (10 ** (-34)), 
+                    "alphabet": Datatypes.String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), "numbers": Datatypes.String("123456789")}
 
 
 def standardize(val):
@@ -29,25 +35,27 @@ def merge(output_list, list_to_append):
 class Interpreter:
     def __init__(self):
         # Define global and local fields, which emulate global and local (function) scope
-        self.global_fields = {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * (10 ** (-34))}
-        self.fields = {"global": self.global_fields}
+        self.fields = {"global": BUILT_IN_FIELDS.copy()}
         self.backup_fields = {}
         self.scope = "global"
         self.nested_scopes = []
         self.output_lines = []
+        self.keywords = KEYWORDS.copy()
 
     def stringify(self, elem):
         if isinstance(elem, float) and elem%1 == 0:
             elem = int(elem)
-        return str(elem)
+        return str(elem).replace(r'\n', '\n')
+
         
 
-    def get_output(self, ast_list):
+    def get_output(self, ast_list, printall=True):
         self.output_lines = []
         for ast in ast_list:
             out = standardize(self.evaluate(ast))
             out = [self.stringify(o) for o in out if o is not None]
-            merge(self.output_lines, out)
+            if printall:
+                merge(self.output_lines, out)
         return self.output_lines
 
     # Will evaluate the ast (parser output) recursively
@@ -68,13 +76,13 @@ class Interpreter:
             if type(node.identifier).__name__ == "ArrayCallNode":
                 last_index = node.identifier.index.pop()
                 arr = self.evaluate(node.identifier)
-                arr[last_index] = assignment_value
+                arr[self.evaluate(last_index)] = assignment_value
+                node.identifier.index.append(last_index)
             else:
+                if node.identifier in self.keywords:
+                    self.keywords.remove(node.identifier)
                 global_value = self.fields["global"].get(node.identifier)
-                if global_value is not None:
-                    self.fields["global"][node.identifier] = assignment_value
-                else:
-                    self.fields[self.scope][node.identifier] = assignment_value
+                self.fields[self.scope][node.identifier] = assignment_value
             return assignment_value
         elif node_type == "SolveNode":
             _, expression = equation_solver.solve(node.left_side, node.right_side)
@@ -90,10 +98,16 @@ class Interpreter:
             return arr
         elif node_type == "ArrayApplyNode":
             arr = self.evaluate(node.identifier)
+            if not isinstance(arr, float):
+                arr = arr.copy()
             self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function)
+            funcargs = {}
+            if self.scope != "global":
+                for k, v in self.fields[self.scope].items():
+                    funcargs[k] = v                
             if hasattr(arr, "__iter__"):
                 for i, elem in enumerate(arr):
-                    res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, i, arr]))
+                    res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, i, arr]), funcargs)
                     if isinstance(res, list):
                         if len(res) == 0:
                             continue
@@ -260,9 +274,10 @@ class Interpreter:
         elif node_type == "ContinueNode":
             self.fields[self.scope]["__continue__"] = Datatypes.Bool(True)
         elif node_type == "Array":
-            for i, elem in enumerate(node):
-                node[i] = self.evaluate(elem)
-            return node
+            temp = Datatypes.Array(node.contents.copy())
+            for i, elem in enumerate(temp):
+                temp[i] = self.evaluate(elem)
+            return temp
         else:
             return node
 
@@ -273,7 +288,7 @@ class Interpreter:
         self.output_lines = []
 
     # Will handle all nodes of type FuncCallNode
-    def function_call_handler(self, node):
+    def function_call_handler(self, node, optional_funcargs = {}):
         # Fetches the function and its name from the global fields
         func = self.fields["global"].get(node.identifier)
         node_type = type(func).__name__
@@ -298,22 +313,26 @@ class Interpreter:
         self.fields[node.identifier + str(len(self.nested_scopes) + 1)] = {}
         for i, argument in enumerate(arguments):
             self.fields[node.identifier + str(len(self.nested_scopes) + 1)][func.arguments[i]] = self.evaluate(argument)
+        for k, v in optional_funcargs.items():
+            self.fields[node.identifier + str(len(self.nested_scopes) + 1)][k] = v
         self.nested_scopes.append(self.scope)
         self.scope = node.identifier + str(len(self.nested_scopes))
         # Now that the variables are assigned, the function body can be evaluated
-        result = None
+        returned_result = None
         if isinstance(func.body, list):
             for statement in func.body:
                 self.evaluate(statement)
                 if "__return__" in self.fields[self.scope]:
-                    result = self.fields[self.scope]["__return__"]
+                    returned_result = self.fields[self.scope]["__return__"]
+                    if isinstance(returned_result, list):
+                        returned_result = returned_result[0]
                     break
         else:
-            result = self.evaluate(func.body)
+            returned_result = self.evaluate(func.body)
         # Local fields will be cleared after the function ends, just like in any other language
         self.fields[self.scope].clear()
         self.scope = self.nested_scopes.pop()
-        return result
+        return returned_result
 
     # Will handle all built-in functions
     def keyword_handler(self, node):
@@ -337,32 +356,20 @@ class Interpreter:
                 lines.append(self.evaluate(arg))
             out = ""
             for line in lines:
-                out += str(Datatypes.String(line)) + " "
-            out = out.strip()
-            out = [self.stringify(Datatypes.String(out))]
+                out +=  self.stringify(Datatypes.String(line)) + " "
+            out = [Datatypes.String(out.strip())]
             merge(self.output_lines, out)
             return
         elif keyword == "midn":
             if arg_count != 3:
                 raise TypeError(f"Expected 3 arguments for function {keyword}, got {arg_count}.")
             a, b, c = [self.evaluate(arg) for arg in node.arguments]
-            sol = []
-            if a == 0 and b == 0:
-                return []
-            elif a == 0:
-                return [(-c)/b]      
-            try:
-                x1 = (-b + math.sqrt(b**2 - 4*a*c))/(2*a)
-                sol.append(x1)
-                x2 = (-b - math.sqrt(b**2 - 4*a*c))/(2*a)
-                if(x1 != x2):
-                    sol.append(x2)
-            except ValueError:
-                pass
-            return sol
+            return builtinfunctions.midnight(a, b, c)
         elif keyword == "rick":
             webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
             return
+        elif keyword == "input":
+            return input()
         elif keyword == "arr":
             return Datatypes.Array(list(pot_object))
         elif keyword == "apply":
@@ -389,15 +396,48 @@ class Interpreter:
             for arg in args:
                 temp = self.evaluate(arg)
                 if type(temp).__name__ != "Array":
-                    raise TypeError(f"Cannot use union with type {type(temp).__name__}")
+                    raise TypeError(f"Cannot use intersection with type {type(temp).__name__}")
                 pot_object.intersection(temp)
             return pot_object
+        elif keyword == "diff":
+            for arg in args:
+                temp = self.evaluate(arg)
+                if type(temp).__name__ != "Array":
+                    raise TypeError(f"Cannot use diff with type {type(temp).__name__}")
+                pot_object.difference(temp)
+            return pot_object
+        elif keyword == "count":
+            ct = 0 
+            for arg in args:
+                temp = self.evaluate(arg)
+                ct += pot_object.count(temp)
+            return ct
+        elif keyword == "posof":
+            return pot_object.posof(*args)
+        elif keyword == "combinations":
+            if len(args) == 0:
+                args.append(len(pot_object))
+            return pot_object.combinations(*args)
+        elif keyword == "allcombinations":
+            return pot_object.allcombinations()
+        elif keyword == "multicombinations":
+            if len(args) == 0:
+                args.append(len(pot_object))
+            return pot_object.multicombinations(*args)
+        elif keyword == "permutations":
+            return pot_object.permutations()
+        elif keyword == "mostcommon":
+            if len(args) == 0:
+                ranking_length = 3
+            else:
+                ranking_length = args[0]
+            return pot_object.mostcommon(ranking_length)
         elif keyword == "l":
             return len(pot_object)
         elif keyword == "s":
             return Datatypes.String(pot_object)
         elif keyword == "n":
-            return float(pot_object)
+            return float(str(pot_object))
         elif keyword == "min":
             return pot_object.min()
         elif keyword == "max":
@@ -408,10 +448,35 @@ class Interpreter:
         elif keyword == "sum":
             return pot_object.sum()
         elif keyword == "split":
-            delimiter = " " if len(args) == 0 else args[0]
-            return pot_object.split(delimiter)
+            return pot_object.split(args)
         elif keyword == "rev":
             return pot_object.reverse()
+        elif keyword == "nummap":
+            return pot_object.nummap()
+        elif keyword == "lower":
+            return pot_object.lower()
+        elif keyword == "upper":
+            return pot_object.upper()
+        elif keyword == "sort":
+            return pot_object.sort()
+        elif keyword == "capitalize":
+            return pot_object.capitalize()
+        elif keyword == "isupper":
+            return pot_object.isupper()
+        elif keyword == "islower":
+            return pot_object.islower()
+        elif keyword == "iscapitalized":
+            return pot_object.iscapitalized()
+        elif keyword == "strip":
+            if len(args) == 0:
+                return pot_object.strip()
+            else:
+                chars = ""
+                for arg in args:
+                    chars += str(arg)
+                return pot_object.strip(chars)
+        elif keyword == "replace":
+            return pot_object.replace(args[0], args[1])        
         elif keyword == "openurl":
             webbrowser.open(str(pot_object)) 
             return
@@ -445,7 +510,7 @@ class Interpreter:
         elif keyword == "fraction":
             return Fraction(arg).limit_denominator()
         elif keyword == "leet":
-            return builtins.leet(str(arg))
+            return builtinfunctions.leet(str(arg))
         elif keyword == "type":
             return type(arg).__name__
         
@@ -511,7 +576,7 @@ class Interpreter:
         elif type(node.right_side).__name__ == "VariableNode" and (node.right_side.identifier in KEYWORDS or type(self.fields["global"].get(node.right_side.identifier)).__name__ == "Function"):
             return self.function_call_handler(Datatypes.FuncCallNode(node.right_side.identifier, [node.left_side]))
         else:
-            return "pos1"
+            raise Exception("pos1")
             
             
     def plot_handler(self, function, lower_rng, upper_rng, increment=0.001):

@@ -12,7 +12,7 @@ OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datat
                  ">=": Datatypes.GREATER_OR_EQUALS, "=>": Datatypes.ARROW, "=": Datatypes.EQUALS, "!": Datatypes.NOT,
                  "--": Datatypes.DOUBLE_MINUS, "++": Datatypes.DOUBLE_PLUS, "<<": Datatypes.BLOCK_END,
                  "{": Datatypes.LCURLY, "}": Datatypes.RCURLY, "?=": Datatypes.SOLVE_ASSIGN, "?": Datatypes.SOLVE,
-                 "[": Datatypes.LBRACKET, "]": Datatypes.RBRACKET, ">>": Datatypes.ARRAYAPPLY
+                 "[": Datatypes.LBRACKET, "]": Datatypes.RBRACKET, ">>": Datatypes.ARRAYAPPLY, ">>>": Datatypes.ARRAYAPPLY_ASSIGN
                  }
 KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD,
                 "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
@@ -64,8 +64,12 @@ class Lexer:
                 self.next_char()
                 operator = char + str(self.current_char)
                 if operator in OPERATOR_DICT:
-                    tokens.append(Token(OPERATOR_DICT[operator]))
                     self.next_char()
+                    if operator + str(self.current_char) in OPERATOR_DICT:
+                        tokens.append(Token(OPERATOR_DICT[operator + str(self.current_char)]))
+                        self.next_char()
+                    else:
+                        tokens.append(Token(OPERATOR_DICT[operator]))
                 else:
                     tokens.append(Token(OPERATOR_DICT[char]))
                 if self.current_char == ".":

@@ -83,7 +83,7 @@ class Interface:
     # Instead of starting an interpreter session, this function will simply
     # get the output from any input string and print the output
 
-    def run(self, input_string, return_out=False):
+    def run(self, input_string, return_out=False, printall=True):
         lexer = Lexer(input_string)
         tokens = lexer.gen_tokens()
         if self.debug:
@@ -97,23 +97,22 @@ class Interface:
         ast_list = parser.parse()
         if self.debug:
             print(ast_list)
-        output_lines = self.interpreter.get_output(ast_list)
+        output_lines = self.interpreter.get_output(ast_list, printall)
         if return_out:
             return output_lines
         else:
             self.print_output(output_lines)
 
-    def run_from_txt(self):
+    def run_from_txt(self, printall=False):
         with open('program.txt') as program:
             program = program.read()
-        self.run(program)
+        self.run(program, printall=printall)
 
     def print_output(self, output_lines):
         # Printing the result
-        # Won't print anything if the result is None
+        # Won't print anything if the result is None#
         for line in output_lines:
             if line is not None:
-                # Running some instance checks to make sure that the right thing is printed to the console
                 print(line)
 
 
