@@ -2,12 +2,15 @@
 # array.
 #fileopen
 #implement number class
+#implement dict class
 #update comments
-#dicts
 #delegate arrays to numpy
 #name unittests
 #removeall
-#fix num assignments
+#fix num assignments 3=4
+#while loop
+#array access by / ?
+#kwargs
 
 
 #redo exceptions + add trycatch

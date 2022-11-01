@@ -1,4 +1,13 @@
-fn perm str =>
-    return (str.permutations >> x.join).removeduplicates
+fn uni str =>
+    new = [str[0]]
+    new.type.p
+    iter str =>
+            if _x != new[-1] and _i >0 =>
+                    new+=_x
+            <<
+    <<
+    new.type.p
+    return new
 <<
-"aabb".perm.p
+"AAAABBBCCDAABBB".uni.p
+[1,2,2,3,3].uni.p

@@ -4,6 +4,9 @@ from itertools import combinations, permutations, combinations_with_replacement
 ALPHABET_MAP = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6, "G": 7, "H":8 , "I":9, "J":10, "K":11, "L":12, "M":13,
                 "N":14, "O":15, "P":16, "Q":17, "R":18, "S":19, "T":20, "U":21, "V":22, "W":23, "X":24, "Y":25, "Z":26}
 
+def convert_to_ints(arglist):
+    return [int(elem) if (isinstance(elem, float) and elem%1==0) else elem for elem in arglist]
+
 class String:
     def __init__(self, value=None):
         if isinstance(value, float) and value % 1 == 0:
@@ -89,6 +92,10 @@ class String:
     def slice(self, start, stop, step):
         return String(self.str[int(start):int(stop):int(step)])
     
+    def append(self, *args):
+        for arg in args:
+            self += arg
+            
     def nummap(self):
         new = Array([])
         for char in self.str:
@@ -104,11 +111,12 @@ class String:
         self.max -= 1
         return self
 
-    def deleteAt(self, index):
-        del self.contents[int(index)]
+    def deleteAt(self, *args):
+        for arg in convert_to_ints(args):
+            del self.str[arg]
     
-    def pop(self, index):
-        return self.contents.pop(int(index))
+    def pop(self, *args):
+        return self.contents.pop(*convert_to_ints(args))
 
     def posof(self, value):
         return self.str.index(value)
@@ -122,11 +130,17 @@ class String:
     def capitalize(self):
         return String(self.str.capitalize())
     
-    def strip(self, chars=" "):
-        return String(self.str.strip(chars))
+    def strip(self, *args):
+        if len(args) == 0:
+            delimiters = " "
+        else:
+            delimiters = ""
+            for arg in args:
+                delimiters += str(arg)
+        return String(self.str.strip(delimiters))
     
-    def replace(self, old, new):
-        return String(self.str.replace(str(old), str(new)))
+    def replace(self, *args):
+        return String(self.str.replace(*[str(arg) for arg in args]))
     
     def isupper(self):
         return Bool(self.str.isupper())
@@ -137,20 +151,30 @@ class String:
     def iscapitalized(self):
         return Bool(self.str.istitle())
         
-    def count(self, elem):
-        return float(self.str.count(str(elem)))
+    def count(self, *args):
+        ct = 0
+        for arg in args:
+            if not isinstance(arg, String):
+                raise TypeError("Expected type String for function count")
+            ct += self.str.count(str(arg))
+        return float(ct)
     
     def mostcommon(self, num):
         c = Counter(list([str(s) for s in self.str]))
         results = []
-        for tup in c.most_common(int(num)):
+        args = convert_to_ints(args)
+        if len(args) == 0:
+            ranking_length = 3
+        else:
+            ranking_length = args[0]
+        for tup in c.most_common(ranking_length):
             results.append(Array(list(tup)))
         print(results)
         return Array(results)
 
-    def combinations(self, length):
+    def combinations(self, *args):
         temp = []
-        for comb in combinations(self.str, int(length)):
+        for comb in combinations(self.str, *convert_to_ints(args)):
             temp.append(Array(list(comb)))
         return Array(temp)
 
@@ -161,9 +185,11 @@ class String:
                 temp.append(Array(list(subset)))
         return Array(temp)
     
-    def multicombinations(self, length):
+    def multicombinations(self, *args):
         temp = []
-        for comb in combinations_with_replacement(self.str, int(length)):
+        if len(args) == 0:
+            args = [len(self)]
+        for comb in combinations_with_replacement(self.str, *convert_to_ints(args)):
             temp.append(Array(list(comb)))
         return Array(temp)
 
@@ -176,17 +202,17 @@ class String:
     def removeduplicates(self):
         return Array(list(dict.fromkeys(list(self.str))))
 
-    def reverse(self):
+    def rev(self):
         self.str = self.str[::-1]
         return self
 
-    def split(self, delimiters):
-        if len(delimiters) == 0:
+    def split(self, *args):
+        if len(args) == 0:
             return Array([String(s) for s in self.str.split()])
         new = self.str.replace(r" ", " ")
-        master = str(delimiters[0])
-        for i in range(1, len(delimiters)):
-            new = new.replace(str(delimiters[i]), master)
+        master = str(args[0])
+        for i in range(1, len(args)):
+            new = new.replace(str(args[i]), master)
         return Array([String(s) for s in new.split(str(master))])
 
 class Bool:
@@ -222,7 +248,7 @@ class Bool:
             return self.__dict__ == other.__dict__
         return False
 
-    def reverse(self):
+    def rev(self):
         self.boolean_value = not self.boolean_value
 
 
@@ -232,6 +258,7 @@ class Array:
         self.n = []
     
     def process_element(self, elem):
+        print(elem, type(elem).__name__)
         if isinstance(elem, float) and elem%1==0:
             return int(elem)
         if isinstance(elem, str):
@@ -315,26 +342,32 @@ class Array:
         if isinstance(index, float) and index%1 == 0:
             index = int(index)
         self.contents[index] = val
+    
+    def append(self, *args):
+        for arg in args:
+            self += arg
 
-    def getpylist(self):
+    def convert_to_builtins(self):
         new = []
         for element in self.contents:
-            if type(element).__name__ == "Array":
+            if isinstance(element, Array):
                 new.append(element.contents)
-            elif type(element).__name__ == "String":
+            elif isinstance(element, String):
                 new.append(element.str)
-            elif type(element).__name__ == "Bool":
+            elif isinstance(element, Bool):
                 new.append(element.boolean_value)
+            elif isinstance(element, float) and element%1==0:
+                new.append(int(element))
             else:
-                new+=element
+                new.append(element)
         return new
 
     def slice(self, start, stop, step):
         return Array(self.contents[int(start):int(stop):int(step)])
 
-    def combinations(self, length):
+    def combinations(self, *args):
         temp = []
-        for comb in combinations(self.contents, int(length)):
+        for comb in combinations(self.contents, *convert_to_ints(args)):
             temp.append(Array(list(comb)))
         return Array(temp)
         
@@ -345,9 +378,11 @@ class Array:
                 temp.append(Array(list(subset)))
         return Array(list(temp))
 
-    def multicombinations(self, length):
+    def multicombinations(self, *args):
         temp = []
-        for comb in combinations_with_replacement(self.contents, int(length)):
+        if len(args) == 0:
+            args = [len(self)]
+        for comb in combinations_with_replacement(self.contents, *convert_to_ints(args)):
             temp.append(Array(list(comb)))
         return Array(temp)
     
@@ -358,7 +393,7 @@ class Array:
         return Array(temp)
 
     def removeduplicates(self):
-        return Array(list(dict.fromkeys(self.getpylist())))
+        return Array(list(dict.fromkeys(self.convert_to_builtins())))
 
     def intersection(self, other):
         new = []
@@ -373,22 +408,30 @@ class Array:
             if elem not in self:
                 self.contents.append(elem)
         return self
-    
-    def mostcommon(self, num):
-        c = Counter(self.getpylist())
-        results = []
-        for tup in c.most_common(int(num)):
-            results.append(Array(list(tup)))
-        return Array(results)
-    
+
     def difference(self, other):
         for elem in other:
             if elem in self:
                     self.contents.remove(elem)
         return self
 
-    def count(self, elem):
-        return float(self.contents.count(elem))
+    def mostcommon(self, *args):
+        c = Counter(self.convert_to_builtins())
+        results = []
+        args = convert_to_ints(args)
+        if len(args) == 0:
+            ranking_length = 3
+        else:
+            ranking_length = args[0]
+        for tup in c.most_common(ranking_length):
+            results.append(Array(list(tup)))
+        return Array(results)
+
+    def count(self, *args):
+        ct = 0
+        for arg in args:
+            ct += self.contents.count(arg)
+        return float(ct)
     
     def delete(self):
         del self.contents[self.n[-1]-1]
@@ -396,11 +439,12 @@ class Array:
         self.max -= 1
         return self
 
-    def deleteAt(self, index):
-        del self.contents[int(index)]
+    def deleteAt(self, *args):
+        for arg in convert_to_ints(args):
+            del self.contents[arg]
     
-    def pop(self, index):
-        return self.contents.pop(int(index))
+    def pop(self, *args):
+        return self.contents.pop(*convert_to_ints(args))
     
     def posof(self, value):
         return self.contents.index(value)
@@ -410,8 +454,12 @@ class Array:
         self.max -= 1
         self.contents.remove(element)
         return self
-    
-    def join(self, delimiter):
+
+    def replace(self, *args):
+        return String(self.contents.replace(*args))
+
+    def join(self, *args):
+        delimiter = "" if len(args) == 0 else args[0]
         return String(str(delimiter).join([str(s) for s in self.contents]))
     
     def sum(self):
@@ -435,16 +483,17 @@ class Array:
     def max(self):
         return max(self.contents)
 
-    def reverse(self):
+    def rev(self):
         self.contents.reverse()
         return self
             
 
 # Defines a function consisting of the arguments and the body
 class Function:
-    def __init__(self, arguments, body):
+    def __init__(self, arguments, body, identifier):
         self.arguments = arguments
         self.body = body
+        self.identifier = identifier
 
     def __repr__(self):
         return f"FUNCTION: \n ARGS = {self.arguments} \n BODY = {self.body}"

@@ -137,7 +137,7 @@ x >> x+1
 """
 input22 = """fn x =>
 return 0 <<
-x
+x()
 """
 input23= """fn sum_of_positive arr =>
 return (arr >> 0 if x<0 else x).sum
@@ -204,7 +204,7 @@ input33="""
 """
 input34="""fn x a =>
      odd_nums = a >> del if x%2==0
-     a.diff(odd_nums)
+     a.difference(odd_nums)
      return odd_nums[0] if odd_nums.l == 1 else a[0]
 <<
 [160, 3, 1719, 19, 11, 13, -21].x
@@ -425,7 +425,7 @@ output7 = ['0.19163898275344238']
 output8 = ['10', '"Warning: Built-in function n has been overridden."', 'True', 'False']
 output9 = ['1', '2', '-1']
 output10 = ['1', '1']
-output11 = ['1', '2', '"Fizz"', '4', '"Buzz"', '"Fizz"', '7', '8', '"Fizz"', '"Buzz"']
+output11 = ['1', '2', 'Fizz', '4', 'Buzz', 'Fizz', '7', '8', 'Fizz', 'Buzz']
 output12 = ['"Yes"']
 output13 = ['"Negative number"', '"Positive number"', '"Greater than 10"']
 output14 = ['3']
@@ -450,7 +450,7 @@ output32 = ['"h a l l o "']
 output33 = ['"Rmv ll vwls"']
 output34 = ['160']
 output35 = ['"20 8 5 19 21 14 19 5 20 19 5 20 19 1 20 20 23 5 12 22 5 15 3 12 15 3 11"']
-output36 = ['"Fo1r the2 g3ood 4of th5e pe6ople"']
+output36 = ['Fo1r the2 g3ood 4of th5e pe6ople']
 output37 = ['["A", "B", "C", "D", "A", "B"]', '[1, 2, 3]']
 output38 = ['True', 'True', 'False']
 output39 = ['"volcano"']

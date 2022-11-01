@@ -1,5 +1,8 @@
 import Datatypes
 import math
+import webbrowser
+import builtins
+import numpy as np
 
 def leet(message):
     charMapping = {
@@ -15,7 +18,8 @@ def leet(message):
             leetspeak += char
     return Datatypes.String(leetspeak)
 
-def midnight(a,b,c):
+def midn(self, *args):
+    a, b, c = args
     sol = []
     if a == 0 and b == 0:
         return []
@@ -30,3 +34,36 @@ def midnight(a,b,c):
     except ValueError:
         pass
     return Datatypes.Array(sol)
+
+def rick():
+    webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+
+def openurl(url):
+    webbrowser.open(url) 
+
+def abs(value):
+    return math.fabs(value)
+
+def input():
+    return Datatypes.String(builtins.input())
+
+def arr(object):
+    return Datatypes.Array(list(object))
+
+def bool(object):
+    return Datatypes.Bool(object)
+
+def s(object):
+    return Datatypes.String(object)
+
+def n(object):
+    return float(str(object))
+
+def l(object):
+    return len(object)
+
+def range(*args):    
+    return Datatypes.Array(list(np.arange(*args)))
+
+def type(object):
+    return builtins.type(object).__name__
