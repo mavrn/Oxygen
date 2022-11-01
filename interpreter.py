@@ -12,8 +12,8 @@ KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "abs", "sqrt", "factori
             "p", "midn", "rick", "leet", "type", "arr", "apply", "append", "union", "intersection", "l", "join",
             "rev", "sum", "openurl", "min", "max", "s", "split", "n", "diff", "count", "nummap", "lower", "upper",
             "capitalize", "strip", "replace", "isupper", "islower", "iscapitalized", "input", "sort", "posof",
-            "combinations", "allcombinations", "permutations", "mostcommon", "multicombinations"
-            ]
+            "combinations", "allcombinations", "permutations", "mostcommon", "multicombinations", "removeduplicates",
+            "range", "del", "pop"            ]
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 
 BUILT_IN_FIELDS =  {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * (10 ** (-34)), 
@@ -42,10 +42,16 @@ class Interpreter:
         self.output_lines = []
         self.keywords = KEYWORDS.copy()
 
+    def remove_decimals(self, elem):
+        if isinstance(elem, float) and elem%1==0:
+            return int(elem)
+        return elem
+
     def stringify(self, elem):
         if isinstance(elem, float) and elem%1 == 0:
             elem = int(elem)
-        return str(elem).replace(r'\n', '\n')
+        if elem is not None:
+            return repr(self.remove_decimals(elem)).replace(r'\n', '\n')
 
         
 
@@ -82,7 +88,13 @@ class Interpreter:
                 if node.identifier in self.keywords:
                     self.keywords.remove(node.identifier)
                 global_value = self.fields["global"].get(node.identifier)
-                self.fields[self.scope][node.identifier] = assignment_value
+                local_value = self.fields[self.scope].get(node.identifier)
+                if local_value is not None:
+                    self.fields[self.scope][node.identifier] = assignment_value
+                elif global_value is not None:
+                    self.fields["global"][node.identifier] = assignment_value
+                else:
+                    self.fields[self.scope][node.identifier] = assignment_value
             return assignment_value
         elif node_type == "SolveNode":
             _, expression = equation_solver.solve(node.left_side, node.right_side)
@@ -94,7 +106,10 @@ class Interpreter:
         elif node_type == "ArrayCallNode":
             arr = self.evaluate(node.identifier)
             for index in node.index:
-                arr = arr[self.evaluate(index)]
+                if type(index).__name__ == "RangeNode":
+                    arr = arr.slice(self.evaluate(index.start), self.evaluate(index.stop), self.evaluate(index.step) )
+                else:
+                    arr = arr[self.evaluate(index)]
             return arr
         elif node_type == "ArrayApplyNode":
             arr = self.evaluate(node.identifier)
@@ -265,6 +280,8 @@ class Interpreter:
                     self.fields[self.scope].pop("__continue__")
             self.fields[self.scope].pop(id)
             return out
+        elif node_type == "RangeNode":
+            return Datatypes.Array(list(np.arange(node.start,node.stop,node.step)))
         elif node_type == "ReturnNode":
             if self.scope == "global":
                 raise SyntaxError("Return statement outside function")
@@ -338,13 +355,6 @@ class Interpreter:
     def keyword_handler(self, node):
         keyword = node.identifier
         arg_count = len(node.arguments)
-
-        if len(node.arguments) == 1:
-            pot_object, args = self.evaluate(node.arguments[0]), []
-        elif len(node.arguments) > 1:
-            pot_object, *args =  [self.evaluate(arg) for arg in node.arguments]
-        
-
         if keyword == "plot":
             if arg_count not in (3, 4):
                 raise TypeError(f"Expected 3 to 4 arguments for function {keyword}, got {arg_count}.")
@@ -353,13 +363,21 @@ class Interpreter:
         elif keyword == "p":
             lines = []
             for arg in node.arguments:
-                lines.append(self.evaluate(arg))
+                line = self.evaluate(arg)
+                if line is not None:
+                    lines.append(line)
+            if len(lines) == 0:
+                return
             out = ""
             for line in lines:
-                out +=  self.stringify(Datatypes.String(line)) + " "
-            out = [Datatypes.String(out.strip())]
+                if line is not None:
+                    out +=  self.stringify(line) + " "
+            out = [out.strip()]
             merge(self.output_lines, out)
             return
+        elif keyword == "range":
+            args = [self.evaluate(arg) for arg in node.arguments]
+            return Datatypes.Array(list(np.arange(*args)))
         elif keyword == "midn":
             if arg_count != 3:
                 raise TypeError(f"Expected 3 arguments for function {keyword}, got {arg_count}.")
@@ -370,7 +388,14 @@ class Interpreter:
             return
         elif keyword == "input":
             return input()
-        elif keyword == "arr":
+    
+
+        if len(node.arguments) == 1:
+            pot_object, args = self.evaluate(node.arguments[0]), []
+        elif len(node.arguments) > 1:
+            pot_object, *args =  [self.evaluate(arg) for arg in node.arguments]
+    
+        if keyword == "arr":
             return Datatypes.Array(list(pot_object))
         elif keyword == "apply":
             if len(args) != 1:
@@ -432,6 +457,15 @@ class Interpreter:
             else:
                 ranking_length = args[0]
             return pot_object.mostcommon(ranking_length)
+        elif keyword == "del":
+            pot_object.deleteAt(args[0])
+            return
+        elif keyword == "pop":
+            if len(args) == 0:
+                index = -1
+            else:
+                index = args[0]
+            return pot_object.pop(index)
         elif keyword == "l":
             return len(pot_object)
         elif keyword == "s":
@@ -467,6 +501,8 @@ class Interpreter:
             return pot_object.islower()
         elif keyword == "iscapitalized":
             return pot_object.iscapitalized()
+        elif keyword == "removeduplicates":
+            return pot_object.removeduplicates()
         elif keyword == "strip":
             if len(args) == 0:
                 return pot_object.strip()

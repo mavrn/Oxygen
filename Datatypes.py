@@ -8,6 +8,10 @@ class String:
     def __init__(self, value=None):
         if isinstance(value, float) and value % 1 == 0:
             self.str = str(int(value))
+        elif value is None:
+            self.str = None
+        elif isinstance(value, String):
+            self.str = value.str
         else:
             self.str = str(value)
         self.str_arr = []
@@ -82,6 +86,9 @@ class String:
         self.str_arr[-1][index] = str(String(val))
         self.str = "".join(lst)
     
+    def slice(self, start, stop, step):
+        return String(self.str[int(start):int(stop):int(step)])
+    
     def nummap(self):
         new = Array([])
         for char in self.str:
@@ -96,6 +103,12 @@ class String:
         self.n[-1] -= 1
         self.max -= 1
         return self
+
+    def deleteAt(self, index):
+        del self.contents[int(index)]
+    
+    def pop(self, index):
+        return self.contents.pop(int(index))
 
     def posof(self, value):
         return self.str.index(value)
@@ -132,6 +145,7 @@ class String:
         results = []
         for tup in c.most_common(int(num)):
             results.append(Array(list(tup)))
+        print(results)
         return Array(results)
 
     def combinations(self, length):
@@ -158,6 +172,9 @@ class String:
         for comb in permutations(self.str):
             temp.append(Array(list(comb)))
         return Array(temp)
+    
+    def removeduplicates(self):
+        return Array(list(dict.fromkeys(list(self.str))))
 
     def reverse(self):
         self.str = self.str[::-1]
@@ -214,15 +231,22 @@ class Array:
         self.contents = contents
         self.n = []
     
+    def process_element(self, elem):
+        if isinstance(elem, float) and elem%1==0:
+            return int(elem)
+        if isinstance(elem, str):
+            return String(elem)
+        return elem
+
     def __str__(self):
         if len(self) ==0:
             return "[]"
-        repr = "["
+        res = "["
         for c in self.contents:
-            repr += String(c).str + ", "
-        repr = repr[:-2]
-        repr += "]"
-        return repr
+            res += repr(self.process_element(c)) + ", "
+        res = res[:-2]
+        res += "]"
+        return res
     
     def __len__(self):
         return len(self.contents)
@@ -292,6 +316,22 @@ class Array:
             index = int(index)
         self.contents[index] = val
 
+    def getpylist(self):
+        new = []
+        for element in self.contents:
+            if type(element).__name__ == "Array":
+                new.append(element.contents)
+            elif type(element).__name__ == "String":
+                new.append(element.str)
+            elif type(element).__name__ == "Bool":
+                new.append(element.boolean_value)
+            else:
+                new+=element
+        return new
+
+    def slice(self, start, stop, step):
+        return Array(self.contents[int(start):int(stop):int(step)])
+
     def combinations(self, length):
         temp = []
         for comb in combinations(self.contents, int(length)):
@@ -317,6 +357,9 @@ class Array:
             temp.append(Array(list(comb)))
         return Array(temp)
 
+    def removeduplicates(self):
+        return Array(list(dict.fromkeys(self.getpylist())))
+
     def intersection(self, other):
         new = []
         for elem in self:
@@ -332,17 +375,7 @@ class Array:
         return self
     
     def mostcommon(self, num):
-        new = []
-        for element in self.contents:
-            if type(element).__name__ == "Array":
-                new.append(element.contents)
-            elif type(element).__name__ == "String":
-                new.append(element.str)
-            elif type(element).__name__ == "Bool":
-                new.append(element.boolean_value)
-            else:
-                new+=element
-        c = Counter(new)
+        c = Counter(self.getpylist())
         results = []
         for tup in c.most_common(int(num)):
             results.append(Array(list(tup)))
@@ -362,6 +395,12 @@ class Array:
         self.n = [n-1 for n in self.n]
         self.max -= 1
         return self
+
+    def deleteAt(self, index):
+        del self.contents[int(index)]
+    
+    def pop(self, index):
+        return self.contents.pop(int(index))
     
     def posof(self, value):
         return self.contents.index(value)
@@ -495,6 +534,8 @@ ARRAYAPPLY_ASSIGN = 51
 IN = 52
 ITERATE = 53
 DEL = 54
+LET = 55
+COLON = 56
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -525,6 +566,7 @@ PeriodCallNode = namedtuple("PeriodCallNode", ["left_side", "right_side"])
 ForEachNode = namedtuple("ForEachNode", ["item", "iterable", "statements"])
 ContainsNode = namedtuple("ContainsNode", ["iterable", "item"])
 IterateNode = namedtuple("IterateNode", ["iterable", "items", "statements"])
+RangeNode = namedtuple("RangeNode", ["start", "stop", "step"])
 
 # Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
@@ -588,5 +630,7 @@ type_dict = {
     IN: "IN",
     ITERATE: "ITERATE",
     DEL: "DEL",
-    ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN"
+    ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN",
+    LET: "LET",
+    COLON: "COLON"
 }

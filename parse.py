@@ -115,7 +115,8 @@ class Parser:
                                           Datatypes.MULT_ASSIGN, Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN,
                                           Datatypes.ARRAYAPPLY_ASSIGN, Datatypes.COMP_EQUALS, Datatypes.COMP_NOT_EQUALS,
                                           Datatypes.GREATER_THAN, Datatypes.LESS_THAN, Datatypes.GREATER_OR_EQUALS,
-                                          Datatypes.LESS_OR_EQUALS, Datatypes.IN, Datatypes.NOT, Datatypes.ARRAYAPPLY
+                                          Datatypes.LESS_OR_EQUALS, Datatypes.IN, Datatypes.NOT, Datatypes.ARRAYAPPLY,
+                                          Datatypes.COLON
                                           ) and not self.skipped_linebreak:
             if self.current_token_type in (Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN):
                 token_type = self.current_token_type
@@ -153,6 +154,16 @@ class Parser:
             elif self.current_token_type == Datatypes.IN:
                 self.next_token()           
                 result = Datatypes.ContainsNode(iterable=self.exponential(), item=result)
+            elif self.current_token_type == Datatypes.COLON:
+                start = result
+                self.next_token()
+                stop = self.exponential()
+                if self.current_token_type == Datatypes.COLON:
+                    self.next_token()
+                    step = self.exponential()
+                else:
+                    step = 1
+                return Datatypes.RangeNode(start=start, stop=stop, step=step)
             elif self.current_token_type == Datatypes.NOT:
                 self.next_token()
                 if self.current_token_type == Datatypes.IN:
@@ -190,9 +201,8 @@ class Parser:
             self.next_token()
             if self.current_token_type == Datatypes.IDENTIFIER:
                 return Datatypes.MultNode(token.value, self.exponential())
-            elif self.current_token_type == Datatypes.MODULUS_SIGN:
-                self.next_token()
-                return Datatypes.DivNode(token.value, 100)
+            elif self.current_token_type == Datatypes.LBRACKET:
+                return self.gen_arrcall(token.value)
             return token.value
         # In case of a FUNCTION_KEYWORD, the parsing process will continue declare_function() function
         elif token_type == Datatypes.FUNCTION_KEYWORD:
@@ -224,6 +234,8 @@ class Parser:
         elif token_type == Datatypes.LBRACKET:
             arr = self.gen_arr()
             self.next_token()
+            if self.current_token_type == Datatypes.LBRACKET:
+                return self.gen_arrcall(arr)
             return arr
         elif token_type == Datatypes.TRUE:
             self.next_token()
@@ -273,7 +285,14 @@ class Parser:
                 return Datatypes.VariableNode(identifier=identifier)
         elif token_type == Datatypes.DEL:
             self.next_token()
+            if self.current_token_type == Datatypes.LPAREN:
+                return self.gen_funccall("del")
             return token
+        elif token_type == Datatypes.LET:
+            self.next_token()
+            id = self.current_token.value
+            self.next_token()
+            return Datatypes.AssignNode(identifier=id, value=self.statement())
         elif token_type in (Datatypes.BLOCK_END, Datatypes.RCURLY):
             return
         else:
@@ -345,8 +364,7 @@ class Parser:
 
     def gen_iterate(self):
         self.next_token()
-        iterable = self.exponential()
-
+        iterable = self.term()
         items = []
         if self.current_token_type == Datatypes.AS:
             self.next_token()
@@ -393,13 +411,11 @@ class Parser:
 
     def gen_arrcall(self, identifier):
         indexes = []
-        while True:
+        while self.current_token_type == Datatypes.LBRACKET:
             self.next_token()
             index = self.statement()
             if self.current_token_type != Datatypes.RBRACKET:
                 raise SyntaxError("Excpected ]")
             self.next_token()
             indexes.append(index)
-            if self.current_token_type != Datatypes.LBRACKET:
-                break
         return Datatypes.ArrayCallNode(identifier = identifier, index = indexes)

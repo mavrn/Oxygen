@@ -1,2 +1,4 @@
-
-            
+fn perm str =>
+    return (str.permutations >> x.join).removeduplicates
+<<
+"aabb".perm.p

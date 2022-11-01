@@ -2,132 +2,19 @@
 # array.
 #fileopen
 #implement number class
-#redo exceptions + add trycatch
 #update comments
 #dicts
-#fix print iside funcs being printed when p is claled on returned value
-#fix arr.count.num
-#rearrange keywords in interpreter
-#make actual unittests
 #delegate arrays to numpy
+#name unittests
+#removeall
+#fix num assignments
+
+
+#redo exceptions + add trycatch
+#rearrange keywords in interpreter
+
 testmodules to add
 
 one liner if without else
-
-
-fn val str =>
-    open = 0
-    iter str as i, char =>
-        if char == "(" => open +=1
-        or char == ")" =>
-            if open <= 0 => return False
-            else => open -= 1
-        <<
-    <<
-    return open == 0
-<<
-"(())((()())())".val.p
-https://www.codewars.com/kata/52774a314c2333f0a7000688/python
-
-
-
-fn uniquecheck arr =>
-    arr.sort()
-    for i=1, i<arr.l, i++ =>
-        if i!=arr[i-1] => return False
-    <<
-    return True
-<<
-
-fn check sudoku =>
-    column = [0]*9
-    grid = [0]*9
-    count = 0
-
-    for row in sudoku =>
-        if not uniquecheck(row) => return False
-    <<
-    for i=0, i<9, i++ =>
-        for x=0, x<9, x++ =>
-            column[x] = sudoku[x][i]
-        <<
-        if not uniquecheck(column) => return False
-    <<
-    for i=0, i<9, i+=3 =>
-        for x=0, x<9, x+=3 =>
-            for o=0, o<3, o++ =>
-                for k=0, k<3, k++ =>
-                    grid[count] = sudoku[i+k][x+o]
-                    count++
-                <<
-            <<
-            if not uniquecheck(grid) => return False
-            grid = [0]*9
-            count = 0
-        <<
-    <<
-    return True
-    
-<<
-
-[[5, 3, 4, 6, 7, 8, 9, 1, 2],
-[6, 7, 2, 1, 9, 5, 3, 4, 8],
-[1, 9, 8, 3, 4, 2, 5, 6, 7],
-[8, 5, 9, 7, 6, 1, 4, 2, 3],
-[4, 2, 6, 8, 5, 3, 7, 9, 1],
-[7, 1, 3, 9, 2, 4, 8, 5, 6],
-[9, 6, 1, 5, 3, 7, 2, 8, 4],
-[2, 8, 7, 4, 1, 9, 6, 3, 5],
-[3, 4, 5, 2, 8, 6, 1, 7, 9]].check.p
-
-[[5, 3, 4, 6, 7, 8, 9, 1, 2],
-[6, 7, 2, 1, 9, 0, 3, 4, 8],
-[1, 0, 0, 3, 4, 2, 5, 6, 0],
-[8, 5, 9, 7, 6, 1, 0, 2, 0],
-[4, 2, 6, 8, 5, 3, 7, 9, 1],
-[7, 1, 3, 9, 2, 4, 8, 5, 6],
-[9, 0, 1, 5, 3, 7, 2, 1, 4],
-[2, 8, 7, 4, 1, 9, 6, 3, 5],
-[3, 0, 0, 4, 8, 1, 1, 7, 9]]).check.p
-https://www.codewars.com/kata/529bf0e9bdf7657179000008
-
-
-fn remspace str => str >> del if x == " "
-'8aaaaa dddd r     '.remspace
-'8aaaaa dddd r     '.remspace
-https://www.codewars.com/kata/57eae20f5500ad98e50002c5/train/python
-
-
-
-fn stripcomments str delimiters =>
-    lines = str.split("\n")
-    newlines = []
-    iter lines as line =>
-        newline = ""
-        iter line as char =>
-            if char in delimiters => break
-            else => newline += char
-        <<
-        newlines += newline.strip
-    <<
-    return newlines.join("\n")
-<<
-stripcomments("apples, pears # and bananas\ngrapes\nbananas !apples", ["#", "!"])
-stripcomments("a #b\nc\nd $e f g", ["#", "$"]))
-https://www.codewars.com/kata/51c8e37cee245da6b40000bd/train/python
-
-
-fn nextbigger num =>
-    allnums = (num.s.permutations >> n(x.join)).sort()
-    return -1 if allnums.posof(num) == allnums.l else allnums[allnums.posof(num)+1]
-<<
-12.nextbigger
-518.nextbigger
-2017.nextbigger
-9.nextbigger
-
-fn wordcount text =>
-    arr = split(lower(text >> " " if x not in alphabet))
-    return arr.mostcommon >> x[0]
-<<
-"DDD e e e e ddd DdD: ddd ddd aa aA Aa, bb cc cC e e e".wordcount.p
+#slices
+ranges iter
