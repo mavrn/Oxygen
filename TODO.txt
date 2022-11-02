@@ -3,22 +3,16 @@
 #fileopen
 #implement number class
 #implement dict class
+#redo exceptions + add trycatch
 #update comments
 #delegate arrays to numpy
 #name unittests
-#removeall
-#while loop
-#implicit iter loop
-#merge foreach and iter logic (same)
 
 #kwargs
-
-
-#redo exceptions + add trycatch
-#rearrange keywords in interpreter
 
 testmodules to add
 
 one liner if without else
 #slices
 ranges iter
+#remove, removeall

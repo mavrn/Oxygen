@@ -47,14 +47,11 @@ def abs(value):
 def input():
     return Datatypes.String(builtins.input())
 
-def bool(object):
-    return Datatypes.Bool(object)
-
 def s(object):
     return Datatypes.String(object)
 
 def n(object):
-    return float(str(object))
+    return Datatypes.Number(object)
 
 def l(object):
     return len(object)

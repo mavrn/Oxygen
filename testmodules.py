@@ -646,7 +646,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(self.interface.run(
             "type('str');type(0);type([]);type(True)",
              return_out=True,),
-             ['"String"', '"float"', '"Array"', '"Bool"'])
+             ['"String"', '"Number"', '"Array"', '"Bool"'])
              
     def test_arr(self):
         self.assertEqual(self.interface.run(

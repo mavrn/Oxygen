@@ -112,7 +112,7 @@ class Lexer:
         # A number with multiple periods will raise an exception
         if number.count(".") > 1:
             raise ValueError(f"Illegal number {number}")
-        return Token(Datatypes.NUMBER, float(number)), add_period_call
+        return Token(Datatypes.NUMBER, Datatypes.Number(number)), add_period_call
 
     # Will generate and return an identifier with multiple or one letter(s)
     def gen_identifier(self):

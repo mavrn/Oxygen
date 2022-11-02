@@ -5,7 +5,95 @@ ALPHABET_MAP = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6, "G": 7, "H":8 , 
                 "N":14, "O":15, "P":16, "Q":17, "R":18, "S":19, "T":20, "U":21, "V":22, "W":23, "X":24, "Y":25, "Z":26}
 
 def convert_to_ints(arglist):
-    return [int(elem) if (isinstance(elem, float) and elem%1==0) else elem for elem in arglist]
+    return [elem.get_num() if isinstance(elem, Number) else elem for elem in arglist]
+
+
+class Number:
+    def __init__(self, value):
+        if isinstance(value, int) or isinstance(value, float) or isinstance(value, str):
+            self.num = float(value)
+        elif isinstance(value, Bool):
+            if Bool:
+                self.num=1
+            else:
+                self.num=0
+        elif isinstance(value, String):
+            self.num = float(value.str)
+        else:
+            raise ValueError(f"Couldn't convert type {type(value).__name__} to number.")
+
+    def __add__(self, other):
+        return Number(self.num + float(other))
+    
+    def __radd__(self, other):
+        return Number(self.num + float(other))
+    
+    def __sub__(self, other):
+        return Number(self.num - float(other))
+    
+    def __rsub__(self, other):
+        return Number(float(other) - self.num )
+    
+    def __mul__(self, other):
+        return Number(self.num * float(other))
+    
+    def __rmul__(self, other):
+        return Number(self.num * float(other))
+    
+    def __truediv__(self, other):
+        return Number(self.num / float(other))
+    
+    def __rtruediv__(self, other):
+        return Number(float(other) / self.num)
+
+    def __mod__(self, other):
+        return Number(int(self) % int(other))
+
+    def __rmod__(self, other):
+        return Number(int(other) % int(self))
+    
+    def pow(self, other):
+        return Number(self.num ** float(other))
+
+    def __lt__(self, other):
+        return self.num < float(other)
+
+    def __le__(self, other):
+        return self.num <= float(other)
+    
+    def __gt__(self, other):
+        return self.num > float(other)
+
+    def __ge__(self, other):
+        return self.num >= float(other)
+
+    def __bool__(self):
+        return Bool(self)
+    
+    def __len__(self):
+        return len(str(self.num))
+
+    def __str__(self):
+        return str(self.get_num())
+    
+    def __repr__(self):
+        return str(self)
+    
+    def __int__(self):
+        return int(self.num)
+
+    def get_num(self):
+        if self.num%1==0:
+            return int(self.num)
+        else:
+            return self.num
+    
+    def __float__(self):
+        return float(self.num)
+    
+    def __eq__(self, other):
+        return self.num == float(other)
+
 
 class String:
     def __init__(self, value=None):
@@ -19,6 +107,7 @@ class String:
             self.str = str(value)
         self.str_arr = []
         self.n = []
+        self.max = len(self.str)
 
 
     def __len__(self):
@@ -74,19 +163,15 @@ class String:
         return str(self) == str(other)
 
     def __getitem__(self, index):
-        if isinstance(index, float) and index%1 == 0:
-            index = int(index)
-        return String(self.str[index])
+        return String(self.str[index.get_num()])
 
     def __setitem__(self, index, val):
         lst = list(self.str)
-        if isinstance(index, float) and index%1 == 0:
-            index = int(index)
         try:
-            lst[index] = str(String(val))
+            lst[index.get_num()] = str(String(val))
         except IndexError:
             pass
-        self.str_arr[-1][index] = str(String(val))
+        self.str_arr[-1][index.get_num()] = str(String(val))
         self.str = "".join(lst)
     
     def slice(self, *args):
@@ -125,12 +210,28 @@ class String:
     def deleteAt(self, *args):
         for arg in convert_to_ints(args):
             del self.str[arg]
+
+    def remove(self, *args):
+        arr = Array(list(self.str))
+        for arg in args:
+            for arg in args:
+                arr.remove(arg)
+                self.n = [n-1 for n in self.n]
+                self.max -= 1
+        self.str = "".join(arr)
+        return self
+
+    def removeall(self, *args):
+        for arg in args:
+            while arg in self:
+                self.remove(arg)
+        return self
     
     def pop(self, *args):
         return self.contents.pop(*convert_to_ints(args))
 
     def posof(self, value):
-        return self.str.index(str(value))
+        return Number(self.str.index(str(value)))
 
     def lower(self):
         return String(self.str.lower())
@@ -168,7 +269,7 @@ class String:
             if not isinstance(arg, String):
                 raise TypeError("Expected type String for function count")
             ct += self.str.count(str(arg))
-        return float(ct)
+        return Number(ct)
     
     def mostcommon(self, *args):
         c = Counter(list([str(s) for s in self.str]))
@@ -231,10 +332,10 @@ class Bool:
             self.boolean_value = value
         elif isinstance(value, Bool):
             self.boolean_value = value.boolean_value
-        elif isinstance(value, float) or isinstance(value, int):
+        elif isinstance(value, Number):
             if value == 0:
                 self.boolean_value = False
-            else:
+            else: 
                 self.boolean_value = True
         elif value is None:
             self.boolean_value = False
@@ -266,6 +367,7 @@ class Array:
     def __init__(self, contents):
         self.contents = contents
         self.n = []
+        self.max = len(self.contents)
     
     def process_element(self, elem):
         if isinstance(elem, float) and elem%1==0:
@@ -299,12 +401,9 @@ class Array:
         return Array(self.contents.copy())
 
     def __mul__(self, num):
-        if isinstance(num, float) and num%1==0:
-            num = int(num)
+        num = int(num)
         if num<1:
             raise TypeError("Cannot divide arrays.")
-        if not isinstance (num, int):
-            raise TypeError(f"Cannot multiply Array with {type(num).__name__}")
         self.contents*=num
         return self        
     
@@ -333,24 +432,20 @@ class Array:
             _ = iter(other)
             eq = True
             for i, v in enumerate(self):
-                if v != other[i]:
+                if v != other[Number(i)]:
                     eq = False
             return Bool(eq)
         except TypeError:
             raise TypeError(f"{type(other).__name__} object is not iterable.")         
 
     def __getitem__(self, index):
-        if isinstance(index, float) and index%1 == 0:
-            index = int(index)
-        return self.contents[index]
+        return self.contents[index.get_num()]
 
     def __contains__(self, elem):
         return elem in self.contents
 
     def __setitem__(self, index, val):
-        if isinstance(index, float) and index%1 == 0:
-            index = int(index)
-        self.contents[index] = val
+        self.contents[index.get_num()] = val
     
     def append(self, *args):
         for arg in args:
@@ -359,15 +454,17 @@ class Array:
 
     def convert_to_builtins(self):
         new = []
+        print(self)
         for element in self.contents:
+            print(element, type(element).__name__)
             if isinstance(element, Array):
                 new.append(element.contents)
             elif isinstance(element, String):
                 new.append(element.str)
             elif isinstance(element, Bool):
                 new.append(element.boolean_value)
-            elif isinstance(element, float) and element%1==0:
-                new.append(int(element))
+            elif isinstance(element, Number):
+                new.append(element.get_num())
             else:
                 new.append(element)
         return new
@@ -451,7 +548,7 @@ class Array:
         ct = 0
         for arg in args:
             ct += self.contents.count(arg)
-        return float(ct)
+        return Number(ct)
     
     def delete(self):
         del self.contents[self.n[-1]-1]
@@ -463,16 +560,23 @@ class Array:
         for arg in convert_to_ints(args):
             del self.contents[arg]
     
+    def removeall(self, *args):
+        for arg in args:
+            while arg in self.contents:
+                self.remove(arg)
+        return self
+    
     def pop(self, *args):
         return self.contents.pop(*convert_to_ints(args))
     
     def posof(self, value):
-        return self.contents.index(value)
+        return Number(self.contents.index(value))
 
-    def remove(self, element):
-        self.n[-1] -= 1
-        self.max -= 1
-        self.contents.remove(element)
+    def remove(self, *args):
+        for arg in args:
+            self.contents.remove(arg)
+            self.n = [n-1 for n in self.n]
+            self.max -= 1
         return self
 
     def replace(self, *args):
@@ -487,7 +591,7 @@ class Array:
     def sum(self):
         s = 0
         for el in self.contents:
-            if isinstance(el, float):
+            if isinstance(el, Number):
                 s += el
             elif isinstance(el, Array):
                 s += el.sum()

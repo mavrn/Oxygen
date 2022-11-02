@@ -14,11 +14,11 @@ BUILTIN_EXPECTED_ARGS = {"sin":[1], "cos":[1], "tan":[1], "asin":[1], "acos":[1]
             "count":range(2,100), "nummap":[1], "lower":[1], "upper":[1], "capitalize":[1], "strip":[1,2], "replace":[3], "isupper":[1],
             "islower":[1], "iscapitalized":[1], "input":[0], "sort":[1], "posof":[2], "combinations":[2], "allcombinations":[1],
             "permutations":[1], "mostcommon":[1,2], "multicombinations":[1,2], "removeduplicates":[1], "range":[1,2,3],
-            "deleteAt":range(2,100), "pop":[1,2], "getfields": [0], "quit": [0]}
+            "deleteAt":range(2,100), "pop":[1,2], "getfields": [0], "quit": [0], "removeall": range(2,100), "remove": range(2,100)}
         
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["p","apply", "plot", "type", "arr", "getfields"]
-BUILTIN_KEYWORDS = ["midn", "rick", "leet", "range", "input", "l", "s", "n", "bool", "openurl", "abs", "quit"] 
+INTERNAL_KEYWORDS = ["p","apply", "plot", "type", "arr", "getfields", "bool"]
+BUILTIN_KEYWORDS = ["midn", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit"] 
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS+INTERNAL_KEYWORDS+BUILTIN_KEYWORDS)]
 
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
@@ -52,6 +52,15 @@ class Interpreter:
         if isinstance(elem, float) and elem%1==0:
             return int(elem)
         return elem
+
+    def process_nums(self, arglist):
+        new = []
+        for arg in arglist:
+            if isinstance(arg, Datatypes.Number):
+                new.append(arg.get_num())
+            else:
+                new.append(arg)
+        return new
 
     def stringify(self, elem):
         if isinstance(elem, float) and elem%1 == 0:
@@ -120,7 +129,7 @@ class Interpreter:
             return arr
         elif node_type == "ArrayApplyNode":
             arr = self.evaluate(node.identifier)
-            if not isinstance(arr, float):
+            if not isinstance(arr, Datatypes.Number):
                 arr = arr.copy()
             self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function, "__arrfunc")
             funcargs = {}
@@ -136,12 +145,12 @@ class Interpreter:
                         elif isinstance(res[0], Datatypes.Token) and res[0].type == Datatypes.DEL:
                             arr.delete()
                         else:
-                            arr[i] = res[0]
+                            arr[Datatypes.Number(i)] = res[0]
                     else:
                         if isinstance(res, Datatypes.Token) and res.type == Datatypes.DEL:
                             arr.delete()
                         else:
-                            arr[i] = res
+                            arr[Datatypes.Number(i)] = res
                 return arr
             else:
                 return self.evaluate(self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [arr, 0, arr])))
@@ -192,7 +201,7 @@ class Interpreter:
             return result
         elif node_type == "RepNode":
             reps = self.evaluate(node.repetitions)
-            if not isinstance(reps, float) or reps < 0 or reps % 1 != 0:
+            if not isinstance(reps, Datatypes.Number) or reps < 0 or reps % 1 != 0:
                 raise ValueError(f"Invalid repetition count, expected a whole positive number, got {reps}")
             out = []
             for i in range(int(reps)):
@@ -290,7 +299,7 @@ class Interpreter:
         elif node_type == "Array":
             temp = Datatypes.Array(node.contents.copy())
             for i, elem in enumerate(temp):
-                temp[i] = self.evaluate(elem)
+                temp[Datatypes.Number(i)] = self.evaluate(elem)
             return temp
         else:
             return node
@@ -363,9 +372,11 @@ class Interpreter:
         elif keyword in BUILTIN_KEYWORDS:
             return getattr(builtinfunctions, keyword)(*self.convert_to_builtins(args))
         elif keyword in MATH_KEYWORDS:
-            return getattr(math, keyword)(*self.convert_to_builtins(args))
+            print(getattr(math, keyword))
+            print(self.process_nums(args))
+            return Datatypes.Number(getattr(math, keyword)(*self.process_nums(args)))
         else:
-            return getattr(builtins.type(args[0]), keyword)(*args)
+            return getattr(builtins.type(args[0]), keyword)(*self.process_nums(args))
 
     # Will handle any type of simple operation
     def operation_handler(self, node):
@@ -384,8 +395,9 @@ class Interpreter:
             elif node_type == "ModulusNode":
                 return a % b
             elif node_type == "ExpNode":
-                return a ** b
+                return a.pow(b)
         except TypeError as e:
+            print(e)
             raise TypeError(f"Cannot use this mathematical operation on object of type {self.type(a)} and {self.type(b)}")
 
     # Will handle any type of simple comparison
@@ -461,9 +473,9 @@ class Interpreter:
         for i, elem in enumerate(args[0]):
             res = self.function_call_handler(Datatypes.FuncCallNode(args[1].identifier, [elem]))
             if isinstance(res, list):
-                args[0][i] = res[0]
+                args[0][Datatypes.Number(i)] = res[0]
             else:
-                args[0][i] = res
+                args[0][Datatypes.Number(i)] = res
         return args[0]
 
     def type(self, object):
@@ -474,5 +486,6 @@ class Interpreter:
     
     def getfields(self):
         return self.fields
-
     
+    def bool(self, object):
+        return Datatypes.Bool(object)

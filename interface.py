@@ -20,7 +20,6 @@ class Interface:
     # debug: Will print lexer output and parser output additionally
     # quit_after_exceptions: Will prevent program from quitting after reaching an exception.
     def start_session(self):
-
         while True:
             try:
                 self.inp = input(self.inp_msg)
