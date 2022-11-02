@@ -469,7 +469,7 @@ output48 = ['0', 'h', '"s"', '1']
 
 class TestUtils(unittest.TestCase):
     def setUp(self):
-        self.interface = Interface()
+        self.interface = Interface(debug=False, quit_after_exceptions=True, printall=True)
 
     def test1(self):
         self.assertEqual(self.interface.run(input1, return_out=True), output1)

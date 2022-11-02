@@ -2,13 +2,11 @@ from lexer import Lexer
 from parse import Parser
 from interpreter import Interpreter
 import Datatypes
-from fractions import Fraction
-
 # TODO: add custom and more precise exceptions (i.e. store token positions)
 
 
 class Interface:
-    def __init__(self, debug=False, quit_after_exceptions=False):
+    def __init__(self, debug=False, quit_after_exceptions=False, printall=False):
         self.inp_msg = ">> "
         self.interpreter = Interpreter()
         self.debug = debug
@@ -16,13 +14,18 @@ class Interface:
         self.tokens_list = []
         self.open_blocks = 0
         self.active_if = False
+        self.printall = printall
         self.inp = ""
 
     # debug: Will print lexer output and parser output additionally
     # quit_after_exceptions: Will prevent program from quitting after reaching an exception.
     def start_session(self):
+
         while True:
-            self.inp = input(self.inp_msg)
+            try:
+                self.inp = input(self.inp_msg)
+            except KeyboardInterrupt:
+                exit(0)
             if self.quit_after_exceptions:
                 out = self.get_out()
                 self.print_output(out)
@@ -83,7 +86,7 @@ class Interface:
     # Instead of starting an interpreter session, this function will simply
     # get the output from any input string and print the output
 
-    def run(self, input_string, return_out=False, printall=True):
+    def run(self, input_string, return_out=False):
         lexer = Lexer(input_string)
         tokens = lexer.gen_tokens()
         if self.debug:
@@ -97,16 +100,16 @@ class Interface:
         ast_list = parser.parse()
         if self.debug:
             print(ast_list)
-        output_lines = self.interpreter.get_output(ast_list, printall)
+        output_lines = self.interpreter.get_output(ast_list, self.printall)
         if return_out:
             return output_lines
         else:
             self.print_output(output_lines)
 
-    def run_from_file(self, filepath, printall=False):
+    def run_from_file(self, filepath):
         with open(filepath) as program:
             program = program.read()
-        self.run(program, printall=printall)
+        self.run(program)
 
     def print_output(self, output_lines):
         # Printing the result
@@ -114,6 +117,10 @@ class Interface:
         for line in output_lines:
             if line is not None:
                 print(line)
+
+
+def quit():
+    exit()
 
 
 if __name__ == '__main__':

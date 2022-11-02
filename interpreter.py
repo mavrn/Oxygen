@@ -14,11 +14,11 @@ BUILTIN_EXPECTED_ARGS = {"sin":[1], "cos":[1], "tan":[1], "asin":[1], "acos":[1]
             "count":range(2,100), "nummap":[1], "lower":[1], "upper":[1], "capitalize":[1], "strip":[1,2], "replace":[3], "isupper":[1],
             "islower":[1], "iscapitalized":[1], "input":[0], "sort":[1], "posof":[2], "combinations":[2], "allcombinations":[1],
             "permutations":[1], "mostcommon":[1,2], "multicombinations":[1,2], "removeduplicates":[1], "range":[1,2,3],
-            "deleteAt":range(2,100), "pop":[1,2], "getfields": [0]}
+            "deleteAt":range(2,100), "pop":[1,2], "getfields": [0], "quit": [0]}
         
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
 INTERNAL_KEYWORDS = ["p","apply", "plot", "type", "arr", "getfields"]
-BUILTIN_KEYWORDS = ["midn", "rick", "leet", "range", "input", "l", "s", "n", "bool", "openurl", "abs"] 
+BUILTIN_KEYWORDS = ["midn", "rick", "leet", "range", "input", "l", "s", "n", "bool", "openurl", "abs", "quit"] 
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS+INTERNAL_KEYWORDS+BUILTIN_KEYWORDS)]
 
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
@@ -232,26 +232,6 @@ class Interpreter:
                 self.evaluate(node.increment)
             self.fields[self.scope].pop(node.assignment.identifier)
             return out
-        elif node_type == "ForEachNode":
-            out = []
-            id = node.item
-            iterable = self.evaluate(node.iterable)
-            for element in iterable:
-                self.evaluate(Datatypes.AssignNode(id, element))
-                for statement in node.statements:
-                    lines = standardize(self.evaluate(statement))
-                    merge(out, lines)
-                    if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
-                        break
-                    if "__return__" in self.fields[self.scope]:
-                        return out
-                if "__break__" in self.fields[self.scope]:
-                    self.fields[self.scope].pop("__break__")
-                    break
-                elif "__continue__" in self.fields[self.scope]:
-                    self.fields[self.scope].pop("__continue__")
-            self.fields[self.scope].pop(id)
-            return out
         elif node_type == "IterateNode":
             out=[]
             if len(node.items) == 2:
@@ -260,7 +240,7 @@ class Interpreter:
             elif len(node.items) == 1:
                 id = node.items[0]
                 index_id = "_i"
-            elif len(node.items) == 0:
+            else:
                 id = "_x"
                 index_id = "_i"
             iterable = self.evaluate(node.iterable)

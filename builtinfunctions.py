@@ -61,3 +61,6 @@ def l(object):
 
 def range(*args):    
     return Datatypes.Array(list(np.arange(*args)))
+
+def quit():
+    exit()

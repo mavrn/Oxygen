@@ -175,7 +175,6 @@ class Parser:
                 comparison_type = self.current_token_type
                 self.next_token()
                 result = Datatypes.ComparisonNode(a=result, b=self.exponential(), operator=comparison_type)
-
         return result
 
     def exponential(self):
@@ -360,7 +359,7 @@ class Parser:
             return Datatypes.ForNode(assignment=assignment, condition=condition, increment=increment,
                                     statements=self.statement_block())
         elif type(assignment).__name__ == "ContainsNode":
-            return Datatypes.ForEachNode(item=assignment.item.identifier, iterable=assignment.iterable, statements=self.statement_block())
+            return Datatypes.IterateNode(iterable=assignment.iterable, items = [assignment.item.identifier], statements=self.statement_block())
         else:
             raise SyntaxError("Expected comma or \"in\" after statement")
 

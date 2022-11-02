@@ -1,1 +1,8 @@
-"Hello World!".p
+fn nextbigger num =>
+    allnums = (num.s.permutations >> n(x.join)).sort()
+    return -1 if allnums.posof(num) == (allnums.l-1) else allnums[allnums.posof(num)+1]
+<<
+12.nextbigger
+518.nextbigger
+2017.nextbigger
+9.nextbigger
