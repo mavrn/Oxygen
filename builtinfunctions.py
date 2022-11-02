@@ -18,7 +18,7 @@ def leet(message):
             leetspeak += char
     return Datatypes.String(leetspeak)
 
-def midn(self, *args):
+def midn(*args):
     a, b, c = args
     sol = []
     if a == 0 and b == 0:
@@ -47,9 +47,6 @@ def abs(value):
 def input():
     return Datatypes.String(builtins.input())
 
-def arr(object):
-    return Datatypes.Array(list(object))
-
 def bool(object):
     return Datatypes.Bool(object)
 
@@ -64,6 +61,3 @@ def l(object):
 
 def range(*args):    
     return Datatypes.Array(list(np.arange(*args)))
-
-def type(object):
-    return builtins.type(object).__name__

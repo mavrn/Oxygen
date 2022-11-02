@@ -89,12 +89,23 @@ class String:
         self.str_arr[-1][index] = str(String(val))
         self.str = "".join(lst)
     
-    def slice(self, start, stop, step):
-        return String(self.str[int(start):int(stop):int(step)])
+    def slice(self, *args):
+        args = convert_to_ints(args)
+        if len(args) == 1:
+            stop = args[0]
+            start = 0
+            step = 1
+        elif len(args)==2:
+            start, stop = args
+            step = 1
+        else:
+            start, stop, step = args
+        return String(self.str[start:stop:step])
     
     def append(self, *args):
         for arg in args:
             self += arg
+        return self
             
     def nummap(self):
         new = Array([])
@@ -119,7 +130,7 @@ class String:
         return self.contents.pop(*convert_to_ints(args))
 
     def posof(self, value):
-        return self.str.index(value)
+        return self.str.index(str(value))
 
     def lower(self):
         return String(self.str.lower())
@@ -159,7 +170,7 @@ class String:
             ct += self.str.count(str(arg))
         return float(ct)
     
-    def mostcommon(self, num):
+    def mostcommon(self, *args):
         c = Counter(list([str(s) for s in self.str]))
         results = []
         args = convert_to_ints(args)
@@ -169,7 +180,6 @@ class String:
             ranking_length = args[0]
         for tup in c.most_common(ranking_length):
             results.append(Array(list(tup)))
-        print(results)
         return Array(results)
 
     def combinations(self, *args):
@@ -221,7 +231,7 @@ class Bool:
             self.boolean_value = value
         elif isinstance(value, Bool):
             self.boolean_value = value.boolean_value
-        elif isinstance(value, float):
+        elif isinstance(value, float) or isinstance(value, int):
             if value == 0:
                 self.boolean_value = False
             else:
@@ -258,7 +268,6 @@ class Array:
         self.n = []
     
     def process_element(self, elem):
-        print(elem, type(elem).__name__)
         if isinstance(elem, float) and elem%1==0:
             return int(elem)
         if isinstance(elem, str):
@@ -346,6 +355,7 @@ class Array:
     def append(self, *args):
         for arg in args:
             self += arg
+        return self
 
     def convert_to_builtins(self):
         new = []
@@ -362,8 +372,18 @@ class Array:
                 new.append(element)
         return new
 
-    def slice(self, start, stop, step):
-        return Array(self.contents[int(start):int(stop):int(step)])
+    def slice(self, *args):
+        args = convert_to_ints(args)
+        if len(args) == 1:
+            stop = args[0]
+            start = 0
+            step = 1
+        elif len(args)==2:
+            start, stop = args
+            step = 1
+        else:
+            start, stop, step = args
+        return Array(self.contents[start:stop:step])
 
     def combinations(self, *args):
         temp = []
@@ -456,7 +476,9 @@ class Array:
         return self
 
     def replace(self, *args):
-        return String(self.contents.replace(*args))
+        old = args[0]
+        new = args[1]
+        return Array([new if elem==old else elem for elem in self.contents])
 
     def join(self, *args):
         delimiter = "" if len(args) == 0 else args[0]

@@ -1,13 +1,6 @@
-fn uni str =>
-    new = [str[0]]
-    new.type.p
-    iter str =>
-            if _x != new[-1] and _i >0 =>
-                    new+=_x
-            <<
-    <<
-    new.type.p
-    return new
-<<
-"AAAABBBCCDAABBB".uni.p
-[1,2,2,3,3].uni.p
+x = "hallo".arr
+type(x)
+x >> x+" "
+x = ["h", "a", "l", "l", "o"]
+type(x)
+x >> x+" "

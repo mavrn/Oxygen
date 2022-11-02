@@ -1,11 +1,11 @@
 from interface import Interface
 import sys
-import testing_module
+import testmodules
 
 
 def main():
     args = sys.argv[1:]
-    interface_args = {"debug": False, "fallthrough": False, "run": False, "tests": False, "printall": False}
+    interface_args = {"debug": False, "fallthrough": False, "run": False, "printall": False}
     for arg in args:
         if arg in interface_args:
             interface_args[arg] = True
@@ -13,11 +13,8 @@ def main():
                           quit_after_exceptions=interface_args["fallthrough"])
     if interface_args["run"]:
         interface.run_from_txt(printall=interface_args["printall"])
-    elif interface_args["tests"]:
-        testing_module.test_group.run_tests()
     else:
         interface.start_session()
-
 
 if __name__ == '__main__':
     main()

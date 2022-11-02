@@ -17,3 +17,5 @@ start.bat
 .vscode/launch.json
 .vscode/settings.json
 __pycache__/builtinfunctions.cpython-310.pyc
+__pycache__/builtinfunctions.cpython-39.pyc
+__pycache__/testmodules.cpython-39.pyc

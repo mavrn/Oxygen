@@ -411,7 +411,7 @@ fn x a =>
     "h".p
     return "s"
 <<
-1.x.p
+1.x
 y
 """
 
@@ -462,7 +462,7 @@ output44 = ['"apples, pears\ngrapes\nbananas"', '"a\nc\nd"']
 output45 = ['21', '581', '2071', '-1']
 output46 = ['["e", "ddd", "aa"]']
 output47 = ['8', '1', '18']
-output48 = ['0', '"h"', '"s"', '1']
+output48 = ['0', 'h', '"s"', '1']
 
 
 
@@ -472,151 +472,334 @@ class TestUtils(unittest.TestCase):
         self.interface = Interface()
 
     def test1(self):
-        self.assertEquals(self.interface.run(input1, return_out=True), output1)
+        self.assertEqual(self.interface.run(input1, return_out=True), output1)
     
     def test2(self):
-        self.assertEquals(self.interface.run(input2, return_out=True), output2)
+        self.assertEqual(self.interface.run(input2, return_out=True), output2)
 
     def test2(self):
-        self.assertEquals(self.interface.run(input2, return_out=True), output2)
+        self.assertEqual(self.interface.run(input2, return_out=True), output2)
 
     def test3(self):
-        self.assertEquals(self.interface.run(input3, return_out=True), output3)
+        self.assertEqual(self.interface.run(input3, return_out=True), output3)
     
     def test4(self):
-        self.assertEquals(self.interface.run(input4, return_out=True), output4)
+        self.assertEqual(self.interface.run(input4, return_out=True), output4)
 
     def test5(self):
-        self.assertEquals(self.interface.run(input5, return_out=True), output5)
+        self.assertEqual(self.interface.run(input5, return_out=True), output5)
     
     def test6(self):
-        self.assertEquals(self.interface.run(input6, return_out=True), output6)
+        self.assertEqual(self.interface.run(input6, return_out=True), output6)
 
     def test7(self):
-        self.assertEquals(self.interface.run(input7, return_out=True), output7)
+        self.assertEqual(self.interface.run(input7, return_out=True), output7)
 
     def test8(self):
-        self.assertEquals(self.interface.run(input8, return_out=True), output8)
+        self.assertEqual(self.interface.run(input8, return_out=True), output8)
     
     def test9(self):
-        self.assertEquals(self.interface.run(input9, return_out=True), output9)
+        self.assertEqual(self.interface.run(input9, return_out=True), output9)
 
     def test10(self):
-        self.assertEquals(self.interface.run(input10, return_out=True), output10)
+        self.assertEqual(self.interface.run(input10, return_out=True), output10)
     
     def test11(self):
-        self.assertEquals(self.interface.run(input11, return_out=True), output11)
+        self.assertEqual(self.interface.run(input11, return_out=True), output11)
 
     def test12(self):
-        self.assertEquals(self.interface.run(input12, return_out=True), output12)
+        self.assertEqual(self.interface.run(input12, return_out=True), output12)
 
     def test13(self):
-        self.assertEquals(self.interface.run(input13, return_out=True), output13)
+        self.assertEqual(self.interface.run(input13, return_out=True), output13)
     
     def test14(self):
-        self.assertEquals(self.interface.run(input14, return_out=True), output14)
+        self.assertEqual(self.interface.run(input14, return_out=True), output14)
 
     def test15(self):
-        self.assertEquals(self.interface.run(input15, return_out=True), output15)
+        self.assertEqual(self.interface.run(input15, return_out=True), output15)
     
     def test16(self):
-        self.assertEquals(self.interface.run(input16, return_out=True), output16)
+        self.assertEqual(self.interface.run(input16, return_out=True), output16)
 
     def test17(self):
-        self.assertEquals(self.interface.run(input17, return_out=True), output17)
+        self.assertEqual(self.interface.run(input17, return_out=True), output17)
 
     def test18(self):
-        self.assertEquals(self.interface.run(input18, return_out=True), output18)
+        self.assertEqual(self.interface.run(input18, return_out=True), output18)
     
     def test19(self):
-        self.assertEquals(self.interface.run(input19, return_out=True), output19)
+        self.assertEqual(self.interface.run(input19, return_out=True), output19)
     
     def test20(self):
-        self.assertEquals(self.interface.run(input20, return_out=True), output20)
+        self.assertEqual(self.interface.run(input20, return_out=True), output20)
 
     def test21(self):
-        self.assertEquals(self.interface.run(input21, return_out=True), output21)
+        self.assertEqual(self.interface.run(input21, return_out=True), output21)
     
     def test22(self):
-        self.assertEquals(self.interface.run(input22, return_out=True), output22)
+        self.assertEqual(self.interface.run(input22, return_out=True), output22)
 
     def test23(self):
-        self.assertEquals(self.interface.run(input23, return_out=True), output23)
+        self.assertEqual(self.interface.run(input23, return_out=True), output23)
 
     def test24(self):
-        self.assertEquals(self.interface.run(input24, return_out=True), output24)
+        self.assertEqual(self.interface.run(input24, return_out=True), output24)
     
     def test25(self):
-        self.assertEquals(self.interface.run(input25, return_out=True), output25)
+        self.assertEqual(self.interface.run(input25, return_out=True), output25)
 
     def test26(self):
-        self.assertEquals(self.interface.run(input26, return_out=True), output26)
+        self.assertEqual(self.interface.run(input26, return_out=True), output26)
     
     def test27(self):
-        self.assertEquals(self.interface.run(input27, return_out=True), output27)
+        self.assertEqual(self.interface.run(input27, return_out=True), output27)
 
     def test28(self):
-        self.assertEquals(self.interface.run(input28, return_out=True), output28)
+        self.assertEqual(self.interface.run(input28, return_out=True), output28)
 
     def test29(self):
-        self.assertEquals(self.interface.run(input29, return_out=True), output29)
+        self.assertEqual(self.interface.run(input29, return_out=True), output29)
     
     def test30(self):
-        self.assertEquals(self.interface.run(input30, return_out=True), output30)
+        self.assertEqual(self.interface.run(input30, return_out=True), output30)
 
     def test31(self):
-        self.assertEquals(self.interface.run(input31, return_out=True), output31)
+        self.assertEqual(self.interface.run(input31, return_out=True), output31)
     
     def test32(self):
-        self.assertEquals(self.interface.run(input32, return_out=True), output32)
+        self.assertEqual(self.interface.run(input32, return_out=True), output32)
 
     def test33(self):
-        self.assertEquals(self.interface.run(input33, return_out=True), output33)
+        self.assertEqual(self.interface.run(input33, return_out=True), output33)
 
     def test34(self):
-        self.assertEquals(self.interface.run(input34, return_out=True), output34)
+        self.assertEqual(self.interface.run(input34, return_out=True), output34)
     
     def test35(self):
-        self.assertEquals(self.interface.run(input35, return_out=True), output35)
+        self.assertEqual(self.interface.run(input35, return_out=True), output35)
 
     def test36(self):
-        self.assertEquals(self.interface.run(input36, return_out=True), output36)
+        self.assertEqual(self.interface.run(input36, return_out=True), output36)
     
     def test37(self):
-        self.assertEquals(self.interface.run(input37, return_out=True), output37)
+        self.assertEqual(self.interface.run(input37, return_out=True), output37)
 
     def test38(self):
-        self.assertEquals(self.interface.run(input38, return_out=True), output38)
+        self.assertEqual(self.interface.run(input38, return_out=True), output38)
 
     def test39(self):
-        self.assertEquals(self.interface.run(input39, return_out=True), output39)
+        self.assertEqual(self.interface.run(input39, return_out=True), output39)
     
     def test40(self):
-        self.assertEquals(self.interface.run(input40, return_out=True), output40)
+        self.assertEqual(self.interface.run(input40, return_out=True), output40)
 
     def test41(self):
-        self.assertEquals(self.interface.run(input41, return_out=True), output41)
+        self.assertEqual(self.interface.run(input41, return_out=True), output41)
     
     def test42(self):
-        self.assertEquals(self.interface.run(input42, return_out=True), output42)
+        self.assertEqual(self.interface.run(input42, return_out=True), output42)
 
     def test43(self):
-        self.assertEquals(self.interface.run(input43, return_out=True), output43)
+        self.assertEqual(self.interface.run(input43, return_out=True), output43)
 
     def test44(self):
-        self.assertEquals(self.interface.run(input44, return_out=True), output44)
+        self.assertEqual(self.interface.run(input44, return_out=True), output44)
     
     def test45(self):
-        self.assertEquals(self.interface.run(input44, return_out=True), output44)
+        self.assertEqual(self.interface.run(input44, return_out=True), output44)
 
     def test46(self):
-        self.assertEquals(self.interface.run(input46, return_out=True), output46)
+        self.assertEqual(self.interface.run(input46, return_out=True), output46)
     
     def test47(self):
-        self.assertEquals(self.interface.run(input47, return_out=True), output47)
+        self.assertEqual(self.interface.run(input47, return_out=True), output47)
 
     def test48(self):
-        self.assertEquals(self.interface.run(input48, return_out=True), output48)
+        self.assertEqual(self.interface.run(input48, return_out=True), output48)
+
+    def test_math(self):
+        self.assertEqual(self.interface.run(
+            "100.sqrt.factorial",
+             return_out=True,),
+             ["3628800"])
+
+    def test_bool(self):
+        self.assertEqual(self.interface.run(
+            "bool(0);bool(10==10)",
+             return_out=True,),
+             ["False","True"])
+
+    def test_midn(self):
+        self.assertEqual(self.interface.run(
+            "midn(1,0,-1)",
+             return_out=True,),
+             ["[1, -1]"])
+             
+    def test_leet(self):
+        self.assertEqual(self.interface.run(
+            "'Hallo'.leet",
+             return_out=True,),
+             ['"|-|4ll0"'])
+
+    def test_type(self):
+        self.assertEqual(self.interface.run(
+            "type('str');type(0);type([]);type(True)",
+             return_out=True,),
+             ['"String"', '"float"', '"Array"', '"Bool"'])
+             
+    def test_arr(self):
+        self.assertEqual(self.interface.run(
+            "'hallo'.arr",
+             return_out=True,),
+             ['["h", "a", "l", "l", "o"]'])
+    
+    def test_apply(self):
+        self.assertEqual(self.interface.run(
+            'fn x a => a+10;[0,1,2].apply(x)',
+             return_out=True,),
+             ['[10, 11, 12]'])
+
+    def test_append(self):
+        self.assertEqual(self.interface.run(
+            'x = [0].append(1);x+2;x+=3;x',
+             return_out=True,),
+             ['[0, 1]', '[0, 1, 2]', '[0, 1, 3]', '[0, 1, 3]'])
+
+    def test_union(self):
+        self.assertEqual(self.interface.run(
+            '[0,1,2].union([2,3,4])',
+             return_out=True,),
+             ['[0, 1, 2, 3, 4]'])
+
+    def test_intersection(self):
+        self.assertEqual(self.interface.run(
+            '[0,1,2].intersection([1,2,3])',
+             return_out=True,),
+             ['[1, 2]'])
+
+    def test_join(self):
+        self.assertEqual(self.interface.run(
+            '["h", "a"].join(" ");["h", "o"].join',
+             return_out=True,),
+             ['"h a"', '"ho"'])
+
+    def test_rev(self):
+        self.assertEqual(self.interface.run(
+            '"xa".rev;[0,1].rev',
+             return_out=True,),
+             ['"ax"', '[1, 0]'])
+
+    def test_sum(self):
+        self.assertEqual(self.interface.run(
+            '[0,1,2,3].sum',
+             return_out=True,),
+             ['6'])
+
+    def test_slice(self):
+        self.assertEqual(self.interface.run(
+            '[0,1,2,3,4].slice(1,3);"hallo"[0:5:2]',
+             return_out=True,),
+             ['[1, 2]', '"hlo"'])
+
+    def test_minmax(self):
+        self.assertEqual(self.interface.run(
+            '[0,2,3,4,5,100,2,101,-3].min;[0,2,3,4,5,100,2,101,-3].max',
+             return_out=True,),
+             ['-3', '101'])
+
+    def test_conv(self):
+        self.assertEqual(self.interface.run(
+            '10.s;type(10.s);"10".n',
+             return_out=True,),
+             ['"10"', '"String"', '10'])
+
+    def test_split(self):
+        self.assertEqual(self.interface.run(
+            '"h a".split',
+             return_out=True,),
+             ['["h", "a"]'])
+
+    def test_difference(self):
+        self.assertEqual(self.interface.run(
+            'difference([0,1,2,3], [0,1,2])',
+             return_out=True,),
+             ['[3]'])
+
+    def test_count(self):
+        self.assertEqual(self.interface.run(
+            '[0,0,1,2].count(0);"hallo".count("l", "h")',
+             return_out=True,),
+             ['2', '3'])
+
+    def test_nummap(self):
+        self.assertEqual(self.interface.run(
+            '"hallo".nummap',
+             return_out=True,),
+             ['["8", "1", "12", "12", "15"]'])
+
+    def test_upper_lower_capitalize(self):
+        self.assertEqual(self.interface.run(
+            '"hAlLo".lower;"halLo".upper;"hALLO".capitalize',
+             return_out=True,),
+             ['"hallo"', '"HALLO"', '"Hallo"'])
+
+    def test_strip(self):
+        self.assertEqual(self.interface.run(
+            '"h f    ".strip;"jk".strip("k")',
+             return_out=True,),
+             ['"h f"', '"j"'])
+
+    def test_replace(self):
+        self.assertEqual(self.interface.run(
+            '[0,1].replace(0,2)',
+             return_out=True,),
+             ['[2, 1]'])
+
+    def test_isupper_islower_iscapitalized(self):
+        self.assertEqual(self.interface.run(
+            '"hallo".islower;"Hallo".isupper;"Hallo".iscapitalized',
+             return_out=True,),
+             ['True', 'False', 'True'])
+
+    def test_sort(self):
+        self.assertEqual(self.interface.run(
+            '[1,0,-1].sort',
+             return_out=True,),
+             ['[-1, 0, 1]'])
+
+    def test_posof(self):
+        self.assertEqual(self.interface.run(
+            '"hallo".posof("o")',
+             return_out=True,),
+             ['4'])
+             
+    def test_combinations_allcombinations_multicombinations_permutations_mostcommon(self):
+        self.assertEqual(self.interface.run(
+            'x="ha";"hal".combinations(2);x.allcombinations;x.multicombinations;x.permutations;x.mostcommon(1)',
+             return_out=True,),
+             ['"ha"', '[["h", "a"], ["h", "l"], ["a", "l"]]', '[[], ["h"], ["a"], ["h", "a"]]', '[["h", "h"], ["h", "a"], ["a", "a"]]', '[["h", "a"], ["a", "h"]]', '[["h", 1]]'])
+
+    def test_removeduplicates(self):
+        self.assertEqual(self.interface.run(
+            '[0,0,1].removeduplicates',
+             return_out=True,),
+             ['[0, 1]'])
+
+    def test_range(self):
+        self.assertEqual(self.interface.run(
+            '1:10:3',
+             return_out=True,),
+             ['[1, 4, 7]'])
+             
+    def test_deleteat_pop(self):
+        self.assertEqual(self.interface.run(
+            'x=[0,1,2,3];x.deleteAt(0);x.pop(0)',
+             return_out=True,),
+             ['[0, 1, 2, 3]', '1'])
+
+def main():
+    unittest.main()
 
 if __name__ == "__main__":
-        unittest.main()
+        main()

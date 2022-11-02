@@ -16,8 +16,8 @@ BUILTIN_EXPECTED_ARGS = {"sin":[1], "cos":[1], "tan":[1], "asin":[1], "acos":[1]
             "permutations":[1], "mostcommon":[1,2], "multicombinations":[1,2], "removeduplicates":[1], "range":[1,2,3], "deleteAt":range(2,100), "pop":[1,2],}
         
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["p", "plot"]
-BUILTIN_KEYWORDS = ["midn", "rick", "leet", "range", "input", "l", "s", "n", "bool", "arr", "openurl", "abs", "type"] 
+INTERNAL_KEYWORDS = ["p","apply", "plot", "type", "arr"]
+BUILTIN_KEYWORDS = ["midn", "rick", "leet", "range", "input", "l", "s", "n", "bool", "openurl", "abs"] 
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS+INTERNAL_KEYWORDS+BUILTIN_KEYWORDS)]
 
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
@@ -72,7 +72,7 @@ class Interpreter:
 
     # Will evaluate the ast (parser output) recursively
     def evaluate(self, node):
-        node_type = builtinfunctions.type(node)
+        node_type = self.type(node)
         if node_type == "FuncDeclareNode":
             self.fields["global"][node.identifier] = Datatypes.Function(node.arguments, node.body, node.identifier)
             if node.identifier in BUILTIN_EXPECTED_ARGS:
@@ -85,7 +85,6 @@ class Interpreter:
             return self.operation_handler(node)
         elif node_type == "AssignNode":
             assignment_value = self.evaluate(node.value)
-            print(type(assignment_value).__name__)
             if isinstance(node.identifier, Datatypes.ArrayCallNode):
                 last_index = node.identifier.index.pop()
                 arr = self.evaluate(node.identifier)
@@ -361,19 +360,17 @@ class Interpreter:
             else:
                 TypeError(f"Expected at least {expected_arg_count[0]} arguments for function {keyword}, got {arg_count}.")
         if keyword in INTERNAL_KEYWORDS:
-            return getattr(Interpreter, keyword)(self, *self.convert_to_builtins(args))
+            return getattr(Interpreter, keyword)(self, *args)
         elif keyword in BUILTIN_KEYWORDS:
             return getattr(builtinfunctions, keyword)(*self.convert_to_builtins(args))
         elif keyword in MATH_KEYWORDS:
             return getattr(math, keyword)(*self.convert_to_builtins(args))
-        elif keyword == "apply":
-            return self.apply(*args)
         else:
             return getattr(builtins.type(args[0]), keyword)(*args)
 
     # Will handle any type of simple operation
     def operation_handler(self, node):
-        node_type = builtinfunctions.type(node)
+        node_type = self.type(node)
         a = self.evaluate(node.a)
         b = self.evaluate(node.b)
         try:
@@ -390,7 +387,7 @@ class Interpreter:
             elif node_type == "ExpNode":
                 return a ** b
         except TypeError as e:
-            raise TypeError(f"Cannot use this mathematical operation on object of type {builtinfunctions.type(a)} and {builtinfunctions.type(b)}")
+            raise TypeError(f"Cannot use this mathematical operation on object of type {self.type(a)} and {self.type(b)}")
 
     # Will handle any type of simple comparison
     def comparison_handler(self, node):
@@ -456,7 +453,7 @@ class Interpreter:
             return
         out = ""
         for line in lines:
-            out += str(line) + " "
+            out += str(self.remove_decimals(line)) + " "
         out = [out.strip()]
         merge(self.output_lines, out)
         return
@@ -469,3 +466,11 @@ class Interpreter:
             else:
                 args[0][i] = res
         return args[0]
+
+    def type(self, object):
+        return Datatypes.String(builtins.type(object).__name__)
+    
+    def arr(self, object):
+        return Datatypes.Array(list(object))
+
+    
