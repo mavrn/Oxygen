@@ -231,6 +231,8 @@ class Parser:
             return self.gen_if()
         elif token_type == Datatypes.ITERATE:
             return self.gen_iterate()
+        elif token_type == Datatypes.WHILE:
+            return self.gen_while()
         elif token_type == Datatypes.LBRACKET:
             arr = self.gen_arr()
             self.next_token()
@@ -373,7 +375,12 @@ class Parser:
                 self.next_token()
                 items.append(self.factor())
         return Datatypes.IterateNode(iterable=iterable,items=[item.identifier for item in items],statements=self.statement_block())
-            
+    
+    def gen_while(self):
+        self.next_token()
+        condition = self.statement()
+        return Datatypes.WhileNode(condition=condition, statements=self.statement_block())
+
     def gen_if(self):
         if_node = Datatypes.IfNode()
         self.next_token()

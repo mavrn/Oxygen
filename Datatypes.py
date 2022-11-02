@@ -607,6 +607,7 @@ ITERATE = 53
 DEL = 54
 LET = 55
 COLON = 56
+WHILE = 57
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -635,6 +636,7 @@ ArrayCallNode = namedtuple("ArrayCallNode", ["identifier", "index"])
 ArrayApplyNode = namedtuple("ArrayApplyNode", ["identifier", "function"])
 PeriodCallNode = namedtuple("PeriodCallNode", ["left_side", "right_side"])
 ForEachNode = namedtuple("ForEachNode", ["item", "iterable", "statements"])
+WhileNode = namedtuple("WhileNode", ["condition", "statements"])
 ContainsNode = namedtuple("ContainsNode", ["iterable", "item"])
 IterateNode = namedtuple("IterateNode", ["iterable", "items", "statements"])
 RangeNode = namedtuple("RangeNode", ["start", "stop", "step"])
@@ -703,5 +705,6 @@ type_dict = {
     DEL: "DEL",
     ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN",
     LET: "LET",
-    COLON: "COLON"
+    COLON: "COLON",
+    WHILE: "WHILE"
 }

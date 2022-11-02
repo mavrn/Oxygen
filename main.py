@@ -1,7 +1,5 @@
 from interface import Interface
 import sys
-import testmodules
-
 
 def main():
     args = sys.argv[1:]
@@ -12,7 +10,10 @@ def main():
     interface = Interface(debug=interface_args["debug"],
                           quit_after_exceptions=interface_args["fallthrough"])
     if interface_args["run"]:
-        interface.run_from_txt(printall=interface_args["printall"])
+        filepath=  "program.oxy"
+        if args.index("run")+1 < len(args):
+            filepath = args[args.index("run")+1]
+        interface.run_from_file(filepath, printall=interface_args["printall"])
     else:
         interface.start_session()
 

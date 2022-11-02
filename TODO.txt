@@ -7,8 +7,9 @@
 #delegate arrays to numpy
 #name unittests
 #removeall
-#fix num assignments 3=4
 #while loop
+#implicit iter loop
+#merge foreach and iter logic (same)
 #array access by / ?
 #kwargs
 

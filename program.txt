@@ -1,6 +1,0 @@
-x = "hallo".arr
-type(x)
-x >> x+" "
-x = ["h", "a", "l", "l", "o"]
-type(x)
-x >> x+" "

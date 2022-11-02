@@ -13,10 +13,11 @@ BUILTIN_EXPECTED_ARGS = {"sin":[1], "cos":[1], "tan":[1], "asin":[1], "acos":[1]
             "openurl":[1], "min":range(1,100), "max":range(1,100), "s":range(1,100), "split":[1,2], "n":[1], "difference":range(2,100),
             "count":range(2,100), "nummap":[1], "lower":[1], "upper":[1], "capitalize":[1], "strip":[1,2], "replace":[3], "isupper":[1],
             "islower":[1], "iscapitalized":[1], "input":[0], "sort":[1], "posof":[2], "combinations":[2], "allcombinations":[1],
-            "permutations":[1], "mostcommon":[1,2], "multicombinations":[1,2], "removeduplicates":[1], "range":[1,2,3], "deleteAt":range(2,100), "pop":[1,2],}
+            "permutations":[1], "mostcommon":[1,2], "multicombinations":[1,2], "removeduplicates":[1], "range":[1,2,3],
+            "deleteAt":range(2,100), "pop":[1,2], "getfields": [0]}
         
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["p","apply", "plot", "type", "arr"]
+INTERNAL_KEYWORDS = ["p","apply", "plot", "type", "arr", "getfields"]
 BUILTIN_KEYWORDS = ["midn", "rick", "leet", "range", "input", "l", "s", "n", "bool", "openurl", "abs"] 
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS+INTERNAL_KEYWORDS+BUILTIN_KEYWORDS)]
 
@@ -90,7 +91,7 @@ class Interpreter:
                 arr = self.evaluate(node.identifier)
                 arr[self.evaluate(last_index)] = assignment_value
                 node.identifier.index.append(last_index)
-            else:
+            elif isinstance(node.identifier, str):
                 global_value = self.fields["global"].get(node.identifier)
                 local_value = self.fields[self.scope].get(node.identifier)
                 if local_value is not None:
@@ -99,6 +100,8 @@ class Interpreter:
                     self.fields["global"][node.identifier] = assignment_value
                 else:
                     self.fields[self.scope][node.identifier] = assignment_value
+            else:
+                raise SyntaxError(f"Cannot assign to type {type(node.identifier).__name__}")
             return assignment_value
         elif node_type == "SolveNode":
             _, expression = equation_solver.solve(node.left_side, node.right_side)
@@ -141,7 +144,7 @@ class Interpreter:
                             arr[i] = res
                 return arr
             else:
-                return self.evaluate(Datatypes.AssignNode(node.identifier, self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [arr, 0, arr]))))
+                return self.evaluate(self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [arr, 0, arr])))
         elif node_type == "ComparisonNode":
             return self.comparison_handler(node)
         elif node_type == "BooleanNegationNode":
@@ -277,6 +280,22 @@ class Interpreter:
                 elif "__continue__" in self.fields[self.scope]:
                     self.fields[self.scope].pop("__continue__")
             self.fields[self.scope].pop(id)
+            return out
+        elif node_type == "WhileNode":
+            out = []
+            while bool(self.evaluate(node.condition)):
+                for statement in node.statements:
+                    lines = standardize(self.evaluate(statement))
+                    merge(out, lines)
+                    if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                        break
+                    if "__return__" in self.fields[self.scope]:
+                        return out
+                if "__break__" in self.fields[self.scope]:
+                    self.fields[self.scope].pop("__break__")
+                    break
+                elif "__continue__" in self.fields[self.scope]:
+                    self.fields[self.scope].pop("__continue__")
             return out
         elif node_type == "RangeNode":
             return Datatypes.Array(list(np.arange(node.start,node.stop,node.step)))
@@ -472,5 +491,8 @@ class Interpreter:
     
     def arr(self, object):
         return Datatypes.Array(list(object))
+    
+    def getfields(self):
+        return self.fields
 
     

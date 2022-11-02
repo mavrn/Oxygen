@@ -103,8 +103,8 @@ class Interface:
         else:
             self.print_output(output_lines)
 
-    def run_from_txt(self, printall=False):
-        with open('program.txt') as program:
+    def run_from_file(self, filepath, printall=False):
+        with open(filepath) as program:
             program = program.read()
         self.run(program, printall=printall)
 
