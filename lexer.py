@@ -12,14 +12,13 @@ OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datat
                  ">=": Datatypes.GREATER_OR_EQUALS, "=>": Datatypes.ARROW, "=": Datatypes.EQUALS, "!": Datatypes.NOT,
                  "--": Datatypes.DOUBLE_MINUS, "++": Datatypes.DOUBLE_PLUS, "<<": Datatypes.BLOCK_END,
                  "{": Datatypes.LCURLY, "}": Datatypes.RCURLY, "?=": Datatypes.SOLVE_ASSIGN, "?": Datatypes.SOLVE,
-                 "[": Datatypes.LBRACKET, "]": Datatypes.RBRACKET, ">>": Datatypes.ARRAYAPPLY, ">>>": Datatypes.ARRAYAPPLY_ASSIGN,
-                ":": Datatypes.COLON
-                 }
-KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD,
-                "True": Datatypes.TRUE, "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR,
-                "and": Datatypes.AND, "rep": Datatypes.REP, "as": Datatypes.AS, "for": Datatypes.FOR,
-                "return": Datatypes.RETURN, "break": Datatypes.BREAK, "continue": Datatypes.CONTINUE, "in": Datatypes.IN,
-                "iter": Datatypes.ITERATE, "del": Datatypes.DEL, "let": Datatypes.LET, "equals": Datatypes.EQUALS, 
+                 "[": Datatypes.LBRACKET, "]": Datatypes.RBRACKET, ">>": Datatypes.ARRAYAPPLY,
+                 ">>>": Datatypes.ARRAYAPPLY_ASSIGN, ":": Datatypes.COLON}
+KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD, "True": Datatypes.TRUE,
+                "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR, "and": Datatypes.AND,
+                "rep": Datatypes.REP, "as": Datatypes.AS, "for": Datatypes.FOR, "return": Datatypes.RETURN,
+                "break": Datatypes.BREAK, "continue": Datatypes.CONTINUE, "in": Datatypes.IN, "iter": Datatypes.ITERATE,
+                "del": Datatypes.DEL, "let": Datatypes.LET, "equals": Datatypes.EQUALS,
                 "greater": Datatypes.GREATER_THAN, "smaller": Datatypes.LESS_THAN, "while": Datatypes.WHILE,
                 "bind": Datatypes.BIND}
 
@@ -105,7 +104,7 @@ class Lexer:
         while self.current_char is not None and self.current_char in (NUM_CHARS + "."):
             number += self.current_char
             self.next_char()
-        # Will change ie. ".5" to "0.5"
+        # Will change i.e. ".5" to "0.5"
         if number.startswith("."):
             number = "0" + number
         if number.endswith("."):

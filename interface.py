@@ -1,7 +1,9 @@
+import Datatypes
+from interpreter import Interpreter
 from lexer import Lexer
 from parse import Parser
-from interpreter import Interpreter
-import Datatypes
+
+
 # TODO: add custom and more precise exceptions (i.e. store token positions)
 
 

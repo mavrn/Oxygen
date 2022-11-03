@@ -1,31 +1,41 @@
+import builtins
 import math
-from webbrowser import get
-import Datatypes
+
 import numpy as np
 from matplotlib import pyplot as plt
-import builtins
-import equation_solver
-import builtinfunctions
 
-BUILTIN_EXPECTED_ARGS = {"sin":[1], "cos":[1], "tan":[1], "asin":[1], "acos":[1], "atan":[1], "abs":[1], "sqrt":[1], "factorial":[1], "bool":[1],
-            "plot":[3,4], "p":range(1,100), "midn":[3], "rick":[0], "leet":[1], "type":[1], "arr":[1], "apply":range(1,100),
-            "append":[2], "union":[2], "intersection":[2], "l":[1], "join":[0,1], "rev":[1], "sum":[1], "slice": [1,2,3],
-            "openurl":[1], "min":range(1,100), "max":range(1,100), "s":range(1,100), "split":[1,2], "n":[1], "difference":range(2,100),
-            "count":range(2,100), "nummap":[1], "lower":[1], "upper":[1], "capitalize":[1], "strip":[1,2], "replace":[3], "isupper":[1],
-            "islower":[1], "iscapitalized":[1], "input":[0], "sort":[1], "posof":[2], "combinations":[2], "allcombinations":[1],
-            "permutations":[1], "mostcommon":[1,2], "multicombinations":[1,2], "removeduplicates":[1], "range":[1,2,3],
-            "deleteAt":range(2,100), "pop":[1,2], "getfields": [0], "quit": [0], "removeall": range(2,100), "remove": range(2,100),
-            "keys": [1], "values": [1]}
-        
+import Datatypes
+import builtinfunctions
+import equation_solver
+
+BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos": [1], "atan": [1], "abs": [1],
+                         "sqrt": [1], "factorial": [1], "bool": [1],
+                         "plot": [3, 4], "p": range(1, 100), "midnight": [3], "rick": [0], "leet": [1], "type": [1],
+                         "arr": [1], "apply": range(1, 100),
+                         "append": [2], "union": [2], "intersection": [2], "l": [1], "join": [0, 1], "rev": [1],
+                         "sum": [1], "slice": [1, 2, 3],
+                         "openurl": [1], "min": range(1, 100), "max": range(1, 100), "s": range(1, 100),
+                         "split": [1, 2], "n": [1], "difference": range(2, 100),
+                         "count": range(2, 100), "nummap": [1], "lower": [1], "upper": [1], "capitalize": [1],
+                         "strip": [1, 2], "replace": [3], "isupper": [1],
+                         "islower": [1], "iscapitalized": [1], "input": [0], "sort": [1], "posof": [2],
+                         "combinations": [2], "allcombinations": [1],
+                         "permutations": [1], "mostcommon": [1, 2], "multicombinations": [1, 2],
+                         "removeduplicates": [1], "range": [1, 2, 3],
+                         "deleteAt": range(2, 100), "pop": [1, 2], "getfields": [0], "quit": [0],
+                         "removeall": range(2, 100), "remove": range(2, 100),
+                         "keys": [1], "values": [1], "flatten": [1]}
+
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["p","apply", "plot", "type", "arr", "getfields", "bool"]
-BUILTIN_KEYWORDS = ["midn", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit"] 
-OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS+INTERNAL_KEYWORDS+BUILTIN_KEYWORDS)]
+INTERNAL_KEYWORDS = ["p", "apply", "plot", "type", "arr", "getfields", "bool"]
+BUILTIN_KEYWORDS = ["midnight", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit"]
+OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS + INTERNAL_KEYWORDS + BUILTIN_KEYWORDS)]
 
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 
-BUILT_IN_FIELDS =  {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * (10 ** (-34)), 
-                    "alphabet": Datatypes.String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), "numbers": Datatypes.String("123456789")}
+BUILT_IN_FIELDS = {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * (10 ** (-34)),
+                   "alphabet": Datatypes.String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"),
+                   "numbers": Datatypes.String("123456789")}
 
 
 def standardize(val):
@@ -33,6 +43,7 @@ def standardize(val):
         return val
     else:
         return [val]
+
 
 def merge(output_list, list_to_append):
     for item in list_to_append:
@@ -65,7 +76,7 @@ class Interpreter:
             return repr(elem).replace(r'\n', '\n')
 
     def convert_to_builtins(self, arglist):
-        return list(Datatypes.Array(arglist).convert_to_builtins())        
+        return list(Datatypes.Array(arglist).convert_to_builtins())
 
     def get_output(self, ast_list, printall=True):
         self.output_lines = []
@@ -119,7 +130,7 @@ class Interpreter:
             arr = self.evaluate(node.identifier)
             for index in node.index:
                 if isinstance(index, Datatypes.RangeNode):
-                    arr = arr.slice(self.evaluate(index.start), self.evaluate(index.stop), self.evaluate(index.step) )
+                    arr = arr.slice(self.evaluate(index.start), self.evaluate(index.stop), self.evaluate(index.step))
                 else:
                     arr = arr[self.evaluate(index)]
             return arr
@@ -128,10 +139,11 @@ class Interpreter:
             if not hasattr(arr, "__iter__"):
                 raise TypeError(f"Element of type {type(arr).__name__} is not iterable.")
             arr = arr.copy()
-            self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function, "__arrfunc")     
+            self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function, "__arrfunc")
             funcargs = {} if self.scope == "global" else self.fields[self.scope]
             for i, elem in enumerate(arr):
-                res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, Datatypes.Number(i), arr]), funcargs)
+                res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, Datatypes.Number(i), arr]),
+                                                 funcargs)
                 if isinstance(res, list):
                     if len(res) == 0:
                         continue
@@ -233,7 +245,7 @@ class Interpreter:
             self.fields[self.scope].pop(node.assignment.identifier)
             return out
         elif node_type == "IterateNode":
-            out=[]
+            out = []
             if len(node.items) == 2:
                 id = node.items[1]
                 index_id = node.items[0]
@@ -278,7 +290,7 @@ class Interpreter:
                     self.fields[self.scope].pop("__continue__")
             return out
         elif node_type == "RangeNode":
-            return Datatypes.Array(list(np.arange(node.start,node.stop,node.step)))
+            return Datatypes.Array(list(np.arange(node.start, node.stop, node.step)))
         elif node_type == "ReturnNode":
             if self.scope == "global":
                 raise SyntaxError("Return statement outside function")
@@ -307,7 +319,7 @@ class Interpreter:
         self.output_lines = []
 
     # Will handle all nodes of type FuncCallNode
-    def function_call_handler(self, node, optional_funcargs = {}):
+    def function_call_handler(self, node, optional_funcargs={}):
         # Fetches the function and its name from the global fields
         func = self.fields["global"].get(node.identifier)
         # If none is found, the function might be a built-in one. If not, an error will be risen
@@ -362,7 +374,8 @@ class Interpreter:
             if len(expected_arg_count) == 1:
                 raise TypeError(f"Expected {expected_arg_count[0]} arguments for function {keyword}, got {arg_count}.")
             else:
-                TypeError(f"Expected at least {expected_arg_count[0]} arguments for function {keyword}, got {arg_count}.")
+                TypeError(
+                    f"Expected at least {expected_arg_count[0]} arguments for function {keyword}, got {arg_count}.")
         if keyword in INTERNAL_KEYWORDS:
             return getattr(Interpreter, keyword)(self, *args)
         elif keyword in BUILTIN_KEYWORDS:
@@ -391,7 +404,8 @@ class Interpreter:
             elif node_type == "ExpNode":
                 return a.pow(b)
         except TypeError as e:
-            raise TypeError(f"Cannot use this mathematical operation on object of type {self.type(a)} and {self.type(b)}")
+            raise TypeError(
+                f"Cannot use this mathematical operation on object of type {self.type(a)} and {self.type(b)}")
 
     # Will handle any type of simple comparison
     def comparison_handler(self, node):
@@ -426,18 +440,22 @@ class Interpreter:
 
     def period_call_handler(self, node):
         if isinstance(node.right_side, Datatypes.FuncCallNode):
-            return self.function_call_handler(Datatypes.FuncCallNode(node.right_side.identifier, [node.left_side, *node.right_side.arguments]))
-        elif isinstance(node.right_side, Datatypes.VariableNode) and (node.right_side.identifier in BUILTIN_EXPECTED_ARGS or isinstance(self.fields["global"].get(node.right_side.identifier), Datatypes.Function)):
+            return self.function_call_handler(
+                Datatypes.FuncCallNode(node.right_side.identifier, [node.left_side, *node.right_side.arguments]))
+        elif isinstance(node.right_side, Datatypes.VariableNode) and (
+                node.right_side.identifier in BUILTIN_EXPECTED_ARGS or isinstance(
+            self.fields["global"].get(node.right_side.identifier), Datatypes.Function)):
             return self.function_call_handler(Datatypes.FuncCallNode(node.right_side.identifier, [node.left_side]))
         else:
             raise Exception("pos1")
-            
+
     def plot(self, function, lower_rng=-5, upper_rng=5, increment=0.001):
         if increment < 0.0001:
             raise ValueError("Plotting increment can not be less than 0.0001")
         args = np.arange(lower_rng, upper_rng, increment)
         try:
-            func_args = np.array([self.function_call_handler(Datatypes.FuncCallNode(function.identifier, [arg])) for arg in args])
+            func_args = np.array(
+                [self.function_call_handler(Datatypes.FuncCallNode(function.identifier, [arg])) for arg in args])
         except TypeError:
             raise TypeError("Only functions with exactly one argument can be plotted.")
         plt.rcParams["figure.autolayout"] = True
@@ -473,12 +491,12 @@ class Interpreter:
 
     def type(self, object):
         return Datatypes.String(builtins.type(object).__name__)
-    
+
     def arr(self, object):
         return Datatypes.Array(list(object))
-    
+
     def getfields(self):
         return self.fields
-    
+
     def bool(self, object):
         return Datatypes.Bool(object)

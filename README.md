@@ -339,7 +339,7 @@ if.
 
 ---
 
-Strings are indicated by two quotation marks (which can be either `"` or `'`, like in many other languages. There
+Strings are indicated by two quotation marks which can be either `"` or `'`, like in many other languages. There
 currently are no string operations.
 
 ```python

@@ -1,10 +1,12 @@
 from collections import namedtuple, Counter
 from itertools import combinations, permutations, combinations_with_replacement
 
-ALPHABET_MAP = dict(zip("ABCDEFGHIJKLMNOPQRSTUVWXYZ", range(1,27)))
+ALPHABET_MAP = dict(zip("ABCDEFGHIJKLMNOPQRSTUVWXYZ", range(1, 27)))
+
 
 def convert_to_ints(arglist):
     return [elem.get_num() if isinstance(elem, Number) else elem for elem in arglist]
+
 
 def convert_to_builtin(arg):
     if isinstance(arg, Array):
@@ -18,15 +20,16 @@ def convert_to_builtin(arg):
     else:
         return arg
 
+
 class Number:
     def __init__(self, value):
         if isinstance(value, int) or isinstance(value, float) or isinstance(value, str):
             self.num = float(value)
         elif isinstance(value, Bool):
             if Bool:
-                self.num=1
+                self.num = 1
             else:
-                self.num=0
+                self.num = 0
         elif isinstance(value, String):
             self.num = float(value.str)
         else:
@@ -34,25 +37,25 @@ class Number:
 
     def __add__(self, other):
         return Number(self.num + float(other))
-    
+
     def __radd__(self, other):
         return Number(self.num + float(other))
-    
+
     def __sub__(self, other):
         return Number(self.num - float(other))
-    
+
     def __rsub__(self, other):
-        return Number(float(other) - self.num )
-    
+        return Number(float(other) - self.num)
+
     def __mul__(self, other):
         return Number(self.num * float(other))
-    
+
     def __rmul__(self, other):
         return Number(self.num * float(other))
-    
+
     def __truediv__(self, other):
         return Number(self.num / float(other))
-    
+
     def __rtruediv__(self, other):
         return Number(float(other) / self.num)
 
@@ -61,7 +64,7 @@ class Number:
 
     def __rmod__(self, other):
         return Number(int(other) % int(self))
-    
+
     def pow(self, other):
         return Number(self.num ** float(other))
 
@@ -70,7 +73,7 @@ class Number:
 
     def __le__(self, other):
         return self.num <= float(other)
-    
+
     def __gt__(self, other):
         return self.num > float(other)
 
@@ -79,28 +82,28 @@ class Number:
 
     def __bool__(self):
         return Bool(self)
-    
+
     def __len__(self):
         return len(str(self.num))
 
     def __str__(self):
         return str(self.get_num())
-    
+
     def __repr__(self):
         return str(self)
-    
+
     def __int__(self):
         return int(self.num)
 
     def get_num(self):
-        if self.num%1==0:
+        if self.num % 1 == 0:
             return int(self.num)
         else:
             return self.num
-    
+
     def __float__(self):
         return float(self.num)
-    
+
     def __eq__(self, other):
         return self.num == float(other)
 
@@ -118,7 +121,6 @@ class String:
         self.str_arr = []
         self.n = []
         self.max = len(self.str)
-
 
     def __len__(self):
         return len(self.str)
@@ -146,25 +148,25 @@ class String:
         else:
             self.str = str(Array(self.str_arr.pop()).join(""))
             self.n.pop()
-            raise StopIteration  
-    
+            raise StopIteration
+
     def __eq__(self, other):
         if type(other) is type(self):
             return self.__dict__ == other.__dict__
         return False
-    
+
     def __add__(self, other):
         return String(str(self) + str(String(other)))
-    
+
     def __radd__(self, other):
         return String(str(self) + str(String(other)))
 
     def __mul__(self, num):
         num = num.get_num()
-        if num<1:
+        if num < 1:
             raise TypeError("Cannot divide arrays.")
-        self.str*=num
-        return self       
+        self.str *= num
+        return self
 
     def __eq__(self, other):
         return str(self) == str(other)
@@ -180,25 +182,25 @@ class String:
             pass
         self.str_arr[-1][index.get_num()] = str(String(val))
         self.str = "".join(lst)
-    
+
     def slice(self, *args):
         args = convert_to_ints(args)
         if len(args) == 1:
             stop = args[0]
             start = 0
             step = 1
-        elif len(args)==2:
+        elif len(args) == 2:
             start, stop = args
             step = 1
         else:
             start, stop, step = args
         return String(self.str[start:stop:step])
-    
+
     def append(self, *args):
         for arg in args:
             self += arg
         return self
-            
+
     def nummap(self):
         new = Array([])
         for char in self.str:
@@ -206,10 +208,10 @@ class String:
                 new += Number(ALPHABET_MAP[char.capitalize()])
             else:
                 new += char
-        return new  
-    
+        return new
+
     def delete(self):
-        del self.str_arr[-1][self.n[-1]-1]
+        del self.str_arr[-1][self.n[-1] - 1]
         self.n[-1] -= 1
         self.max -= 1
         return self
@@ -223,7 +225,7 @@ class String:
         for arg in args:
             for arg in args:
                 arr.remove(arg)
-                self.n = [n-1 for n in self.n]
+                self.n = [n - 1 for n in self.n]
                 self.max -= 1
         self.str = "".join(arr)
         return self
@@ -233,7 +235,7 @@ class String:
             while arg in self:
                 self.remove(arg)
         return self
-    
+
     def pop(self, *args):
         return self.contents.pop(*convert_to_ints(args))
 
@@ -242,13 +244,13 @@ class String:
 
     def lower(self):
         return String(self.str.lower())
-    
+
     def upper(self):
         return String(self.str.upper())
-    
+
     def capitalize(self):
         return String(self.str.capitalize())
-    
+
     def strip(self, *args):
         if len(args) == 0:
             delimiters = " "
@@ -257,19 +259,19 @@ class String:
             for arg in args:
                 delimiters += str(arg)
         return String(self.str.strip(delimiters))
-    
+
     def replace(self, *args):
         return String(self.str.replace(*[str(arg) for arg in args]))
-    
+
     def isupper(self):
         return Bool(self.str.isupper())
-    
+
     def islower(self):
         return Bool(self.str.islower())
-    
+
     def iscapitalized(self):
         return Bool(self.str.istitle())
-        
+
     def count(self, *args):
         ct = 0
         for arg in args:
@@ -277,7 +279,7 @@ class String:
                 raise TypeError("Expected type String for function count")
             ct += self.str.count(str(arg))
         return Number(ct)
-    
+
     def mostcommon(self, *args):
         c = Counter(list([str(s) for s in self.str]))
         results = []
@@ -298,11 +300,11 @@ class String:
 
     def allcombinations(self):
         temp = []
-        for length in range(len(self.str) +1):
+        for length in range(len(self.str) + 1):
             for subset in combinations(self.str, length):
                 temp.append(Array([String(elem) for elem in subset]))
         return Array(temp)
-    
+
     def multicombinations(self, *args):
         temp = []
         if len(args) == 0:
@@ -316,7 +318,7 @@ class String:
         for comb in permutations(self.str):
             temp.append(Array([String(elem) for elem in comb]))
         return Array(temp)
-    
+
     def removeduplicates(self):
         return Array(list(dict.fromkeys(list(self.str))))
 
@@ -333,6 +335,7 @@ class String:
             new = new.replace(str(args[i]), master)
         return Array([String(s) for s in new.split(str(master))])
 
+
 class Bool:
     def __init__(self, value=None):
         if isinstance(value, bool):
@@ -342,7 +345,7 @@ class Bool:
         elif isinstance(value, Number):
             if value == 0:
                 self.boolean_value = False
-            else: 
+            else:
                 self.boolean_value = True
         elif value is None:
             self.boolean_value = False
@@ -354,7 +357,7 @@ class Bool:
             return "False"
         if self.boolean_value is True:
             return "True"
-    
+
     def __str__(self):
         return self.__repr__()
 
@@ -377,7 +380,7 @@ class Array:
         self.max = len(self.contents)
 
     def __str__(self):
-        if len(self) ==0:
+        if len(self) == 0:
             return "[]"
         res = "["
         for c in self.contents:
@@ -385,7 +388,7 @@ class Array:
         res = res[:-2]
         res += "]"
         return res
-    
+
     def __len__(self):
         return len(self.contents)
 
@@ -395,23 +398,23 @@ class Array:
         return self
 
     def __add__(self, elem):
-        return Array(self.contents.copy() +[elem])
-    
+        return Array(self.contents.copy() + [elem])
+
     def copy(self):
         return Array(self.contents.copy())
 
     def __mul__(self, num):
         num = int(num)
-        if num<1:
+        if num < 1:
             raise TypeError("Cannot divide arrays.")
-        self.contents*=num
-        return self        
-    
+        self.contents *= num
+        return self
+
     def __sub__(self, elem):
         for i in reversed(range(len(self))):
             if self[i] == elem:
                 del self[i]
-        return self        
+        return self
 
     def __next__(self):
         if self.n[-1] < self.max:
@@ -420,8 +423,8 @@ class Array:
             return res
         else:
             self.n.pop()
-            raise StopIteration        
-        
+            raise StopIteration
+
     def __repr__(self):
         return self.__str__()
 
@@ -436,7 +439,7 @@ class Array:
                     eq = False
             return Bool(eq)
         except TypeError:
-            raise TypeError(f"{type(other).__name__} object is not iterable.")         
+            raise TypeError(f"{type(other).__name__} object is not iterable.")
 
     def __getitem__(self, index):
         return self.contents[index.get_num()]
@@ -446,7 +449,7 @@ class Array:
 
     def __setitem__(self, index, val):
         self.contents[index.get_num()] = val
-    
+
     def append(self, *args):
         for arg in args:
             self += arg
@@ -464,22 +467,32 @@ class Array:
             stop = args[0]
             start = 0
             step = 1
-        elif len(args)==2:
+        elif len(args) == 2:
             start, stop = args
             step = 1
         else:
             start, stop, step = args
         return Array(self.contents[start:stop:step])
 
+    def flatten(self):
+        new = Array([])
+        for elem in self.contents:
+            if isinstance(elem, Array):
+                for item in elem.flatten():
+                    new += item
+            else:
+                new += elem
+        return new
+
     def combinations(self, *args):
         temp = []
         for comb in combinations(self.contents, *convert_to_ints(args)):
             temp.append(Array(list(comb)))
         return Array(temp)
-        
+
     def allcombinations(self):
         temp = []
-        for length in range(len(self.contents) +1):
+        for length in range(len(self.contents) + 1):
             for subset in combinations(self.contents, length):
                 temp.append(Array(list(subset)))
         return Array(list(temp))
@@ -491,7 +504,7 @@ class Array:
         for comb in combinations_with_replacement(self.contents, *convert_to_ints(args)):
             temp.append(Array(list(comb)))
         return Array(temp)
-    
+
     def permutations(self):
         temp = []
         for comb in permutations(self.contents):
@@ -508,7 +521,7 @@ class Array:
                 new.append(elem)
         self.contents = new
         return self
-    
+
     def union(self, other):
         for elem in other:
             if elem not in self:
@@ -518,7 +531,7 @@ class Array:
     def difference(self, other):
         for elem in other:
             if elem in self:
-                    self.contents.remove(elem)
+                self.contents.remove(elem)
         return self
 
     def mostcommon(self, *args):
@@ -538,50 +551,49 @@ class Array:
         for arg in args:
             ct += self.contents.count(arg)
         return Number(ct)
-    
+
     def delete(self):
-        del self.contents[self.n[-1]-1]
-        self.n = [n-1 for n in self.n]
+        del self.contents[self.n[-1] - 1]
+        self.n = [n - 1 for n in self.n]
         self.max -= 1
         return self
 
     def deleteAt(self, *args):
         for arg in convert_to_ints(args):
             del self.contents[arg]
-    
+
     def removeall(self, *args):
         for arg in args:
             while arg in self.contents:
                 self.remove(arg)
         return self
-    
+
     def pop(self, *args):
         return self.contents.pop(*convert_to_ints(args))
-    
+
     def posof(self, value):
         return Number(self.contents.index(value))
 
     def remove(self, *args):
         for arg in args:
             self.contents.remove(arg)
-            self.n = [n-1 for n in self.n]
+            self.n = [n - 1 for n in self.n]
             self.max -= 1
         return self
 
-    #def flatten(self):
+    # def flatten(self):
     #    
     #    for elem in self:
-            
 
     def replace(self, *args):
         old = args[0]
         new = args[1]
-        return Array([new if elem==old else elem for elem in self.contents])
+        return Array([new if elem == old else elem for elem in self.contents])
 
     def join(self, *args):
         delimiter = "" if len(args) == 0 else args[0]
         return String(str(delimiter).join([str(s) for s in self.contents]))
-    
+
     def sum(self):
         s = 0
         for el in self.contents:
@@ -592,11 +604,11 @@ class Array:
             else:
                 raise TypeError(f"Cannot add item of type {type(el).__name__} to sum")
         return s
-    
+
     def sort(self):
         self.contents.sort()
         return self
-    
+
     def min(self):
         return min(self.contents)
 
@@ -606,7 +618,8 @@ class Array:
     def rev(self):
         self.contents.reverse()
         return self
-            
+
+
 class Dictionary():
     def __init__(self, contents):
         self.contents = contents
@@ -615,20 +628,20 @@ class Dictionary():
 
     def __str__(self):
         return str(self.contents)
-    
+
     def __len__(self):
         return len(self.contents)
 
     def __iter__(self):
         return iter(Array([Array(list(item)) for item in self.contents.items()]))
-    
+
     def copy(self):
-        return Dictionary(self.contents.copy())  
-    
+        return Dictionary(self.contents.copy())
+
     def __sub__(self, key):
         del self.contents[key]
-        return self            
-        
+        return self
+
     def __repr__(self):
         return self.__str__()
 
@@ -649,15 +662,16 @@ class Dictionary():
     def delete(self, *keys):
         for key in keys:
             del self.contents[convert_to_builtin(key)]
-    
+
     def pop(self, key):
         return self.contents.pop(convert_to_builtin(key))
-    
+
     def keys(self):
         return Array(list(self.contents.keys()))
-    
+
     def values(self):
         return Array(list(self.contents.values()))
+
 
 # Defines a function consisting of the arguments and the body
 class Function:
@@ -794,68 +808,21 @@ DictCreateNode = namedtuple("DictCreateNode", ["items"])
 # Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
                       MODULUS_SIGN: ModulusNode, EQUALS: AssignNode, PLUS_ASSIGN: AddNode, MINUS_ASSIGN: SubNode,
-                      MULT_ASSIGN: MultNode, DIV_ASSIGN: DivNode, MODULUS_ASSIGN: ModulusNode, ARRAYAPPLY_ASSIGN: ArrayApplyNode}
+                      MULT_ASSIGN: MultNode, DIV_ASSIGN: DivNode, MODULUS_ASSIGN: ModulusNode,
+                      ARRAYAPPLY_ASSIGN: ArrayApplyNode}
 
 # Debug
 # Helps to make tokens more readable
-type_dict = {
-    NUMBER: "NUMBER",
-    PLUS_SIGN: "PLUS_SIGN",
-    MINUS_SIGN: "MINUS_SIGN",
-    MULT_SIGN: "MULT_SIGN",
-    DIV_SIGN: "DIV_SIGN",
-    MODULUS_SIGN: "MODULUS_SIGN",
-    PLUS_ASSIGN: "PLUS_ASSIGN",
-    MINUS_ASSIGN: "MINUS_ASSIGN",
-    MULT_ASSIGN: "MULT_ASSIGN",
-    DIV_ASSIGN: "DIV_ASSIGN",
-    MODULUS_ASSIGN: "MODULUS_ASSIGN",
-    LPAREN: "LPAREN",
-    RPAREN: "RPAREN",
-    IDENTIFIER: "IDENTIFIER",
-    EQUALS: "EQUALS",
-    EXP: "EXPONENTIAL_SIGN",
-    ARROW: "ARROW",
-    FUNCTION_KEYWORD: "FUNCTION_KEYWORD",
-    PERIOD_CALL: "PERIOD_FUNC_CALL",
-    COMMA: "COMMA",
-    COMP_EQUALS: "COMP_EQUALS",
-    COMP_NOT_EQUALS: "COMP_NOT_EQUALS",
-    GREATER_THAN: "GREATER_THAN",
-    LESS_THAN: "LESS_THAN",
-    GREATER_OR_EQUALS: "GREATER_OR_EQUALS",
-    LESS_OR_EQUALS: "LESS_OR_EQUALS",
-    TRUE: "TRUE",
-    FALSE: "FALSE",
-    NOT: "NOT",
-    AND: "AND",
-    OR: "OR",
-    IF: "IF",
-    ELSE: "ELSE",
-    REP: "REP",
-    FOR: "FOR",
-    STRING: "STRING",
-    AS: "AS",
-    DOUBLE_MINUS: "DOUBLE_MINUS",
-    DOUBLE_PLUS: "DOUBLE_PLUS",
-    BLOCK_END: "BLOCK_END",
-    RETURN: "RETURN",
-    LCURLY: "LCURLY",
-    RCURLY: "RCURLY",
-    SOLVE_ASSIGN: "SOLVE_ASSIGN",
-    SOLVE: "SOLVE",
-    LINEBREAK: "LINEBREAK",
-    BREAK: "BREAK",
-    CONTINUE: "CONTINUE",
-    LBRACKET: "LBRACKET",
-    RBRACKET: "RBRACKET",
-    ARRAYAPPLY: "ARRAYAPPLY",
-    IN: "IN",
-    ITERATE: "ITERATE",
-    DEL: "DEL",
-    ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN",
-    LET: "LET",
-    COLON: "COLON",
-    WHILE: "WHILE",
-    BIND: "BIND"
-}
+type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN", MULT_SIGN: "MULT_SIGN",
+    DIV_SIGN: "DIV_SIGN", MODULUS_SIGN: "MODULUS_SIGN", PLUS_ASSIGN: "PLUS_ASSIGN", MINUS_ASSIGN: "MINUS_ASSIGN",
+    MULT_ASSIGN: "MULT_ASSIGN", DIV_ASSIGN: "DIV_ASSIGN", MODULUS_ASSIGN: "MODULUS_ASSIGN", LPAREN: "LPAREN",
+    RPAREN: "RPAREN", IDENTIFIER: "IDENTIFIER", EQUALS: "EQUALS", EXP: "EXPONENTIAL_SIGN", ARROW: "ARROW",
+    FUNCTION_KEYWORD: "FUNCTION_KEYWORD", PERIOD_CALL: "PERIOD_FUNC_CALL", COMMA: "COMMA", COMP_EQUALS: "COMP_EQUALS",
+    COMP_NOT_EQUALS: "COMP_NOT_EQUALS", GREATER_THAN: "GREATER_THAN", LESS_THAN: "LESS_THAN",
+    GREATER_OR_EQUALS: "GREATER_OR_EQUALS", LESS_OR_EQUALS: "LESS_OR_EQUALS", TRUE: "TRUE", FALSE: "FALSE", NOT: "NOT",
+    AND: "AND", OR: "OR", IF: "IF", ELSE: "ELSE", REP: "REP", FOR: "FOR", STRING: "STRING", AS: "AS",
+    DOUBLE_MINUS: "DOUBLE_MINUS", DOUBLE_PLUS: "DOUBLE_PLUS", BLOCK_END: "BLOCK_END", RETURN: "RETURN",
+    LCURLY: "LCURLY", RCURLY: "RCURLY", SOLVE_ASSIGN: "SOLVE_ASSIGN", SOLVE: "SOLVE", LINEBREAK: "LINEBREAK",
+    BREAK: "BREAK", CONTINUE: "CONTINUE", LBRACKET: "LBRACKET", RBRACKET: "RBRACKET", ARRAYAPPLY: "ARRAYAPPLY",
+    IN: "IN", ITERATE: "ITERATE", DEL: "DEL", ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN", LET: "LET", COLON: "COLON",
+    WHILE: "WHILE", BIND: "BIND"}

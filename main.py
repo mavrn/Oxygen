@@ -1,5 +1,7 @@
-from interface import Interface
 import sys
+
+from interface import Interface
+
 
 def main():
     args = sys.argv[1:]
@@ -9,7 +11,7 @@ def main():
         args = args[1:]
     else:
         runfile = False
-    
+
     interface_args = {"debug": False, "fallthrough": False, "printall": False}
     for arg in args:
         if arg in interface_args:
@@ -21,8 +23,7 @@ def main():
         interface.run_from_file(filepath)
     else:
         interface.start_session()
-    
-        
+
 
 if __name__ == '__main__':
     main()

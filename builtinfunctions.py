@@ -1,15 +1,18 @@
-import Datatypes
+import builtins
 import math
 import webbrowser
-import builtins
+
 import numpy as np
+
+import Datatypes
+
 
 def leet(message):
     charMapping = {
-    'a': '4', 'c': '(', 'd': '|)', 'e': '3',
-    'f': 'ph', 'h': '|-|', 'i': '1', 'k': ']<',
-    'o': '0', 's': '$', 't': '7', 'u': '|_|',
-    'v': '\\/'}
+        'a': '4', 'c': '(', 'd': '|)', 'e': '3',
+        'f': 'ph', 'h': '|-|', 'i': '1', 'k': ']<',
+        'o': '0', 's': '$', 't': '7', 'u': '|_|',
+        'v': '\\/'}
     leetspeak = ''
     for char in message:  # Check each character:
         if char.lower() in charMapping:
@@ -18,46 +21,56 @@ def leet(message):
             leetspeak += char
     return Datatypes.String(leetspeak)
 
-def midn(*args):
+
+def midnight(*args):
     a, b, c = args
     sol = []
     if a == 0 and b == 0:
         return []
     elif a == 0:
-        return [(-c)/b]      
+        return [(-c) / b]
     try:
-        x1 = (-b + math.sqrt(b**2 - 4*a*c))/(2*a)
+        x1 = (-b + math.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
         sol.append(Datatypes.Number(x1))
-        x2 = (-b - math.sqrt(b**2 - 4*a*c))/(2*a)
-        if(x1 != x2):
+        x2 = (-b - math.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+        if (x1 != x2):
             sol.append(Datatypes.Number(x2))
     except ValueError:
         pass
     return Datatypes.Array(sol)
 
+
 def rick():
     webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
+
 def openurl(url):
-    webbrowser.open(url) 
+    webbrowser.open(url)
+
 
 def abs(value):
     return Datatypes.Number(math.fabs(value))
 
+
 def input():
     return Datatypes.String(builtins.input())
+
 
 def s(object):
     return Datatypes.String(object)
 
+
 def n(object):
     return Datatypes.Number(object)
+
 
 def l(object):
     return Datatypes.Number(len(object))
 
-def range(*args):    
+
+def range(*args):
     return Datatypes.Array(list(np.arange(*args)))
+
 
 def quit():
     exit()
