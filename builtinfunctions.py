@@ -27,10 +27,10 @@ def midn(*args):
         return [(-c)/b]      
     try:
         x1 = (-b + math.sqrt(b**2 - 4*a*c))/(2*a)
-        sol.append(x1)
+        sol.append(Datatypes.Number(x1))
         x2 = (-b - math.sqrt(b**2 - 4*a*c))/(2*a)
         if(x1 != x2):
-            sol.append(x2)
+            sol.append(Datatypes.Number(x2))
     except ValueError:
         pass
     return Datatypes.Array(sol)
@@ -42,7 +42,7 @@ def openurl(url):
     webbrowser.open(url) 
 
 def abs(value):
-    return math.fabs(value)
+    return Datatypes.Number(math.fabs(value))
 
 def input():
     return Datatypes.String(builtins.input())
@@ -54,7 +54,7 @@ def n(object):
     return Datatypes.Number(object)
 
 def l(object):
-    return len(object)
+    return Datatypes.Number(len(object))
 
 def range(*args):    
     return Datatypes.Array(list(np.arange(*args)))

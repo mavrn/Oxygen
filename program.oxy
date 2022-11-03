@@ -1,1 +1,6 @@
-bool(0).p
+x = [0,1,2,3,4,5,6]
+[1,2,3,4,10,102].union(x)
+[3,4,5,7].intersection(x)
+fn y a => a^2
+(x.apply(y)).p
+p(x >> x+1)

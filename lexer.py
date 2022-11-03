@@ -20,7 +20,8 @@ KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNC
                 "and": Datatypes.AND, "rep": Datatypes.REP, "as": Datatypes.AS, "for": Datatypes.FOR,
                 "return": Datatypes.RETURN, "break": Datatypes.BREAK, "continue": Datatypes.CONTINUE, "in": Datatypes.IN,
                 "iter": Datatypes.ITERATE, "del": Datatypes.DEL, "let": Datatypes.LET, "equals": Datatypes.EQUALS, 
-                "greater": Datatypes.GREATER_THAN, "smaller": Datatypes.LESS_THAN, "while": Datatypes.WHILE}
+                "greater": Datatypes.GREATER_THAN, "smaller": Datatypes.LESS_THAN, "while": Datatypes.WHILE,
+                "bind": Datatypes.BIND}
 
 
 # TODO: replace this with a regex lexer

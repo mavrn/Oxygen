@@ -191,7 +191,6 @@ x[1][0]
 x[1][1][0]
 """
 input31="""
-10 >> x/2
 "hallo" >> " " if x in "aeiou" else x
 "lol" >> 1
 "abcdefg" >> i
@@ -445,7 +444,7 @@ output27 = ['3', '7']
 output28 = ['5', '10.105263157894736', '2']
 output29 = ['1.2', '0.4']
 output30 = ['[[0, 1], [2, [3, 4]]]', '[0, 1]', '2', '3']
-output31 = ['5', '"h ll "', '"111"', '"0123456"']
+output31 = ['"h ll "', '"111"', '"0123456"']
 output32 = ['"h a l l o "']
 output33 = ['"Rmv ll vwls"']
 output34 = ['160']
@@ -736,7 +735,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(self.interface.run(
             '"hallo".nummap',
              return_out=True,),
-             ['["8", "1", "12", "12", "15"]'])
+             ['[8, 1, 12, 12, 15]'])
 
     def test_upper_lower_capitalize(self):
         self.assertEqual(self.interface.run(

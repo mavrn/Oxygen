@@ -51,23 +51,20 @@ class Parser:
     # operations have to be evaluated before a term, but after a factor.
     # Finally, the factor can be a number, identifier or a statement between brackets.
     def statement_block(self, func_block=False):
-        if self.current_token_type not in (Datatypes.ARROW, Datatypes.LCURLY):
-            raise SyntaxError("Expected '{' or '=>'")
-        else:
-            block_starter = self.current_token_type
+        if self.current_token_type != Datatypes.ARROW:
+            raise SyntaxError("Expected '=>'")
         self.next_token()
-        if self.current_token_type != Datatypes.LINEBREAK and block_starter == Datatypes.ARROW:
+        if self.current_token_type != Datatypes.LINEBREAK:
             return self.statement() if func_block else [self.statement()]
-        block_ender = Datatypes.BLOCK_END if block_starter == Datatypes.ARROW else Datatypes.RCURLY
         block = []
-        while self.current_token_type not in (block_ender, None):
+        while self.current_token_type not in (Datatypes.BLOCK_END, None):
             while self.current_token_type == Datatypes.LINEBREAK:
                 self.next_token()
             self.skipped_linebreak = False
             block.append(self.statement())
             if self.current_token_type is None:
                 raise SyntaxError("Expected expression")
-        if self.current_token_type != block_ender:
+        if self.current_token_type != Datatypes.BLOCK_END:
             raise SyntaxError(f"Expected block ending operator")
         self.next_token()
         return block
@@ -201,7 +198,7 @@ class Parser:
             if self.current_token_type == Datatypes.IDENTIFIER:
                 return Datatypes.MultNode(token.value, self.exponential())
             elif self.current_token_type == Datatypes.LBRACKET:
-                return self.gen_arrcall(token.value)
+                return self.gen_bracketcall(token.value)
             return token.value
         # In case of a FUNCTION_KEYWORD, the parsing process will continue declare_function() function
         elif token_type == Datatypes.FUNCTION_KEYWORD:
@@ -236,8 +233,14 @@ class Parser:
             arr = self.gen_arr()
             self.next_token()
             if self.current_token_type == Datatypes.LBRACKET:
-                return self.gen_arrcall(arr)
+                return self.gen_bracketcall(arr)
             return arr
+        elif token_type == Datatypes.LCURLY:
+            dict = self.gen_dict()
+            self.next_token()
+            if self.current_token_type == Datatypes.LBRACKET:
+                return self.gen_bracketcall(dict)
+            return dict
         elif token_type == Datatypes.TRUE:
             self.next_token()
             return Datatypes.Bool(True)
@@ -281,7 +284,7 @@ class Parser:
             elif self.current_token_type == Datatypes.LPAREN:
                 return self.gen_funccall(identifier)
             elif self.current_token_type == Datatypes.LBRACKET:
-                return self.gen_arrcall(Datatypes.VariableNode(identifier))
+                return self.gen_bracketcall(Datatypes.VariableNode(identifier))
             else:
                 return Datatypes.VariableNode(identifier=identifier)
         elif token_type == Datatypes.DEL:
@@ -294,7 +297,7 @@ class Parser:
             id = self.current_token.value
             self.next_token()
             return Datatypes.AssignNode(identifier=id, value=self.statement())
-        elif token_type in (Datatypes.BLOCK_END, Datatypes.RCURLY):
+        elif token_type == Datatypes.BLOCK_END:
             return
         else:
             msg = f"Expected any factor, got {Datatypes.type_dict.get(token_type)}"
@@ -415,7 +418,28 @@ class Parser:
             raise SyntaxError("Expected closing parenthesis")
         return Datatypes.Array(contents)
 
-    def gen_arrcall(self, identifier):
+    def gen_dict(self):
+        self.next_token()
+        contents = []
+        while self.current_token is not None and self.current_token_type != Datatypes.RCURLY:
+            key = self.expression()
+            if self.current_token_type != Datatypes.BIND:
+                raise SyntaxError("Expecte bind keyword between key and value.")
+            self.next_token()
+            value = self.statement()
+            contents.append([key, value])
+            if self.current_token_type == Datatypes.COMMA:
+                self.next_token()
+            elif self.current_token_type != Datatypes.RCURLY:
+                raise SyntaxError("Expected comma or closing parenthesis")
+            while self.current_token_type == Datatypes.LINEBREAK:
+                self.next_token()
+        if self.current_token_type != Datatypes.RCURLY:
+            raise SyntaxError("Expected closing parenthesis")
+        return Datatypes.DictCreateNode(items=contents)
+
+
+    def gen_bracketcall(self, identifier):
         indexes = []
         while self.current_token_type == Datatypes.LBRACKET:
             self.next_token()
@@ -424,4 +448,4 @@ class Parser:
                 raise SyntaxError("Excpected ]")
             self.next_token()
             indexes.append(index)
-        return Datatypes.ArrayCallNode(identifier = identifier, index = indexes)
+        return Datatypes.BracketCallNode(identifier = identifier, index = indexes)

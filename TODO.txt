@@ -1,12 +1,13 @@
 # array.flatten()
 # array.
 #fileopen
-#implement number class
-#implement dict class
 #redo exceptions + add trycatch
 #update comments
 #delegate arrays to numpy
 #name unittests
+#change to switch case
+#implement switch case
+#enable passing by reference
 
 #kwargs
 

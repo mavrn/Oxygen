@@ -14,7 +14,8 @@ BUILTIN_EXPECTED_ARGS = {"sin":[1], "cos":[1], "tan":[1], "asin":[1], "acos":[1]
             "count":range(2,100), "nummap":[1], "lower":[1], "upper":[1], "capitalize":[1], "strip":[1,2], "replace":[3], "isupper":[1],
             "islower":[1], "iscapitalized":[1], "input":[0], "sort":[1], "posof":[2], "combinations":[2], "allcombinations":[1],
             "permutations":[1], "mostcommon":[1,2], "multicombinations":[1,2], "removeduplicates":[1], "range":[1,2,3],
-            "deleteAt":range(2,100), "pop":[1,2], "getfields": [0], "quit": [0], "removeall": range(2,100), "remove": range(2,100)}
+            "deleteAt":range(2,100), "pop":[1,2], "getfields": [0], "quit": [0], "removeall": range(2,100), "remove": range(2,100),
+            "keys": [1], "values": [1]}
         
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
 INTERNAL_KEYWORDS = ["p","apply", "plot", "type", "arr", "getfields", "bool"]
@@ -48,11 +49,6 @@ class Interpreter:
         self.nested_scopes = []
         self.output_lines = []
 
-    def remove_decimals(self, elem):
-        if isinstance(elem, float) and elem%1==0:
-            return int(elem)
-        return elem
-
     def process_nums(self, arglist):
         new = []
         for arg in arglist:
@@ -63,10 +59,10 @@ class Interpreter:
         return new
 
     def stringify(self, elem):
-        if isinstance(elem, float) and elem%1 == 0:
-            elem = int(elem)
+        if isinstance(elem, Datatypes.Number):
+            elem = elem.get_num()
         if elem is not None:
-            return repr(self.remove_decimals(elem)).replace(r'\n', '\n')
+            return repr(elem).replace(r'\n', '\n')
 
     def convert_to_builtins(self, arglist):
         return list(Datatypes.Array(arglist).convert_to_builtins())        
@@ -95,7 +91,7 @@ class Interpreter:
             return self.operation_handler(node)
         elif node_type == "AssignNode":
             assignment_value = self.evaluate(node.value)
-            if isinstance(node.identifier, Datatypes.ArrayCallNode):
+            if isinstance(node.identifier, Datatypes.BracketCallNode):
                 last_index = node.identifier.index.pop()
                 arr = self.evaluate(node.identifier)
                 arr[self.evaluate(last_index)] = assignment_value
@@ -119,7 +115,7 @@ class Interpreter:
             variable, expression = equation_solver.solve(node.left_side, node.right_side)
             result = self.evaluate(expression)
             return self.evaluate(Datatypes.AssignNode(variable.identifier, result))
-        elif node_type == "ArrayCallNode":
+        elif node_type == "BracketCallNode":
             arr = self.evaluate(node.identifier)
             for index in node.index:
                 if isinstance(index, Datatypes.RangeNode):
@@ -129,31 +125,26 @@ class Interpreter:
             return arr
         elif node_type == "ArrayApplyNode":
             arr = self.evaluate(node.identifier)
-            if not isinstance(arr, Datatypes.Number):
-                arr = arr.copy()
-            self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function, "__arrfunc")
-            funcargs = {}
-            if self.scope != "global":
-                for k, v in self.fields[self.scope].items():
-                    funcargs[k] = v                
-            if hasattr(arr, "__iter__"):
-                for i, elem in enumerate(arr):
-                    res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, i, arr]), funcargs)
-                    if isinstance(res, list):
-                        if len(res) == 0:
-                            continue
-                        elif isinstance(res[0], Datatypes.Token) and res[0].type == Datatypes.DEL:
-                            arr.delete()
-                        else:
-                            arr[Datatypes.Number(i)] = res[0]
+            if not hasattr(arr, "__iter__"):
+                raise TypeError(f"Element of type {type(arr).__name__} is not iterable.")
+            arr = arr.copy()
+            self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function, "__arrfunc")     
+            funcargs = {} if self.scope == "global" else self.fields[self.scope]
+            for i, elem in enumerate(arr):
+                res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, Datatypes.Number(i), arr]), funcargs)
+                if isinstance(res, list):
+                    if len(res) == 0:
+                        continue
+                    elif isinstance(res[0], Datatypes.Token) and res[0].type == Datatypes.DEL:
+                        arr.delete()
                     else:
-                        if isinstance(res, Datatypes.Token) and res.type == Datatypes.DEL:
-                            arr.delete()
-                        else:
-                            arr[Datatypes.Number(i)] = res
-                return arr
-            else:
-                return self.evaluate(self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [arr, 0, arr])))
+                        arr[Datatypes.Number(i)] = res[0]
+                else:
+                    if isinstance(res, Datatypes.Token) and res.type == Datatypes.DEL:
+                        arr.delete()
+                    else:
+                        arr[Datatypes.Number(i)] = res
+            return arr
         elif node_type == "ComparisonNode":
             return self.comparison_handler(node)
         elif node_type == "BooleanNegationNode":
@@ -205,7 +196,7 @@ class Interpreter:
                 raise ValueError(f"Invalid repetition count, expected a whole positive number, got {reps}")
             out = []
             for i in range(int(reps)):
-                self.fields["global"][node.count_identifier] = float(i)
+                self.fields["global"][node.count_identifier] = Datatypes.Number(i)
                 for statement in node.statements:
                     lines = standardize(self.evaluate(statement))
                     if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
@@ -255,7 +246,7 @@ class Interpreter:
             iterable = self.evaluate(node.iterable)
             for i, element in enumerate(iterable):
                 self.evaluate(Datatypes.AssignNode(id, element))
-                self.evaluate(Datatypes.AssignNode(index_id, i))
+                self.evaluate(Datatypes.AssignNode(index_id, Datatypes.Number(i)))
                 for statement in node.statements:
                     lines = standardize(self.evaluate(statement))
                     merge(out, lines)
@@ -301,6 +292,11 @@ class Interpreter:
             for i, elem in enumerate(temp):
                 temp[Datatypes.Number(i)] = self.evaluate(elem)
             return temp
+        elif node_type == "DictCreateNode":
+            dict = Datatypes.Dictionary({})
+            for item in node.items:
+                dict[self.evaluate(item[0])] = self.evaluate(item[1])
+            return dict
         else:
             return node
 
@@ -372,8 +368,6 @@ class Interpreter:
         elif keyword in BUILTIN_KEYWORDS:
             return getattr(builtinfunctions, keyword)(*self.convert_to_builtins(args))
         elif keyword in MATH_KEYWORDS:
-            print(getattr(math, keyword))
-            print(self.process_nums(args))
             return Datatypes.Number(getattr(math, keyword)(*self.process_nums(args)))
         else:
             return getattr(builtins.type(args[0]), keyword)(*self.process_nums(args))
@@ -397,7 +391,6 @@ class Interpreter:
             elif node_type == "ExpNode":
                 return a.pow(b)
         except TypeError as e:
-            print(e)
             raise TypeError(f"Cannot use this mathematical operation on object of type {self.type(a)} and {self.type(b)}")
 
     # Will handle any type of simple comparison
@@ -464,7 +457,7 @@ class Interpreter:
             return
         out = ""
         for line in lines:
-            out += str(self.remove_decimals(line)) + " "
+            out += str(*self.process_nums([line])) + " "
         out = [out.strip()]
         merge(self.output_lines, out)
         return

@@ -1,12 +1,22 @@
 from collections import namedtuple, Counter
 from itertools import combinations, permutations, combinations_with_replacement
 
-ALPHABET_MAP = {"A": 1, "B": 2, "C": 3, "D": 4, "E": 5, "F": 6, "G": 7, "H":8 , "I":9, "J":10, "K":11, "L":12, "M":13,
-                "N":14, "O":15, "P":16, "Q":17, "R":18, "S":19, "T":20, "U":21, "V":22, "W":23, "X":24, "Y":25, "Z":26}
+ALPHABET_MAP = dict(zip("ABCDEFGHIJKLMNOPQRSTUVWXYZ", range(1,27)))
 
 def convert_to_ints(arglist):
     return [elem.get_num() if isinstance(elem, Number) else elem for elem in arglist]
 
+def convert_to_builtin(arg):
+    if isinstance(arg, Array):
+        return arg.contents
+    elif isinstance(arg, String):
+        return arg.str
+    elif isinstance(arg, Bool):
+        return arg.boolean_value
+    elif isinstance(arg, Number):
+        return arg.get_num()
+    else:
+        return arg
 
 class Number:
     def __init__(self, value):
@@ -150,12 +160,9 @@ class String:
         return String(str(self) + str(String(other)))
 
     def __mul__(self, num):
-        if isinstance(num, float) and num%1==0:
-            num = int(num)
+        num = num.get_num()
         if num<1:
             raise TypeError("Cannot divide arrays.")
-        if not isinstance (num, int):
-            raise TypeError(f"Cannot multiply Array with {type(num).__name__}")
         self.str*=num
         return self       
 
@@ -196,7 +203,7 @@ class String:
         new = Array([])
         for char in self.str:
             if char.capitalize() in ALPHABET_MAP:
-                new += str(ALPHABET_MAP[char.capitalize()])
+                new += Number(ALPHABET_MAP[char.capitalize()])
             else:
                 new += char
         return new  
@@ -280,20 +287,20 @@ class String:
         else:
             ranking_length = args[0]
         for tup in c.most_common(ranking_length):
-            results.append(Array(list(tup)))
+            results.append(Array([String(tup[0]), Number(tup[1])]))
         return Array(results)
 
     def combinations(self, *args):
         temp = []
         for comb in combinations(self.str, *convert_to_ints(args)):
-            temp.append(Array(list(comb)))
+            temp.append(Array([String(elem) for elem in comb]))
         return Array(temp)
 
     def allcombinations(self):
         temp = []
         for length in range(len(self.str) +1):
             for subset in combinations(self.str, length):
-                temp.append(Array(list(subset)))
+                temp.append(Array([String(elem) for elem in subset]))
         return Array(temp)
     
     def multicombinations(self, *args):
@@ -301,13 +308,13 @@ class String:
         if len(args) == 0:
             args = [len(self)]
         for comb in combinations_with_replacement(self.str, *convert_to_ints(args)):
-            temp.append(Array(list(comb)))
+            temp.append(Array([String(elem) for elem in comb]))
         return Array(temp)
 
     def permutations(self):
         temp = []
         for comb in permutations(self.str):
-            temp.append(Array(list(comb)))
+            temp.append(Array([String(elem) for elem in comb]))
         return Array(temp)
     
     def removeduplicates(self):
@@ -368,20 +375,13 @@ class Array:
         self.contents = contents
         self.n = []
         self.max = len(self.contents)
-    
-    def process_element(self, elem):
-        if isinstance(elem, float) and elem%1==0:
-            return int(elem)
-        if isinstance(elem, str):
-            return String(elem)
-        return elem
 
     def __str__(self):
         if len(self) ==0:
             return "[]"
         res = "["
         for c in self.contents:
-            res += repr(self.process_element(c)) + ", "
+            res += repr(c) + ", "
         res = res[:-2]
         res += "]"
         return res
@@ -454,19 +454,8 @@ class Array:
 
     def convert_to_builtins(self):
         new = []
-        print(self)
         for element in self.contents:
-            print(element, type(element).__name__)
-            if isinstance(element, Array):
-                new.append(element.contents)
-            elif isinstance(element, String):
-                new.append(element.str)
-            elif isinstance(element, Bool):
-                new.append(element.boolean_value)
-            elif isinstance(element, Number):
-                new.append(element.get_num())
-            else:
-                new.append(element)
+            new.append(convert_to_builtin(element))
         return new
 
     def slice(self, *args):
@@ -541,7 +530,7 @@ class Array:
         else:
             ranking_length = args[0]
         for tup in c.most_common(ranking_length):
-            results.append(Array(list(tup)))
+            results.append(Array([String(tup[0]), Number(tup[1])]))
         return Array(results)
 
     def count(self, *args):
@@ -579,6 +568,11 @@ class Array:
             self.max -= 1
         return self
 
+    #def flatten(self):
+    #    
+    #    for elem in self:
+            
+
     def replace(self, *args):
         old = args[0]
         new = args[1]
@@ -613,6 +607,57 @@ class Array:
         self.contents.reverse()
         return self
             
+class Dictionary():
+    def __init__(self, contents):
+        self.contents = contents
+        self.n = []
+        self.max = len(self.contents)
+
+    def __str__(self):
+        return str(self.contents)
+    
+    def __len__(self):
+        return len(self.contents)
+
+    def __iter__(self):
+        return iter(Array([Array(list(item)) for item in self.contents.items()]))
+    
+    def copy(self):
+        return Dictionary(self.contents.copy())  
+    
+    def __sub__(self, key):
+        del self.contents[key]
+        return self            
+        
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        if not isinstance(other, Dictionary):
+            raise TypeError(f"Comparison between type Dictionary and type {type(other).__name__} not supported.")
+        return Bool(self.contents == other.contents)
+
+    def __getitem__(self, key):
+        return self.contents[convert_to_builtin(key)]
+
+    def __contains__(self, elem):
+        return convert_to_builtin(elem) in self.contents
+
+    def __setitem__(self, key, val):
+        self.contents[convert_to_builtin(key)] = val
+
+    def delete(self, *keys):
+        for key in keys:
+            del self.contents[convert_to_builtin(key)]
+    
+    def pop(self, key):
+        return self.contents.pop(convert_to_builtin(key))
+    
+    def keys(self):
+        return Array(list(self.contents.keys()))
+    
+    def values(self):
+        return Array(list(self.contents.values()))
 
 # Defines a function consisting of the arguments and the body
 class Function:
@@ -712,6 +757,7 @@ DEL = 54
 LET = 55
 COLON = 56
 WHILE = 57
+BIND = 58
 
 # NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -736,13 +782,14 @@ SolveNode = namedtuple("SolveNode", ["left_side", "right_side"])
 SolveAssignNode = namedtuple("SolveAssignNode", ["left_side", "right_side"])
 BreakNode = namedtuple("BreakNode", [])
 ContinueNode = namedtuple("ContinueNode", [])
-ArrayCallNode = namedtuple("ArrayCallNode", ["identifier", "index"])
+BracketCallNode = namedtuple("BracketCallNode", ["identifier", "index"])
 ArrayApplyNode = namedtuple("ArrayApplyNode", ["identifier", "function"])
 PeriodCallNode = namedtuple("PeriodCallNode", ["left_side", "right_side"])
 WhileNode = namedtuple("WhileNode", ["condition", "statements"])
 ContainsNode = namedtuple("ContainsNode", ["iterable", "item"])
 IterateNode = namedtuple("IterateNode", ["iterable", "items", "statements"])
 RangeNode = namedtuple("RangeNode", ["start", "stop", "step"])
+DictCreateNode = namedtuple("DictCreateNode", ["items"])
 
 # Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
@@ -809,5 +856,6 @@ type_dict = {
     ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN",
     LET: "LET",
     COLON: "COLON",
-    WHILE: "WHILE"
+    WHILE: "WHILE",
+    BIND: "BIND"
 }
