@@ -3,7 +3,7 @@
 import Datatypes
 
 solver_dict = {"AddNode": Datatypes.SubNode, "SubNode": Datatypes.AddNode, "MultNode": Datatypes.DivNode,
-    "DivNode": Datatypes.MultNode, }
+               "DivNode": Datatypes.MultNode, }
 
 
 def solve(left_expr, right_expr):

@@ -4,8 +4,8 @@ from itertools import combinations, permutations, combinations_with_replacement
 ALPHABET_MAP = dict(zip("ABCDEFGHIJKLMNOPQRSTUVWXYZ", range(1, 27)))
 
 
-def convert_to_ints(arglist):
-    return [elem.get_num() if isinstance(elem, Number) else elem for elem in arglist]
+def convert_to_ints(argument_list):
+    return [elem.get_num() if isinstance(elem, Number) else elem for elem in argument_list]
 
 
 def convert_to_builtin(arg):
@@ -150,11 +150,6 @@ class String:
             self.n.pop()
             raise StopIteration
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self.__dict__ == other.__dict__
-        return False
-
     def __add__(self, other):
         return String(str(self) + str(String(other)))
 
@@ -196,11 +191,6 @@ class String:
             start, stop, step = args
         return String(self.str[start:stop:step])
 
-    def append(self, *args):
-        for arg in args:
-            self += arg
-        return self
-
     def nummap(self):
         new = Array([])
         for char in self.str:
@@ -216,28 +206,27 @@ class String:
         self.max -= 1
         return self
 
-    def deleteAt(self, *args):
+    def delete_at(self, *args):
         for arg in convert_to_ints(args):
-            del self.str[arg]
+            self.str.pop(arg)
 
     def remove(self, *args):
         arr = Array(list(self.str))
         for arg in args:
-            for arg in args:
-                arr.remove(arg)
-                self.n = [n - 1 for n in self.n]
-                self.max -= 1
+            arr.remove(arg)
+            self.n = [n - 1 for n in self.n]
+            self.max -= 1
         self.str = "".join(arr)
         return self
 
-    def removeall(self, *args):
+    def remove_all(self, *args):
         for arg in args:
             while arg in self:
                 self.remove(arg)
         return self
 
     def pop(self, *args):
-        return self.contents.pop(*convert_to_ints(args))
+        return self.str.pop(*convert_to_ints(args))
 
     def posof(self, value):
         return Number(self.str.index(str(value)))
@@ -413,7 +402,7 @@ class Array:
     def __sub__(self, elem):
         for i in reversed(range(len(self))):
             if self[i] == elem:
-                del self[i]
+                del self.contents[i]
         return self
 
     def __next__(self):
@@ -452,7 +441,7 @@ class Array:
 
     def append(self, *args):
         for arg in args:
-            self += arg
+            self.contents.append(arg)
         return self
 
     def convert_to_builtins(self):
@@ -558,7 +547,7 @@ class Array:
         self.max -= 1
         return self
 
-    def deleteAt(self, *args):
+    def delete_at(self, *args):
         for arg in convert_to_ints(args):
             del self.contents[arg]
 
@@ -620,7 +609,7 @@ class Array:
         return self
 
 
-class Dictionary():
+class Dictionary:
     def __init__(self, contents):
         self.contents = contents
         self.n = []
@@ -702,14 +691,14 @@ class IfNode:
         self.blocks.append({"keyword": keyword, "condition": condition, "body": body})
 
     def __repr__(self):
-        repr = "IfNode("
+        out = "IfNode("
         for block in self.blocks:
             kw = type_dict.get(block["keyword"])
             condition = block["condition"]
             body = block["body"]
-            repr += f"[keyword = {kw}, condition = {condition}, body = {body}]"
-        repr += ")"
-        return repr
+            out += f"[keyword = {kw}, condition = {condition}, body = {body}]"
+        out += ")"
+        return out
 
 
 # TOKEN TYPE IDs
@@ -814,15 +803,19 @@ OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNo
 # Debug
 # Helps to make tokens more readable
 type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN", MULT_SIGN: "MULT_SIGN",
-    DIV_SIGN: "DIV_SIGN", MODULUS_SIGN: "MODULUS_SIGN", PLUS_ASSIGN: "PLUS_ASSIGN", MINUS_ASSIGN: "MINUS_ASSIGN",
-    MULT_ASSIGN: "MULT_ASSIGN", DIV_ASSIGN: "DIV_ASSIGN", MODULUS_ASSIGN: "MODULUS_ASSIGN", LPAREN: "LPAREN",
-    RPAREN: "RPAREN", IDENTIFIER: "IDENTIFIER", EQUALS: "EQUALS", EXP: "EXPONENTIAL_SIGN", ARROW: "ARROW",
-    FUNCTION_KEYWORD: "FUNCTION_KEYWORD", PERIOD_CALL: "PERIOD_FUNC_CALL", COMMA: "COMMA", COMP_EQUALS: "COMP_EQUALS",
-    COMP_NOT_EQUALS: "COMP_NOT_EQUALS", GREATER_THAN: "GREATER_THAN", LESS_THAN: "LESS_THAN",
-    GREATER_OR_EQUALS: "GREATER_OR_EQUALS", LESS_OR_EQUALS: "LESS_OR_EQUALS", TRUE: "TRUE", FALSE: "FALSE", NOT: "NOT",
-    AND: "AND", OR: "OR", IF: "IF", ELSE: "ELSE", REP: "REP", FOR: "FOR", STRING: "STRING", AS: "AS",
-    DOUBLE_MINUS: "DOUBLE_MINUS", DOUBLE_PLUS: "DOUBLE_PLUS", BLOCK_END: "BLOCK_END", RETURN: "RETURN",
-    LCURLY: "LCURLY", RCURLY: "RCURLY", SOLVE_ASSIGN: "SOLVE_ASSIGN", SOLVE: "SOLVE", LINEBREAK: "LINEBREAK",
-    BREAK: "BREAK", CONTINUE: "CONTINUE", LBRACKET: "LBRACKET", RBRACKET: "RBRACKET", ARRAYAPPLY: "ARRAYAPPLY",
-    IN: "IN", ITERATE: "ITERATE", DEL: "DEL", ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN", LET: "LET", COLON: "COLON",
-    WHILE: "WHILE", BIND: "BIND"}
+             DIV_SIGN: "DIV_SIGN", MODULUS_SIGN: "MODULUS_SIGN", PLUS_ASSIGN: "PLUS_ASSIGN",
+             MINUS_ASSIGN: "MINUS_ASSIGN",
+             MULT_ASSIGN: "MULT_ASSIGN", DIV_ASSIGN: "DIV_ASSIGN", MODULUS_ASSIGN: "MODULUS_ASSIGN", LPAREN: "LPAREN",
+             RPAREN: "RPAREN", IDENTIFIER: "IDENTIFIER", EQUALS: "EQUALS", EXP: "EXPONENTIAL_SIGN", ARROW: "ARROW",
+             FUNCTION_KEYWORD: "FUNCTION_KEYWORD", PERIOD_CALL: "PERIOD_FUNC_CALL", COMMA: "COMMA",
+             COMP_EQUALS: "COMP_EQUALS",
+             COMP_NOT_EQUALS: "COMP_NOT_EQUALS", GREATER_THAN: "GREATER_THAN", LESS_THAN: "LESS_THAN",
+             GREATER_OR_EQUALS: "GREATER_OR_EQUALS", LESS_OR_EQUALS: "LESS_OR_EQUALS", TRUE: "TRUE", FALSE: "FALSE",
+             NOT: "NOT",
+             AND: "AND", OR: "OR", IF: "IF", ELSE: "ELSE", REP: "REP", FOR: "FOR", STRING: "STRING", AS: "AS",
+             DOUBLE_MINUS: "DOUBLE_MINUS", DOUBLE_PLUS: "DOUBLE_PLUS", BLOCK_END: "BLOCK_END", RETURN: "RETURN",
+             LCURLY: "LCURLY", RCURLY: "RCURLY", SOLVE_ASSIGN: "SOLVE_ASSIGN", SOLVE: "SOLVE", LINEBREAK: "LINEBREAK",
+             BREAK: "BREAK", CONTINUE: "CONTINUE", LBRACKET: "LBRACKET", RBRACKET: "RBRACKET", ARRAYAPPLY: "ARRAYAPPLY",
+             IN: "IN", ITERATE: "ITERATE", DEL: "DEL", ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN", LET: "LET",
+             COLON: "COLON",
+             WHILE: "WHILE", BIND: "BIND"}

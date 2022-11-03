@@ -8,15 +8,15 @@ import Datatypes
 
 
 def leet(message):
-    charMapping = {
+    char_mapping = {
         'a': '4', 'c': '(', 'd': '|)', 'e': '3',
         'f': 'ph', 'h': '|-|', 'i': '1', 'k': ']<',
         'o': '0', 's': '$', 't': '7', 'u': '|_|',
         'v': '\\/'}
     leetspeak = ''
     for char in message:  # Check each character:
-        if char.lower() in charMapping:
-            leetspeak += charMapping[char.lower()]
+        if char.lower() in char_mapping:
+            leetspeak += char_mapping[char.lower()]
         else:
             leetspeak += char
     return Datatypes.String(leetspeak)
@@ -33,7 +33,7 @@ def midnight(*args):
         x1 = (-b + math.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
         sol.append(Datatypes.Number(x1))
         x2 = (-b - math.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
-        if (x1 != x2):
+        if x1 != x2:
             sol.append(Datatypes.Number(x2))
     except ValueError:
         pass
@@ -64,8 +64,8 @@ def n(object):
     return Datatypes.Number(object)
 
 
-def l(object):
-    return Datatypes.Number(len(object))
+def l(obj):
+    return Datatypes.Number(len(obj))
 
 
 def range(*args):
@@ -74,3 +74,15 @@ def range(*args):
 
 def quit():
     exit()
+
+
+def type(obj):
+    return Datatypes.String(builtins.type(obj).__name__)
+
+
+def arr(obj):
+    return Datatypes.Array(list(obj))
+
+
+def bool(obj):
+    return Datatypes.Bool(obj)

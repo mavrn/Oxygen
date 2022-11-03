@@ -9,25 +9,22 @@ import builtinfunctions
 import equation_solver
 
 BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos": [1], "atan": [1], "abs": [1],
-                         "sqrt": [1], "factorial": [1], "bool": [1],
-                         "plot": [3, 4], "p": range(1, 100), "midnight": [3], "rick": [0], "leet": [1], "type": [1],
-                         "arr": [1], "apply": range(1, 100),
+                         "sqrt": [1], "factorial": [1], "bool": [1], "plot": [3, 4], "p": range(1, 100),
+                         "midnight": [3], "rick": [0], "leet": [1], "type": [1], "arr": [1], "apply": range(1, 100),
                          "append": [2], "union": [2], "intersection": [2], "l": [1], "join": [0, 1], "rev": [1],
-                         "sum": [1], "slice": [1, 2, 3],
-                         "openurl": [1], "min": range(1, 100), "max": range(1, 100), "s": range(1, 100),
-                         "split": [1, 2], "n": [1], "difference": range(2, 100),
+                         "sum": [1], "slice": [1, 2, 3], "openurl": [1], "min": range(1, 100), "max": range(1, 100),
+                         "s": range(1, 100), "split": [1, 2], "n": [1], "difference": range(2, 100),
                          "count": range(2, 100), "nummap": [1], "lower": [1], "upper": [1], "capitalize": [1],
-                         "strip": [1, 2], "replace": [3], "isupper": [1],
-                         "islower": [1], "iscapitalized": [1], "input": [0], "sort": [1], "posof": [2],
-                         "combinations": [2], "allcombinations": [1],
+                         "strip": [1, 2], "replace": [3], "isupper": [1], "islower": [1], "iscapitalized": [1],
+                         "input": [0], "sort": [1], "posof": [2], "combinations": [2], "allcombinations": [1],
                          "permutations": [1], "mostcommon": [1, 2], "multicombinations": [1, 2],
-                         "removeduplicates": [1], "range": [1, 2, 3],
-                         "deleteAt": range(2, 100), "pop": [1, 2], "getfields": [0], "quit": [0],
-                         "removeall": range(2, 100), "remove": range(2, 100),
+                         "removeduplicates": [1], "range": [1, 2, 3], "delete_at": range(2, 100), "pop": [1, 2],
+                         "getfields": [0], "quit": [0], "remove_all": range(2, 100), "remove": range(2, 100),
                          "keys": [1], "values": [1], "flatten": [1]}
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["p", "apply", "plot", "type", "arr", "getfields", "bool"]
+INTERNAL_KEYWORDS = ["p", "apply", "plot", "getfields"]
+BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["arr", "bool", "type"]
 BUILTIN_KEYWORDS = ["midnight", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit"]
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS + INTERNAL_KEYWORDS + BUILTIN_KEYWORDS)]
 
@@ -51,6 +48,27 @@ def merge(output_list, list_to_append):
             output_list.append(item)
 
 
+def process_nums(argument_list):
+    new = []
+    for argument in argument_list:
+        if isinstance(argument, Datatypes.Number):
+            new.append(argument.get_num())
+        else:
+            new.append(argument)
+    return new
+
+
+def stringify(elem):
+    if isinstance(elem, Datatypes.Number):
+        elem = elem.get_num()
+    if elem is not None:
+        return repr(elem).replace(r'\n', '\n')
+
+
+def convert_to_builtins(argument_list):
+    return list(Datatypes.Array(argument_list).convert_to_builtins())
+
+
 class Interpreter:
     def __init__(self):
         # Define global and local fields, which emulate global and local (function) scope
@@ -60,36 +78,18 @@ class Interpreter:
         self.nested_scopes = []
         self.output_lines = []
 
-    def process_nums(self, arglist):
-        new = []
-        for arg in arglist:
-            if isinstance(arg, Datatypes.Number):
-                new.append(arg.get_num())
-            else:
-                new.append(arg)
-        return new
-
-    def stringify(self, elem):
-        if isinstance(elem, Datatypes.Number):
-            elem = elem.get_num()
-        if elem is not None:
-            return repr(elem).replace(r'\n', '\n')
-
-    def convert_to_builtins(self, arglist):
-        return list(Datatypes.Array(arglist).convert_to_builtins())
-
     def get_output(self, ast_list, printall=True):
         self.output_lines = []
         for ast in ast_list:
             out = standardize(self.evaluate(ast))
-            out = [self.stringify(o) for o in out if o is not None]
+            out = [stringify(o) for o in out if o is not None]
             if printall:
                 merge(self.output_lines, out)
         return self.output_lines
 
     # Will evaluate the ast (parser output) recursively
     def evaluate(self, node):
-        node_type = self.type(node)
+        node_type = type(node).__name__
         if node_type == "FuncDeclareNode":
             self.fields["global"][node.identifier] = Datatypes.Function(node.arguments, node.body, node.identifier)
             if node.identifier in BUILTIN_EXPECTED_ARGS:
@@ -305,10 +305,10 @@ class Interpreter:
                 temp[Datatypes.Number(i)] = self.evaluate(elem)
             return temp
         elif node_type == "DictCreateNode":
-            dict = Datatypes.Dictionary({})
+            new_dict = Datatypes.Dictionary({})
             for item in node.items:
-                dict[self.evaluate(item[0])] = self.evaluate(item[1])
-            return dict
+                new_dict[self.evaluate(item[0])] = self.evaluate(item[1])
+            return new_dict
         else:
             return node
 
@@ -319,7 +319,7 @@ class Interpreter:
         self.output_lines = []
 
     # Will handle all nodes of type FuncCallNode
-    def function_call_handler(self, node, optional_funcargs={}):
+    def function_call_handler(self, node, optional_funcargs=dict()):
         # Fetches the function and its name from the global fields
         func = self.fields["global"].get(node.identifier)
         # If none is found, the function might be a built-in one. If not, an error will be risen
@@ -379,15 +379,17 @@ class Interpreter:
         if keyword in INTERNAL_KEYWORDS:
             return getattr(Interpreter, keyword)(self, *args)
         elif keyword in BUILTIN_KEYWORDS:
-            return getattr(builtinfunctions, keyword)(*self.convert_to_builtins(args))
+            return getattr(builtinfunctions, keyword)(*convert_to_builtins(args))
+        elif keyword in BUILTIN_KEYWORDS_WITHOUT_PROCESSING:
+            return getattr(builtinfunctions, keyword)(*args)
         elif keyword in MATH_KEYWORDS:
-            return Datatypes.Number(getattr(math, keyword)(*self.process_nums(args)))
+            return Datatypes.Number(getattr(math, keyword)(*process_nums(args)))
         else:
-            return getattr(builtins.type(args[0]), keyword)(*self.process_nums(args))
+            return getattr(builtins.type(args[0]), keyword)(*process_nums(args))
 
     # Will handle any type of simple operation
     def operation_handler(self, node):
-        node_type = self.type(node)
+        node_type = type(node).__name__
         a = self.evaluate(node.a)
         b = self.evaluate(node.b)
         try:
@@ -403,9 +405,9 @@ class Interpreter:
                 return a % b
             elif node_type == "ExpNode":
                 return a.pow(b)
-        except TypeError as e:
+        except TypeError:
             raise TypeError(
-                f"Cannot use this mathematical operation on object of type {self.type(a)} and {self.type(b)}")
+                f"Cannot use this mathematical operation on object of type {type(a)} and {type(b)}")
 
     # Will handle any type of simple comparison
     def comparison_handler(self, node):
@@ -443,8 +445,8 @@ class Interpreter:
             return self.function_call_handler(
                 Datatypes.FuncCallNode(node.right_side.identifier, [node.left_side, *node.right_side.arguments]))
         elif isinstance(node.right_side, Datatypes.VariableNode) and (
-                node.right_side.identifier in BUILTIN_EXPECTED_ARGS or isinstance(
-            self.fields["global"].get(node.right_side.identifier), Datatypes.Function)):
+                        node.right_side.identifier in BUILTIN_EXPECTED_ARGS or isinstance(
+                            self.fields["global"].get(node.right_side.identifier), Datatypes.Function)):
             return self.function_call_handler(Datatypes.FuncCallNode(node.right_side.identifier, [node.left_side]))
         else:
             raise Exception("pos1")
@@ -475,7 +477,7 @@ class Interpreter:
             return
         out = ""
         for line in lines:
-            out += str(*self.process_nums([line])) + " "
+            out += str(*process_nums([line])) + " "
         out = [out.strip()]
         merge(self.output_lines, out)
         return
@@ -489,14 +491,5 @@ class Interpreter:
                 args[0][Datatypes.Number(i)] = res
         return args[0]
 
-    def type(self, object):
-        return Datatypes.String(builtins.type(object).__name__)
-
-    def arr(self, object):
-        return Datatypes.Array(list(object))
-
     def getfields(self):
         return self.fields
-
-    def bool(self, object):
-        return Datatypes.Bool(object)

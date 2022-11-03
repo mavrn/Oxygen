@@ -29,7 +29,7 @@ class Interface:
                 exit(0)
             if self.quit_after_exceptions:
                 out = self.get_out()
-                self.print_output(out)
+                print_output(out)
             else:
                 # This will do the same exact thing as the block above, but will catch any exceptions coming through
                 # To make this possible, all fields are backed up, so they can be reverted to their original states
@@ -44,7 +44,7 @@ class Interface:
                     self.active_if = False
                     self.open_blocks = 0
                 else:
-                    self.print_output(out)
+                    print_output(out)
 
     def get_out(self):
         lexer = Lexer(self.inp)
@@ -105,19 +105,20 @@ class Interface:
         if return_out:
             return output_lines
         else:
-            self.print_output(output_lines)
+            print_output(output_lines)
 
     def run_from_file(self, filepath):
         with open(filepath) as program:
             program = program.read()
         self.run(program)
 
-    def print_output(self, output_lines):
-        # Printing the result
-        # Won't print anything if the result is None#
-        for line in output_lines:
-            if line is not None:
-                print(line)
+
+def print_output(output_lines):
+    # Printing the result
+    # Won't print anything if the result is None#
+    for line in output_lines:
+        if line is not None:
+            print(line)
 
 
 def quit():

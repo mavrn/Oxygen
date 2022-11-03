@@ -34,7 +34,7 @@ class Parser:
             # If there are no tokens, None will be returned
             if self.current_token is not None:
                 self.ast_list.append(
-                    self.statement())  # If the parsing process is finished and there are still tokens left, the syntax is invalid:  # An example would be x = 2a
+                    self.statement())
             if self.current_token_type not in (Datatypes.LINEBREAK, None) and not self.skipped_linebreak:
                 raise SyntaxError(f"Expected end of statement, got token type"
                                   f" {Datatypes.type_dict.get(self.current_token_type)}")
@@ -71,7 +71,8 @@ class Parser:
     def statement(self):
         result = self.expression()
         while self.current_token_type in (
-        Datatypes.IF, Datatypes.SOLVE_ASSIGN, Datatypes.SOLVE) and not self.skipped_linebreak:
+                Datatypes.IF, Datatypes.SOLVE_ASSIGN, Datatypes.SOLVE
+        ) and not self.skipped_linebreak:
             if self.current_token_type == Datatypes.SOLVE:
                 self.next_token()
                 result = Datatypes.SolveNode(result, self.expression())
@@ -92,8 +93,8 @@ class Parser:
 
     def expression(self):
         result = self.term()
-        while self.current_token_type in (
-        Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN, Datatypes.AND, Datatypes.OR) and not self.skipped_linebreak:
+        while self.current_token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN, Datatypes.AND, Datatypes.OR) \
+                and not self.skipped_linebreak:
             if self.current_token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN):
                 token_type = self.current_token_type
                 self.next_token()
@@ -107,11 +108,12 @@ class Parser:
     def term(self):
         result = self.exponential()
         while self.current_token_type in (
-        Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN, Datatypes.EQUALS, Datatypes.PLUS_ASSIGN,
-        Datatypes.MINUS_ASSIGN, Datatypes.MULT_ASSIGN, Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN,
-        Datatypes.ARRAYAPPLY_ASSIGN, Datatypes.COMP_EQUALS, Datatypes.COMP_NOT_EQUALS, Datatypes.GREATER_THAN,
-        Datatypes.LESS_THAN, Datatypes.GREATER_OR_EQUALS, Datatypes.LESS_OR_EQUALS, Datatypes.IN, Datatypes.NOT,
-        Datatypes.ARRAYAPPLY, Datatypes.COLON) and not self.skipped_linebreak:
+                Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN, Datatypes.EQUALS,
+                Datatypes.PLUS_ASSIGN,
+                Datatypes.MINUS_ASSIGN, Datatypes.MULT_ASSIGN, Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN,
+                Datatypes.ARRAYAPPLY_ASSIGN, Datatypes.COMP_EQUALS, Datatypes.COMP_NOT_EQUALS, Datatypes.GREATER_THAN,
+                Datatypes.LESS_THAN, Datatypes.GREATER_OR_EQUALS, Datatypes.LESS_OR_EQUALS, Datatypes.IN, Datatypes.NOT,
+                Datatypes.ARRAYAPPLY, Datatypes.COLON) and not self.skipped_linebreak:
             if self.current_token_type in (Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN):
                 token_type = self.current_token_type
                 self.next_token()
@@ -125,8 +127,8 @@ class Parser:
                     self.next_token()
                     result = Datatypes.AssignNode(identifier=result, value=self.statement())
             elif self.current_token_type in (
-            Datatypes.PLUS_ASSIGN, Datatypes.MINUS_ASSIGN, Datatypes.MULT_ASSIGN, Datatypes.DIV_ASSIGN,
-            Datatypes.MODULUS_ASSIGN, Datatypes.ARRAYAPPLY_ASSIGN):
+                    Datatypes.PLUS_ASSIGN, Datatypes.MINUS_ASSIGN, Datatypes.MULT_ASSIGN, Datatypes.DIV_ASSIGN,
+                    Datatypes.MODULUS_ASSIGN, Datatypes.ARRAYAPPLY_ASSIGN):
                 # Will first make a check if assign operator comes after a variable , then will match the operator
                 # and return assign nodes accordingly
                 if type(result).__name__ == "VariableNode":
@@ -134,7 +136,7 @@ class Parser:
                     self.next_token()
                     result = Datatypes.AssignNode(identifier=result.identifier,
                                                   value=operator_node(Datatypes.VariableNode(result.identifier),
-                                                      self.statement()))
+                                                                      self.statement()))
                 else:
                     operator_node = Datatypes.OPERATOR_NODE_DICT[self.current_token_type]
                     self.next_token()

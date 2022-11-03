@@ -477,9 +477,6 @@ class TestUtils(unittest.TestCase):
     def test2(self):
         self.assertEqual(self.interface.run(input2, return_out=True), output2)
 
-    def test2(self):
-        self.assertEqual(self.interface.run(input2, return_out=True), output2)
-
     def test3(self):
         self.assertEqual(self.interface.run(input3, return_out=True), output3)
 
@@ -632,7 +629,7 @@ class TestUtils(unittest.TestCase):
 
     def test_midn(self):
         self.assertEqual(self.interface.run(
-            "midn(1,0,-1)",
+            "midnight(1,0,-1)",
             return_out=True, ),
             ["[1, -1]"])
 
@@ -795,7 +792,7 @@ class TestUtils(unittest.TestCase):
 
     def test_deleteat_pop(self):
         self.assertEqual(self.interface.run(
-            'x=[0,1,2,3];x.deleteAt(0);x.pop(0)',
+            'x=[0,1,2,3];x.delete_at(0);x.pop(0)',
             return_out=True, ),
             ['[0, 1, 2, 3]', '1'])
 
