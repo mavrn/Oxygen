@@ -13,27 +13,21 @@ class Interface:
         self.interpreter = Interpreter()
         self.debug = debug
         self.quit_after_exceptions = quit_after_exceptions
+        self.printall = printall
         self.tokens_list = []
         self.open_blocks = 0
         self.active_if = False
-        self.printall = printall
-        self.inp = ""
 
-    # debug: Will print lexer output and parser output additionally
-    # quit_after_exceptions: Will prevent program from quitting after reaching an exception.
     def start_session(self):
         while True:
             try:
-                self.inp = input(self.inp_msg)
+                user_input = input(self.inp_msg)
             except KeyboardInterrupt:
                 exit(0)
             if self.quit_after_exceptions:
                 out = self.get_out()
                 print_output(out)
             else:
-                # This will do the same exact thing as the block above, but will catch any exceptions coming through
-                # To make this possible, all fields are backed up, so they can be reverted to their original states
-                # in case of an exception
                 self.interpreter.backup_fields = self.interpreter.fields.copy()
                 try:
                     out = self.get_out()
@@ -44,10 +38,10 @@ class Interface:
                     self.active_if = False
                     self.open_blocks = 0
                 else:
-                    print_output(out)
+                    print_output(out, user_input)
 
-    def get_out(self):
-        lexer = Lexer(self.inp)
+    def get_out(self, user_input):
+        lexer = Lexer(user_input)
         tokens = lexer.gen_tokens()
         for token in tokens:
             self.tokens_list.append(token)
@@ -84,8 +78,6 @@ class Interface:
         self.tokens_list = []
         return self.interpreter.get_output(ast_list)
 
-    # Instead of starting an interpreter session, this function will simply
-    # get the output from any input string and print the output
 
     def run(self, input_string, return_out=False):
         lexer = Lexer(input_string)
@@ -114,16 +106,8 @@ class Interface:
 
 
 def print_output(output_lines):
-    # Printing the result
-    # Won't print anything if the result is None#
     for line in output_lines:
-        if line is not None:
-            print(line)
-
-
-def quit():
-    exit()
-
+        print(line)
 
 if __name__ == '__main__':
     interface = Interface()

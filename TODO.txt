@@ -5,7 +5,6 @@
 #update comments
 #delegate arrays to numpy
 #name unittests
-#change to switch case
 #implement switch case
 #enable passing by reference
 
@@ -17,3 +16,4 @@ one liner if without else
 #slices
 ranges iter
 #remove, removeall
+#let

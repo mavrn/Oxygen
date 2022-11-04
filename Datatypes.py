@@ -570,10 +570,6 @@ class Array:
             self.max -= 1
         return self
 
-    # def flatten(self):
-    #    
-    #    for elem in self:
-
     def replace(self, *args):
         old = args[0]
         new = args[1]
@@ -662,7 +658,6 @@ class Dictionary:
         return Array(list(self.contents.values()))
 
 
-# Defines a function consisting of the arguments and the body
 class Function:
     def __init__(self, arguments, body, identifier):
         self.arguments = arguments
@@ -673,7 +668,6 @@ class Function:
         return f"FUNCTION: \n ARGS = {self.arguments} \n BODY = {self.body}"
 
 
-# Defines a token consisting of a type ID and some value
 class Token:
     def __init__(self, type=None, value=None):
         self.type = type
@@ -701,7 +695,6 @@ class IfNode:
         return out
 
 
-# TOKEN TYPE IDs
 NUMBER = 0
 PLUS_SIGN = 1
 MINUS_SIGN = 2
@@ -762,7 +755,6 @@ COLON = 56
 WHILE = 57
 BIND = 58
 
-# NODE TYPES
 AddNode = namedtuple("AddNode", ["a", "b"])
 SubNode = namedtuple("SubNode", ["a", "b"])
 MultNode = namedtuple("MultNode", ["a", "b"])
@@ -794,7 +786,6 @@ IterateNode = namedtuple("IterateNode", ["iterable", "items", "statements"])
 RangeNode = namedtuple("RangeNode", ["start", "stop", "step"])
 DictCreateNode = namedtuple("DictCreateNode", ["items"])
 
-# Returns the correct node for operations
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
                       MODULUS_SIGN: ModulusNode, EQUALS: AssignNode, PLUS_ASSIGN: AddNode, MINUS_ASSIGN: SubNode,
                       MULT_ASSIGN: MultNode, DIV_ASSIGN: DivNode, MODULUS_ASSIGN: ModulusNode,
@@ -813,8 +804,6 @@ EXPONENTIAL_TOKENS = (EXP, PERIOD_CALL)
 OP_ASSIGN_TOKENS = (PLUS_ASSIGN, MINUS_ASSIGN, MULT_ASSIGN, DIV_ASSIGN, MODULUS_ASSIGN, ARRAYAPPLY_ASSIGN)
 
 
-# Debug
-# Helps to make tokens more readable
 type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN", MULT_SIGN: "MULT_SIGN",
              DIV_SIGN: "DIV_SIGN", MODULUS_SIGN: "MODULUS_SIGN", PLUS_ASSIGN: "PLUS_ASSIGN",
              MINUS_ASSIGN: "MINUS_ASSIGN",

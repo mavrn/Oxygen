@@ -71,7 +71,6 @@ def convert_to_builtins(argument_list):
 
 class Interpreter:
     def __init__(self):
-        # Define global and local fields, which emulate global and local (function) scope
         self.fields = {"global": BUILT_IN_FIELDS.copy()}
         self.backup_fields = {}
         self.scope = "global"
@@ -87,7 +86,6 @@ class Interpreter:
                 merge(self.output_lines, out)
         return self.output_lines
 
-    # Will evaluate the ast (parser output) recursively
     def evaluate(self, node):
         match type(node).__name__:
             case "FuncDeclareNode":
@@ -191,8 +189,6 @@ class Interpreter:
                         return out
                 return out
             case "VariableNode":
-                # Will check for a local field first, then a global one, and finally raise an exception if
-                # both fields are nonexistent
                 global_value = self.fields["global"].get(node.identifier)
                 local_value = self.fields[self.scope].get(node.identifier)
                 if local_value is not None:
@@ -318,28 +314,19 @@ class Interpreter:
         self.nested_scopes = []
         self.output_lines = []
 
-    # Will handle all nodes of type FuncCallNode
     def function_call_handler(self, node, optional_funcargs=dict()):
-        # Fetches the function and its name from the global fields
         func = self.fields["global"].get(node.identifier)
-        # If none is found, the function might be a built-in one. If not, an error will be risen
         if func is None:
             if node.identifier in BUILTIN_EXPECTED_ARGS:
                 return self.builtin_handler(node)
             else:
                 raise NameError(f"No function found with name {node.identifier}")
-        # If the field previously fetched is not a function (i.e. a float value), an error will be risen
         elif not isinstance(func, Datatypes.Function):
             raise TypeError(f"{builtins.type(node).__name__} object is not callable")
-        # The arguments the user has called the function with are saved
         arguments = node.arguments
-        # The numbers of the called and defined arguments have to match, else an error will be risen
         if len(arguments) != len(func.arguments):
             raise TypeError(
                 f"Expected {len(func.arguments)} arguments for function {node.identifier}, got {len(arguments)}.")
-        # The arguments the function was called with are now assigned
-        # to the identifiers in the order they were previously defined in the function.
-        # The arguments will be assigned to the local fields
         self.fields[node.identifier + str(len(self.nested_scopes) + 1)] = {}
         for i, argument in enumerate(arguments):
             self.fields[node.identifier + str(len(self.nested_scopes) + 1)][func.arguments[i]] = self.evaluate(argument)
@@ -347,7 +334,6 @@ class Interpreter:
             self.fields[node.identifier + str(len(self.nested_scopes) + 1)][k] = v
         self.nested_scopes.append(self.scope)
         self.scope = node.identifier + str(len(self.nested_scopes))
-        # Now that the variables are assigned, the function body can be evaluated
         returned_result = None
         if isinstance(func.body, list):
             for statement in func.body:
@@ -359,12 +345,10 @@ class Interpreter:
                     break
         else:
             returned_result = self.evaluate(func.body)
-        # Local fields will be cleared after the function ends, just like in any other language
         self.fields[self.scope].clear()
         self.scope = self.nested_scopes.pop()
         return returned_result
 
-    # Will handle all built-in functions
     def builtin_handler(self, node):
         keyword = node.identifier
         args = [self.evaluate(arg) for arg in node.arguments]
@@ -387,7 +371,6 @@ class Interpreter:
         else:
             return getattr(builtins.type(args[0]), keyword)(*process_nums(args))
 
-    # Will handle any type of simple operation
     def operation_handler(self, node):
         node_type = type(node).__name__
         a = self.evaluate(node.a)
@@ -410,9 +393,7 @@ class Interpreter:
             raise TypeError(
                 f"Cannot use this mathematical operation on object of type {type(a)} and {type(b)}")
 
-    # Will handle any type of simple comparison
     def comparison_handler(self, node):
-        # Will convert any chained comparison correctly. ie. converts (2<3<5) to (2<3 & 3<5)
         if isinstance(node.a, Datatypes.ComparisonNode):
             return self.evaluate(
                 Datatypes.LogicalOperationNode(node.a, Datatypes.ComparisonNode(node.a.b, node.b, node.operator),
@@ -420,7 +401,6 @@ class Interpreter:
         a = self.evaluate(node.a)
         b = self.evaluate(node.b)
         operator = node.operator
-        # Fetches the boolean value of the Bool datatype to be able to evaluate it in python
         if isinstance(a, Datatypes.Bool):
             a = bool(a)
         if isinstance(b, Datatypes.Bool):

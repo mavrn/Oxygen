@@ -1,11 +1,5 @@
 import Datatypes
 
-
-# TODO: update comments
-
-# RECURSIVE DESCENT PARSER
-# Is responsible for recursively generating a tree of operations based on the lexer output using the pre-defined Nodes
-# from the Datatypes.py file.
 class Parser:
     def __init__(self, tokens):
         self.tokens = iter(tokens)
@@ -16,9 +10,6 @@ class Parser:
         self.skipped_linebreak = False
         self.next_token()
 
-    # Advances the iterator to the next token, returns None at the end of the list
-    # The token type is defined separately to avoid errors being caused by "self.current_token.type" if
-    # the current token is None.
     def next_token(self):
         try:
             self.current_token = next(self.tokens)
@@ -31,24 +22,13 @@ class Parser:
         while self.current_token is not None:
             while self.current_token_type == Datatypes.LINEBREAK:
                 self.next_token()
-            # If there are no tokens, None will be returned
             if self.current_token is not None:
-                self.ast_list.append(
-                    self.statement())
+                self.ast_list.append(self.statement())
             if self.current_token_type not in (Datatypes.LINEBREAK, None) and not self.skipped_linebreak:
-                raise SyntaxError(f"Expected end of statement, got token type"
-                                  f" {Datatypes.type_dict.get(self.current_token_type)}")
+                raise SyntaxError(f"Expected end of statement, got token type {Datatypes.type_dict.get(self.current_token_type)}")
             self.skipped_linebreak = False
         return self.ast_list
 
-    # Following, there are the valid elements of an expression, following the common order top-down.
-    # These elements are grouped in "layers", which are statement, expression, term, "exponential" and factor
-    # The statement is an if statement which consists of the if keyword and multiple expressions
-    # An expression will have a plus or minus sign
-    # A term will be any multiplication, division, modulus, assignment operation or a comparison
-    # An "exponential" will have the exponentiation operator. The reason this has its own layer is that exponential
-    # operations have to be evaluated before a term, but after a factor.
-    # Finally, the factor can be a number, identifier or a statement between brackets.
     def statement_block(self, func_block=False):
         if self.current_token_type != Datatypes.ARROW:
             raise SyntaxError("Expected '=>'")
@@ -108,14 +88,11 @@ class Parser:
                 case Datatypes.MULT_SIGN | Datatypes.DIV_SIGN | Datatypes.MODULUS_SIGN:
                     result = Datatypes.OPERATOR_NODE_DICT[token_type](a=result, b=self.exponential())
                 case Datatypes.EQUALS:
-                    # Will throw an exception if an equals sign comes after anything other than a variable
                     if type(result).__name__ == "VariableNode":
                         result = Datatypes.AssignNode(identifier=result.identifier, value=self.statement())
                     else:
                         result = Datatypes.AssignNode(identifier=result, value=self.statement())
                 case token_type if token_type in Datatypes.OP_ASSIGN_TOKENS:
-                    # Will first make a check if assign operator comes after a variable , then will match the operator
-                    # and return assign nodes accordingly
                     if type(result).__name__ == "VariableNode":
                         operator_node = Datatypes.OPERATOR_NODE_DICT[token_type]
                         result = Datatypes.AssignNode(identifier=result.identifier,
@@ -165,7 +142,6 @@ class Parser:
         token_type = self.current_token_type
         if token_type not in (None, Datatypes.BLOCK_END):
             self.next_token()
-        # Will return the float value for a number token
         match token_type:
             case Datatypes.NUMBER | Datatypes.STRING:
                 if self.current_token_type == Datatypes.IDENTIFIER:
@@ -173,7 +149,6 @@ class Parser:
                 elif self.current_token_type == Datatypes.LBRACKET:
                     return self.gen_bracketcall(token.value)
                 return token.value
-            # In case of a FUNCTION_KEYWORD, the parsing process will continue declare_function() function
             case Datatypes.FUNCTION_KEYWORD:
                 return self.declare_function()
             case Datatypes.RETURN:
@@ -181,7 +156,6 @@ class Parser:
                     return Datatypes.ReturnNode(statement=None)
                 else:
                     return Datatypes.ReturnNode(statement=self.statement())
-            # In case of the loop keyword REP, the parsing process will continue declare_function() function
             case Datatypes.BREAK:
                 return Datatypes.BreakNode()
             case Datatypes.CONTINUE:
@@ -214,12 +188,10 @@ class Parser:
                 return Datatypes.Bool(False)
             case Datatypes.NOT:
                 return Datatypes.BooleanNegationNode(value=self.term())
-            # Will handle unary plus und minus signs
             case Datatypes.PLUS_SIGN:
                 return self.exponential()
             case Datatypes.MINUS_SIGN:
                 return Datatypes.MultNode(a=-1.0, b=self.factor())
-            # Will handle parentheses and throw an exception in case of a missing parenthesis
             case Datatypes.LPAREN:
                 if self.current_token_type == Datatypes.RPAREN:
                     raise SyntaxError("Empty parentheses cannot be evaluated.")
@@ -232,7 +204,6 @@ class Parser:
                 else:
                     self.next_token()
                     return result
-            # Will return either a variable node or a function call node if brackets or a period come after the identifier
             case Datatypes.IDENTIFIER:
                 identifier = token.value
                 if self.current_token_type == Datatypes.DOUBLE_PLUS:
@@ -264,8 +235,6 @@ class Parser:
                     msg += token.value
                 raise SyntaxError(msg)
 
-    # Will follow the pre-defined syntax of a function declaration linearly
-    # and will throw exceptions if the syntax is incorrect
     def declare_function(self):
         arguments = []
         if self.current_token_type != Datatypes.IDENTIFIER:
@@ -280,8 +249,6 @@ class Parser:
             return Datatypes.FuncDeclareNode(identifier=identifier, arguments=arguments,
                                              body=self.statement_block(func_block=True))
 
-    # Will follow the pre-defined syntax of a function call linearly
-    # and will throw exceptions if the syntax is incorrect
     def gen_funccall(self, identifier):
         arguments = []
         self.next_token()
