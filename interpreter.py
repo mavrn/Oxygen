@@ -100,22 +100,23 @@ class Interpreter:
                 return self.operation_handler(node)
             case "AssignNode":
                 assignment_value = self.evaluate(node.value)
-                if isinstance(node.identifier, Datatypes.BracketCallNode):
-                    last_index = node.identifier.index.pop()
-                    arr = self.evaluate(node.identifier)
+                if isinstance(node.variable, Datatypes.BracketCallNode):
+                    last_index = node.variable.index.pop()
+                    arr = self.evaluate(node.variable.identifier)
                     arr[self.evaluate(last_index)] = assignment_value
-                    node.identifier.index.append(last_index)
-                elif isinstance(node.identifier, str):
-                    global_value = self.fields["global"].get(node.identifier)
-                    local_value = self.fields[self.scope].get(node.identifier)
+                    node.variable.index.append(last_index)
+                elif isinstance(node.variable.identifier, str):
+                    global_value = self.fields["global"].get(node.variable.identifier)
+                    local_value = self.fields[self.scope].get(node.variable.identifier)
                     if local_value is not None:
-                        self.fields[self.scope][node.identifier] = assignment_value
+                        self.fields[self.scope][node.variable.identifier] = assignment_value
                     elif global_value is not None:
-                        self.fields["global"][node.identifier] = assignment_value
+                        self.fields["global"][node.variable.identifier] = assignment_value
                     else:
-                        self.fields[self.scope][node.identifier] = assignment_value
+                        self.fields[self.scope][node.variable.identifier] = assignment_value
                 else:
-                    raise SyntaxError(f"Cannot assign to type {type(node.identifier).__name__}")
+                    print(node)
+                    raise SyntaxError(f"Cannot assign to type {type(node.variable.identifier).__name__}")
                 return assignment_value
             case "SolveNode":
                 _, expression = equation_solver.solve(node.left_side, node.right_side)
@@ -123,7 +124,7 @@ class Interpreter:
             case "SolveAssignNode":
                 variable, expression = equation_solver.solve(node.left_side, node.right_side)
                 result = self.evaluate(expression)
-                return self.evaluate(Datatypes.AssignNode(variable.identifier, result))
+                return self.evaluate(Datatypes.AssignNode(variable, result))
             case "BracketCallNode":
                 arr = self.evaluate(node.identifier)
                 for index in node.index:
@@ -140,8 +141,8 @@ class Interpreter:
                 self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function, "__arrfunc")
                 funcargs = {} if self.scope == "global" else self.fields[self.scope]
                 for i, elem in enumerate(arr):
-                    res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, Datatypes.Number(i), arr]),
-                                                    funcargs)
+                    res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, Datatypes.Number(i), arr]), funcargs)
+                                                    
                     if isinstance(res, list):
                         if len(res) == 0:
                             continue
@@ -162,8 +163,6 @@ class Interpreter:
                 custom_bool = Datatypes.Bool(boolean)
                 custom_bool.rev()
                 return custom_bool
-            case "BooleanConversionNode":
-                return Datatypes.Bool(self.evaluate(node.value))
             case "ContainsNode":
                 return Datatypes.Bool(self.evaluate(node.item) in self.evaluate(node.iterable))
             case "LogicalOperationNode":
@@ -238,7 +237,7 @@ class Interpreter:
                     elif "__continue__" in self.fields[self.scope]:
                         self.fields[self.scope].pop("__continue__")
                     self.evaluate(node.increment)
-                self.fields[self.scope].pop(node.assignment.identifier)
+                self.fields[self.scope].pop(node.assignment.variable.identifier)
                 return out
             case "IterateNode":
                 out = []
@@ -253,8 +252,8 @@ class Interpreter:
                     index_id = "_i"
                 iterable = self.evaluate(node.iterable)
                 for i, element in enumerate(iterable):
-                    self.evaluate(Datatypes.AssignNode(id, element))
-                    self.evaluate(Datatypes.AssignNode(index_id, Datatypes.Number(i)))
+                    self.evaluate(Datatypes.AssignNode(Datatypes.VariableNode(id), element))
+                    self.evaluate(Datatypes.AssignNode(Datatypes.VariableNode(index_id), Datatypes.Number(i)))
                     for statement in node.statements:
                         lines = standardize(self.evaluate(statement))
                         merge(out, lines)
@@ -291,10 +290,6 @@ class Interpreter:
                 if self.scope == "global":
                     raise SyntaxError("Return statement outside function")
                 self.fields[self.scope]["__return__"] = self.evaluate(node.statement)
-            case "BreakNode":
-                self.fields[self.scope]["__break__"] = Datatypes.Bool(True)
-            case "ContinueNode":
-                self.fields[self.scope]["__continue__"] = Datatypes.Bool(True)
             case "Array":
                 temp = Datatypes.Array(node.contents.copy())
                 for i, elem in enumerate(temp):

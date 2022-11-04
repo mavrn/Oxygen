@@ -30,7 +30,7 @@ class Interface:
             else:
                 self.interpreter.backup_fields = self.interpreter.fields.copy()
                 try:
-                    out = self.get_out()
+                    out = self.get_out(user_input)
                 except Exception as e:
                     self.interpreter.rollback()
                     print(f"{type(e).__name__}: {e}")
@@ -38,7 +38,7 @@ class Interface:
                     self.active_if = False
                     self.open_blocks = 0
                 else:
-                    print_output(out, user_input)
+                    print_output(out)
 
     def get_out(self, user_input):
         lexer = Lexer(user_input)
@@ -65,7 +65,7 @@ class Interface:
                     self.active_if = False
             if self.open_blocks > 0 or self.active_if:
                 self.inp_msg = ".. "
-                return [None]
+                return []
             else:
                 self.inp_msg = ">> "
         if self.debug:
@@ -107,7 +107,7 @@ class Interface:
 
 def print_output(output_lines):
     for line in output_lines:
-        print(line)
+        print(line) 
 
 if __name__ == '__main__':
     interface = Interface()
