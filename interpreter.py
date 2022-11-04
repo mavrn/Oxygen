@@ -89,228 +89,228 @@ class Interpreter:
 
     # Will evaluate the ast (parser output) recursively
     def evaluate(self, node):
-        node_type = type(node).__name__
-        if node_type == "FuncDeclareNode":
-            self.fields["global"][node.identifier] = Datatypes.Function(node.arguments, node.body, node.identifier)
-            if node.identifier in BUILTIN_EXPECTED_ARGS:
-                return Datatypes.String(f"Warning: Built-in function {node.identifier} has been overridden.")
-        elif node_type == "FuncCallNode":
-            return self.function_call_handler(node)
-        elif node_type == "PeriodCallNode":
-            return self.period_call_handler(node)
-        elif node_type in OPERATIONAL_NODES:
-            return self.operation_handler(node)
-        elif node_type == "AssignNode":
-            assignment_value = self.evaluate(node.value)
-            if isinstance(node.identifier, Datatypes.BracketCallNode):
-                last_index = node.identifier.index.pop()
+        match type(node).__name__:
+            case "FuncDeclareNode":
+                self.fields["global"][node.identifier] = Datatypes.Function(node.arguments, node.body, node.identifier)
+                if node.identifier in BUILTIN_EXPECTED_ARGS:
+                    return Datatypes.String(f"Warning: Built-in function {node.identifier} has been overridden.")
+            case "FuncCallNode":
+                return self.function_call_handler(node)
+            case "PeriodCallNode":
+                return self.period_call_handler(node)
+            case name if name in OPERATIONAL_NODES:
+                return self.operation_handler(node)
+            case "AssignNode":
+                assignment_value = self.evaluate(node.value)
+                if isinstance(node.identifier, Datatypes.BracketCallNode):
+                    last_index = node.identifier.index.pop()
+                    arr = self.evaluate(node.identifier)
+                    arr[self.evaluate(last_index)] = assignment_value
+                    node.identifier.index.append(last_index)
+                elif isinstance(node.identifier, str):
+                    global_value = self.fields["global"].get(node.identifier)
+                    local_value = self.fields[self.scope].get(node.identifier)
+                    if local_value is not None:
+                        self.fields[self.scope][node.identifier] = assignment_value
+                    elif global_value is not None:
+                        self.fields["global"][node.identifier] = assignment_value
+                    else:
+                        self.fields[self.scope][node.identifier] = assignment_value
+                else:
+                    raise SyntaxError(f"Cannot assign to type {type(node.identifier).__name__}")
+                return assignment_value
+            case "SolveNode":
+                _, expression = equation_solver.solve(node.left_side, node.right_side)
+                return self.evaluate(expression)
+            case "SolveAssignNode":
+                variable, expression = equation_solver.solve(node.left_side, node.right_side)
+                result = self.evaluate(expression)
+                return self.evaluate(Datatypes.AssignNode(variable.identifier, result))
+            case "BracketCallNode":
                 arr = self.evaluate(node.identifier)
-                arr[self.evaluate(last_index)] = assignment_value
-                node.identifier.index.append(last_index)
-            elif isinstance(node.identifier, str):
+                for index in node.index:
+                    if isinstance(index, Datatypes.RangeNode):
+                        arr = arr.slice(self.evaluate(index.start), self.evaluate(index.stop), self.evaluate(index.step))
+                    else:
+                        arr = arr[self.evaluate(index)]
+                return arr
+            case "ArrayApplyNode":
+                arr = self.evaluate(node.identifier)
+                if not hasattr(arr, "__iter__"):
+                    raise TypeError(f"Element of type {type(arr).__name__} is not iterable.")
+                arr = arr.copy()
+                self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function, "__arrfunc")
+                funcargs = {} if self.scope == "global" else self.fields[self.scope]
+                for i, elem in enumerate(arr):
+                    res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, Datatypes.Number(i), arr]),
+                                                    funcargs)
+                    if isinstance(res, list):
+                        if len(res) == 0:
+                            continue
+                        elif isinstance(res[0], Datatypes.Token) and res[0].type == Datatypes.DEL:
+                            arr.delete()
+                        else:
+                            arr[Datatypes.Number(i)] = res[0]
+                    else:
+                        if isinstance(res, Datatypes.Token) and res.type == Datatypes.DEL:
+                            arr.delete()
+                        else:
+                            arr[Datatypes.Number(i)] = res
+                return arr
+            case "ComparisonNode":
+                return self.comparison_handler(node)
+            case "BooleanNegationNode":
+                boolean = self.evaluate(node.value)
+                custom_bool = Datatypes.Bool(boolean)
+                custom_bool.rev()
+                return custom_bool
+            case "BooleanConversionNode":
+                return Datatypes.Bool(self.evaluate(node.value))
+            case "ContainsNode":
+                return Datatypes.Bool(self.evaluate(node.item) in self.evaluate(node.iterable))
+            case "LogicalOperationNode":
+                if node.operation == Datatypes.AND:
+                    return Datatypes.Bool(
+                        Datatypes.Bool(self.evaluate(node.a)) and Datatypes.Bool(self.evaluate(node.b)))
+                else:
+                    return Datatypes.Bool(
+                        Datatypes.Bool(self.evaluate(node.a)) or Datatypes.Bool(self.evaluate(node.b)))
+            case "IfNode":
+                out = []
+                results = []
+                for block in node.blocks:
+                    if (block["keyword"] in (Datatypes.IF, Datatypes.OR) and bool(self.evaluate(block["condition"]))) or \
+                            block["keyword"] == Datatypes.ELSE:
+                        results = standardize(block["body"])
+                        break
+                for statement in results:
+                    line = standardize(self.evaluate(statement))
+                    merge(out, line)
+                    if "__return__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope] \
+                            or "__break__" in self.fields[self.scope]:
+                        return out
+                return out
+            case "VariableNode":
+                # Will check for a local field first, then a global one, and finally raise an exception if
+                # both fields are nonexistent
                 global_value = self.fields["global"].get(node.identifier)
                 local_value = self.fields[self.scope].get(node.identifier)
                 if local_value is not None:
-                    self.fields[self.scope][node.identifier] = assignment_value
+                    result = local_value
                 elif global_value is not None:
-                    self.fields["global"][node.identifier] = assignment_value
+                    result = global_value
                 else:
-                    self.fields[self.scope][node.identifier] = assignment_value
-            else:
-                raise SyntaxError(f"Cannot assign to type {type(node.identifier).__name__}")
-            return assignment_value
-        elif node_type == "SolveNode":
-            _, expression = equation_solver.solve(node.left_side, node.right_side)
-            return self.evaluate(expression)
-        elif node_type == "SolveAssignNode":
-            variable, expression = equation_solver.solve(node.left_side, node.right_side)
-            result = self.evaluate(expression)
-            return self.evaluate(Datatypes.AssignNode(variable.identifier, result))
-        elif node_type == "BracketCallNode":
-            arr = self.evaluate(node.identifier)
-            for index in node.index:
-                if isinstance(index, Datatypes.RangeNode):
-                    arr = arr.slice(self.evaluate(index.start), self.evaluate(index.stop), self.evaluate(index.step))
-                else:
-                    arr = arr[self.evaluate(index)]
-            return arr
-        elif node_type == "ArrayApplyNode":
-            arr = self.evaluate(node.identifier)
-            if not hasattr(arr, "__iter__"):
-                raise TypeError(f"Element of type {type(arr).__name__} is not iterable.")
-            arr = arr.copy()
-            self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function, "__arrfunc")
-            funcargs = {} if self.scope == "global" else self.fields[self.scope]
-            for i, elem in enumerate(arr):
-                res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, Datatypes.Number(i), arr]),
-                                                 funcargs)
-                if isinstance(res, list):
-                    if len(res) == 0:
+                    raise NameError(f"Name \"{node.identifier}\" is not defined.")
+                return result
+            case "RepNode":
+                reps = self.evaluate(node.repetitions)
+                if not isinstance(reps, Datatypes.Number) or reps < 0 or reps % 1 != 0:
+                    raise ValueError(f"Invalid repetition count, expected a whole positive number, got {reps}")
+                out = []
+                for i in range(int(reps)):
+                    self.fields["global"][node.count_identifier] = Datatypes.Number(i)
+                    for statement in node.statements:
+                        lines = standardize(self.evaluate(statement))
+                        if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                            break
+                        if "__return__" in self.fields[self.scope]:
+                            return out
+                        merge(out, lines)
+                    else:
                         continue
-                    elif isinstance(res[0], Datatypes.Token) and res[0].type == Datatypes.DEL:
-                        arr.delete()
-                    else:
-                        arr[Datatypes.Number(i)] = res[0]
+                    if "__break__" in self.fields[self.scope]:
+                        self.fields[self.scope].pop("__break__")
+                        break
+                    elif "__continue__" in self.fields[self.scope]:
+                        self.fields[self.scope].pop("__continue__")
+                    self.fields[self.scope].pop(node.count_identifier)
+                return out
+            case "ForNode":
+                self.evaluate(node.assignment)
+                out = []
+                while bool(self.evaluate(node.condition)):
+                    for statement in node.statements:
+                        lines = standardize(self.evaluate(statement))
+                        merge(out, lines)
+                        if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                            break
+                        if "__return__" in self.fields[self.scope]:
+                            return out
+                    if "__break__" in self.fields[self.scope]:
+                        self.fields[self.scope].pop("__break__")
+                        break
+                    elif "__continue__" in self.fields[self.scope]:
+                        self.fields[self.scope].pop("__continue__")
+                    self.evaluate(node.increment)
+                self.fields[self.scope].pop(node.assignment.identifier)
+                return out
+            case "IterateNode":
+                out = []
+                if len(node.items) == 2:
+                    id = node.items[1]
+                    index_id = node.items[0]
+                elif len(node.items) == 1:
+                    id = node.items[0]
+                    index_id = "_i"
                 else:
-                    if isinstance(res, Datatypes.Token) and res.type == Datatypes.DEL:
-                        arr.delete()
-                    else:
-                        arr[Datatypes.Number(i)] = res
-            return arr
-        elif node_type == "ComparisonNode":
-            return self.comparison_handler(node)
-        elif node_type == "BooleanNegationNode":
-            boolean = self.evaluate(node.value)
-            custom_bool = Datatypes.Bool(boolean)
-            custom_bool.rev()
-            return custom_bool
-        elif node_type == "BooleanConversionNode":
-            return Datatypes.Bool(self.evaluate(node.value))
-        elif node_type == "ContainsNode":
-            return Datatypes.Bool(self.evaluate(node.item) in self.evaluate(node.iterable))
-        elif node_type == "LogicalOperationNode":
-            if node.operation == Datatypes.AND:
-                return Datatypes.Bool(
-                    Datatypes.Bool(self.evaluate(node.a)) and Datatypes.Bool(self.evaluate(node.b)))
-            else:
-                return Datatypes.Bool(
-                    Datatypes.Bool(self.evaluate(node.a)) or Datatypes.Bool(self.evaluate(node.b)))
-        elif node_type == "IfNode":
-            out = []
-            results = []
-            for block in node.blocks:
-                if (block["keyword"] in (Datatypes.IF, Datatypes.OR) and bool(self.evaluate(block["condition"]))) or \
-                        block["keyword"] == Datatypes.ELSE:
-                    results = standardize(block["body"])
-                    break
-            for statement in results:
-                line = standardize(self.evaluate(statement))
-                merge(out, line)
-                if "__return__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope] \
-                        or "__break__" in self.fields[self.scope]:
-                    return out
-            return out
-        elif node_type == "VariableNode":
-            # Will check for a local field first, then a global one, and finally raise an exception if
-            # both fields are nonexistent
-            global_value = self.fields["global"].get(node.identifier)
-            local_value = self.fields[self.scope].get(node.identifier)
-            if local_value is not None:
-                result = local_value
-            elif global_value is not None:
-                result = global_value
-            else:
-                raise NameError(f"Name \"{node.identifier}\" is not defined.")
-            return result
-        elif node_type == "RepNode":
-            reps = self.evaluate(node.repetitions)
-            if not isinstance(reps, Datatypes.Number) or reps < 0 or reps % 1 != 0:
-                raise ValueError(f"Invalid repetition count, expected a whole positive number, got {reps}")
-            out = []
-            for i in range(int(reps)):
-                self.fields["global"][node.count_identifier] = Datatypes.Number(i)
-                for statement in node.statements:
-                    lines = standardize(self.evaluate(statement))
-                    if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                    id = "_x"
+                    index_id = "_i"
+                iterable = self.evaluate(node.iterable)
+                for i, element in enumerate(iterable):
+                    self.evaluate(Datatypes.AssignNode(id, element))
+                    self.evaluate(Datatypes.AssignNode(index_id, Datatypes.Number(i)))
+                    for statement in node.statements:
+                        lines = standardize(self.evaluate(statement))
+                        merge(out, lines)
+                        if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                            break
+                        if "__return__" in self.fields[self.scope]:
+                            return out
+                    if "__break__" in self.fields[self.scope]:
+                        self.fields[self.scope].pop("__break__")
                         break
-                    if "__return__" in self.fields[self.scope]:
-                        return out
-                    merge(out, lines)
-                else:
-                    continue
-                if "__break__" in self.fields[self.scope]:
-                    self.fields[self.scope].pop("__break__")
-                    break
-                elif "__continue__" in self.fields[self.scope]:
-                    self.fields[self.scope].pop("__continue__")
-                self.fields[self.scope].pop(node.count_identifier)
-            return out
-        elif node_type == "ForNode":
-            self.evaluate(node.assignment)
-            out = []
-            while bool(self.evaluate(node.condition)):
-                for statement in node.statements:
-                    lines = standardize(self.evaluate(statement))
-                    merge(out, lines)
-                    if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                    elif "__continue__" in self.fields[self.scope]:
+                        self.fields[self.scope].pop("__continue__")
+                self.fields[self.scope].pop(id)
+                return out
+            case "WhileNode":
+                out = []
+                while bool(self.evaluate(node.condition)):
+                    for statement in node.statements:
+                        lines = standardize(self.evaluate(statement))
+                        merge(out, lines)
+                        if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
+                            break
+                        if "__return__" in self.fields[self.scope]:
+                            return out
+                    if "__break__" in self.fields[self.scope]:
+                        self.fields[self.scope].pop("__break__")
                         break
-                    if "__return__" in self.fields[self.scope]:
-                        return out
-                if "__break__" in self.fields[self.scope]:
-                    self.fields[self.scope].pop("__break__")
-                    break
-                elif "__continue__" in self.fields[self.scope]:
-                    self.fields[self.scope].pop("__continue__")
-                self.evaluate(node.increment)
-            self.fields[self.scope].pop(node.assignment.identifier)
-            return out
-        elif node_type == "IterateNode":
-            out = []
-            if len(node.items) == 2:
-                id = node.items[1]
-                index_id = node.items[0]
-            elif len(node.items) == 1:
-                id = node.items[0]
-                index_id = "_i"
-            else:
-                id = "_x"
-                index_id = "_i"
-            iterable = self.evaluate(node.iterable)
-            for i, element in enumerate(iterable):
-                self.evaluate(Datatypes.AssignNode(id, element))
-                self.evaluate(Datatypes.AssignNode(index_id, Datatypes.Number(i)))
-                for statement in node.statements:
-                    lines = standardize(self.evaluate(statement))
-                    merge(out, lines)
-                    if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
-                        break
-                    if "__return__" in self.fields[self.scope]:
-                        return out
-                if "__break__" in self.fields[self.scope]:
-                    self.fields[self.scope].pop("__break__")
-                    break
-                elif "__continue__" in self.fields[self.scope]:
-                    self.fields[self.scope].pop("__continue__")
-            self.fields[self.scope].pop(id)
-            return out
-        elif node_type == "WhileNode":
-            out = []
-            while bool(self.evaluate(node.condition)):
-                for statement in node.statements:
-                    lines = standardize(self.evaluate(statement))
-                    merge(out, lines)
-                    if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
-                        break
-                    if "__return__" in self.fields[self.scope]:
-                        return out
-                if "__break__" in self.fields[self.scope]:
-                    self.fields[self.scope].pop("__break__")
-                    break
-                elif "__continue__" in self.fields[self.scope]:
-                    self.fields[self.scope].pop("__continue__")
-            return out
-        elif node_type == "RangeNode":
-            return Datatypes.Array(list(np.arange(node.start, node.stop, node.step)))
-        elif node_type == "ReturnNode":
-            if self.scope == "global":
-                raise SyntaxError("Return statement outside function")
-            self.fields[self.scope]["__return__"] = self.evaluate(node.statement)
-        elif node_type == "BreakNode":
-            self.fields[self.scope]["__break__"] = Datatypes.Bool(True)
-        elif node_type == "ContinueNode":
-            self.fields[self.scope]["__continue__"] = Datatypes.Bool(True)
-        elif node_type == "Array":
-            temp = Datatypes.Array(node.contents.copy())
-            for i, elem in enumerate(temp):
-                temp[Datatypes.Number(i)] = self.evaluate(elem)
-            return temp
-        elif node_type == "DictCreateNode":
-            new_dict = Datatypes.Dictionary({})
-            for item in node.items:
-                new_dict[self.evaluate(item[0])] = self.evaluate(item[1])
-            return new_dict
-        else:
-            return node
+                    elif "__continue__" in self.fields[self.scope]:
+                        self.fields[self.scope].pop("__continue__")
+                return out
+            case "RangeNode":
+                return Datatypes.Array(list(np.arange(node.start, node.stop, node.step)))
+            case "ReturnNode":
+                if self.scope == "global":
+                    raise SyntaxError("Return statement outside function")
+                self.fields[self.scope]["__return__"] = self.evaluate(node.statement)
+            case "BreakNode":
+                self.fields[self.scope]["__break__"] = Datatypes.Bool(True)
+            case "ContinueNode":
+                self.fields[self.scope]["__continue__"] = Datatypes.Bool(True)
+            case "Array":
+                temp = Datatypes.Array(node.contents.copy())
+                for i, elem in enumerate(temp):
+                    temp[Datatypes.Number(i)] = self.evaluate(elem)
+                return temp
+            case "DictCreateNode":
+                new_dict = Datatypes.Dictionary({})
+                for item in node.items:
+                    new_dict[self.evaluate(item[0])] = self.evaluate(item[1])
+                return new_dict
+            case _:
+                return node
 
     def rollback(self):
         self.fields = self.backup_fields
@@ -393,18 +393,19 @@ class Interpreter:
         a = self.evaluate(node.a)
         b = self.evaluate(node.b)
         try:
-            if node_type == "AddNode":
-                return a + b
-            elif node_type == "SubNode":
-                return a - b
-            elif node_type == "MultNode":
-                return a * b
-            elif node_type == "DivNode":
-                return a / b
-            elif node_type == "ModulusNode":
-                return a % b
-            elif node_type == "ExpNode":
-                return a.pow(b)
+            match node_type:
+                case "AddNode":
+                    return a + b
+                case "SubNode":
+                    return a - b
+                case "MultNode":
+                    return a * b
+                case "DivNode":
+                    return a / b
+                case "ModulusNode":
+                    return a % b
+                case "ExpNode":
+                    return a.pow(b)
         except TypeError:
             raise TypeError(
                 f"Cannot use this mathematical operation on object of type {type(a)} and {type(b)}")
@@ -424,20 +425,21 @@ class Interpreter:
             a = bool(a)
         if isinstance(b, Datatypes.Bool):
             b = bool(b)
-        if operator == Datatypes.COMP_EQUALS:
-            result = Datatypes.Bool(a == b)
-        elif operator == Datatypes.COMP_NOT_EQUALS:
-            result = Datatypes.Bool(a != b)
-        elif operator == Datatypes.GREATER_THAN:
-            result = Datatypes.Bool(a > b)
-        elif operator == Datatypes.LESS_THAN:
-            result = Datatypes.Bool(a < b)
-        elif operator == Datatypes.GREATER_OR_EQUALS:
-            result = Datatypes.Bool(a >= b)
-        elif operator == Datatypes.LESS_OR_EQUALS:
-            result = Datatypes.Bool(a <= b)
-        else:
-            raise Exception("An unknown error occurred")
+        match operator:
+            case Datatypes.COMP_EQUALS:
+                result = Datatypes.Bool(a == b)
+            case Datatypes.COMP_NOT_EQUALS:
+                result = Datatypes.Bool(a != b)
+            case Datatypes.GREATER_THAN:
+                result = Datatypes.Bool(a > b)
+            case Datatypes.LESS_THAN:
+                result = Datatypes.Bool(a < b)
+            case Datatypes.GREATER_OR_EQUALS:
+                result = Datatypes.Bool(a >= b)
+            case Datatypes.LESS_OR_EQUALS:
+                result = Datatypes.Bool(a <= b)
+            case _:
+                raise Exception("An unknown error occurred")
         return result
 
     def period_call_handler(self, node):

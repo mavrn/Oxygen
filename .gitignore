@@ -20,3 +20,11 @@ __pycache__/builtinfunctions.cpython-310.pyc
 __pycache__/builtinfunctions.cpython-39.pyc
 __pycache__/testmodules.cpython-39.pyc
 __pycache__/testmodules.cpython-310.pyc
+__pycache__/builtinfunctions.cpython-311.pyc
+__pycache__/Datatypes.cpython-311.pyc
+__pycache__/equation_solver.cpython-311.pyc
+__pycache__/interface.cpython-311.pyc
+__pycache__/interpreter.cpython-311.pyc
+__pycache__/lexer.cpython-311.pyc
+__pycache__/parse.cpython-311.pyc
+__pycache__/testmodules.cpython-311.pyc

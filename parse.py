@@ -70,19 +70,16 @@ class Parser:
 
     def statement(self):
         result = self.expression()
-        while self.current_token_type in (
-                Datatypes.IF, Datatypes.SOLVE_ASSIGN, Datatypes.SOLVE
-        ) and not self.skipped_linebreak:
-            if self.current_token_type == Datatypes.SOLVE:
-                self.next_token()
+        while self.current_token_type in Datatypes.STATEMENT_TOKENS and not self.skipped_linebreak:
+            token_type = self.current_token_type
+            self.next_token()
+            if token_type == Datatypes.SOLVE:
                 result = Datatypes.SolveNode(result, self.expression())
-            elif self.current_token_type == Datatypes.SOLVE_ASSIGN:
-                self.next_token()
+            elif token_type == Datatypes.SOLVE_ASSIGN:
                 result = Datatypes.SolveAssignNode(result, self.expression())
             else:
                 if_expr = result
                 result = Datatypes.IfNode()
-                self.next_token()
                 condition = self.statement()
                 result.add_block(Datatypes.IF, [if_expr], condition)
                 if self.current_token_type == Datatypes.ELSE:
@@ -93,214 +90,179 @@ class Parser:
 
     def expression(self):
         result = self.term()
-        while self.current_token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN, Datatypes.AND, Datatypes.OR) \
-                and not self.skipped_linebreak:
-            if self.current_token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN):
-                token_type = self.current_token_type
-                self.next_token()
+        while self.current_token_type in Datatypes.EXPRESSION_TOKENS and not self.skipped_linebreak:
+            token_type = self.current_token_type
+            self.next_token()
+            if token_type in (Datatypes.PLUS_SIGN, Datatypes.MINUS_SIGN):
                 result = Datatypes.OPERATOR_NODE_DICT[token_type](a=result, b=self.term())
-            elif self.current_token_type in (Datatypes.AND, Datatypes.OR):
-                operation_type = self.current_token_type
-                self.next_token()
-                result = Datatypes.LogicalOperationNode(a=result, b=self.term(), operation=operation_type)
+            elif token_type in (Datatypes.AND, Datatypes.OR):
+                result = Datatypes.LogicalOperationNode(a=result, b=self.term(), operation=token_type)
         return result
 
     def term(self):
         result = self.exponential()
-        while self.current_token_type in (
-                Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN, Datatypes.EQUALS,
-                Datatypes.PLUS_ASSIGN,
-                Datatypes.MINUS_ASSIGN, Datatypes.MULT_ASSIGN, Datatypes.DIV_ASSIGN, Datatypes.MODULUS_ASSIGN,
-                Datatypes.ARRAYAPPLY_ASSIGN, Datatypes.COMP_EQUALS, Datatypes.COMP_NOT_EQUALS, Datatypes.GREATER_THAN,
-                Datatypes.LESS_THAN, Datatypes.GREATER_OR_EQUALS, Datatypes.LESS_OR_EQUALS, Datatypes.IN, Datatypes.NOT,
-                Datatypes.ARRAYAPPLY, Datatypes.COLON) and not self.skipped_linebreak:
-            if self.current_token_type in (Datatypes.MULT_SIGN, Datatypes.DIV_SIGN, Datatypes.MODULUS_SIGN):
-                token_type = self.current_token_type
-                self.next_token()
-                result = Datatypes.OPERATOR_NODE_DICT[token_type](a=result, b=self.exponential())
-            elif self.current_token_type == Datatypes.EQUALS:
-                # Will throw an exception if an equals sign comes after anything other than a variable
-                if type(result).__name__ == "VariableNode":
-                    self.next_token()
-                    result = Datatypes.AssignNode(identifier=result.identifier, value=self.statement())
-                else:
-                    self.next_token()
-                    result = Datatypes.AssignNode(identifier=result, value=self.statement())
-            elif self.current_token_type in (
-                    Datatypes.PLUS_ASSIGN, Datatypes.MINUS_ASSIGN, Datatypes.MULT_ASSIGN, Datatypes.DIV_ASSIGN,
-                    Datatypes.MODULUS_ASSIGN, Datatypes.ARRAYAPPLY_ASSIGN):
-                # Will first make a check if assign operator comes after a variable , then will match the operator
-                # and return assign nodes accordingly
-                if type(result).__name__ == "VariableNode":
-                    operator_node = Datatypes.OPERATOR_NODE_DICT[self.current_token_type]
-                    self.next_token()
-                    result = Datatypes.AssignNode(identifier=result.identifier,
-                                                  value=operator_node(Datatypes.VariableNode(result.identifier),
-                                                                      self.statement()))
-                else:
-                    operator_node = Datatypes.OPERATOR_NODE_DICT[self.current_token_type]
-                    self.next_token()
-                    result = Datatypes.AssignNode(identifier=result, value=operator_node(result, self.statement()))
-            elif self.current_token_type == Datatypes.ARRAYAPPLY:
-                self.next_token()
-                result = Datatypes.ArrayApplyNode(identifier=result, function=self.statement())
-            elif self.current_token_type == Datatypes.IN:
-                self.next_token()
-                result = Datatypes.ContainsNode(iterable=self.exponential(), item=result)
-            elif self.current_token_type == Datatypes.COLON:
-                start = result
-                self.next_token()
-                stop = self.exponential()
-                if self.current_token_type == Datatypes.COLON:
-                    self.next_token()
-                    step = self.exponential()
-                else:
-                    step = 1
-                return Datatypes.RangeNode(start=start, stop=stop, step=step)
-            elif self.current_token_type == Datatypes.NOT:
-                self.next_token()
-                if self.current_token_type == Datatypes.IN:
-                    self.next_token()
-                    result = Datatypes.BooleanNegationNode(
-                        Datatypes.ContainsNode(iterable=self.exponential(), item=result))
-                else:
-                    Datatypes.ComparisonNode(a=result, b=self.exponential(), operator=Datatypes.COMP_NOT_EQUALS)
-            else:
-                comparison_type = self.current_token_type
-                self.next_token()
-                result = Datatypes.ComparisonNode(a=result, b=self.exponential(), operator=comparison_type)
+        while self.current_token_type in Datatypes.TERM_TOKENS and not self.skipped_linebreak:
+            token_type = self.current_token_type
+            self.next_token()
+            match token_type:
+                case Datatypes.MULT_SIGN | Datatypes.DIV_SIGN | Datatypes.MODULUS_SIGN:
+                    result = Datatypes.OPERATOR_NODE_DICT[token_type](a=result, b=self.exponential())
+                case Datatypes.EQUALS:
+                    # Will throw an exception if an equals sign comes after anything other than a variable
+                    if type(result).__name__ == "VariableNode":
+                        result = Datatypes.AssignNode(identifier=result.identifier, value=self.statement())
+                    else:
+                        result = Datatypes.AssignNode(identifier=result, value=self.statement())
+                case token_type if token_type in Datatypes.OP_ASSIGN_TOKENS:
+                    # Will first make a check if assign operator comes after a variable , then will match the operator
+                    # and return assign nodes accordingly
+                    if type(result).__name__ == "VariableNode":
+                        operator_node = Datatypes.OPERATOR_NODE_DICT[token_type]
+                        result = Datatypes.AssignNode(identifier=result.identifier,
+                                                    value=operator_node(Datatypes.VariableNode(result.identifier),
+                                                                        self.statement()))
+                    else:
+                        operator_node = Datatypes.OPERATOR_NODE_DICT[token_type]
+                        result = Datatypes.AssignNode(identifier=result, value=operator_node(result, self.statement()))
+                case Datatypes.ARRAYAPPLY:
+                    result = Datatypes.ArrayApplyNode(identifier=result, function=self.statement())
+                case Datatypes.IN:
+                    result = Datatypes.ContainsNode(iterable=self.exponential(), item=result)
+                case Datatypes.COLON:
+                    start = result
+                    stop = self.exponential()
+                    if self.current_token_type == Datatypes.COLON:
+                        self.next_token()
+                        step = self.exponential()
+                    else:
+                        step = 1
+                    return Datatypes.RangeNode(start=start, stop=stop, step=step)
+                case Datatypes.NOT:
+                    if self.current_token_type == Datatypes.IN:
+                        self.next_token()
+                        result = Datatypes.BooleanNegationNode(
+                            Datatypes.ContainsNode(iterable=self.exponential(), item=result))
+                    else:
+                        Datatypes.ComparisonNode(a=result, b=self.exponential(), operator=Datatypes.COMP_NOT_EQUALS)
+                case _:
+                    result = Datatypes.ComparisonNode(a=result, b=self.exponential(), operator=token_type)
         return result
 
     def exponential(self):
         result = self.factor()
-        while self.current_token_type in (Datatypes.EXP, Datatypes.PERIOD_CALL):
-            if self.current_token_type == Datatypes.EXP:
-                self.next_token()
+        while self.current_token_type in Datatypes.EXPONENTIAL_TOKENS:
+            token_type = self.current_token_type
+            self.next_token()
+            if token_type == Datatypes.EXP:
                 result = Datatypes.ExpNode(a=result, b=self.factor())
-            elif self.current_token_type == Datatypes.PERIOD_CALL:
-                self.next_token()
+            elif token_type == Datatypes.PERIOD_CALL:
                 right_side = self.factor()
                 result = Datatypes.PeriodCallNode(left_side=result, right_side=right_side)
-
         return result
 
     def factor(self):
         token = self.current_token
         token_type = self.current_token_type
-        if token_type is None:
-            raise SyntaxError("Expected number or identifier")
+        if token_type not in (None, Datatypes.BLOCK_END):
+            self.next_token()
         # Will return the float value for a number token
-        if token_type in (Datatypes.NUMBER, Datatypes.STRING):
-            self.next_token()
-            if self.current_token_type == Datatypes.IDENTIFIER:
-                return Datatypes.MultNode(token.value, self.exponential())
-            elif self.current_token_type == Datatypes.LBRACKET:
-                return self.gen_bracketcall(token.value)
-            return token.value
-        # In case of a FUNCTION_KEYWORD, the parsing process will continue declare_function() function
-        elif token_type == Datatypes.FUNCTION_KEYWORD:
-            self.next_token()
-            return self.declare_function()
-        elif self.current_token_type == Datatypes.RETURN:
-            self.next_token()
-            if self.current_token_type == Datatypes.LINEBREAK:
-                return Datatypes.ReturnNode(statement=None)
-            else:
-                return Datatypes.ReturnNode(statement=self.statement())
-        # In case of the loop keyword REP, the parsing process will continue declare_function() function
-        elif token_type == Datatypes.BREAK:
-            self.next_token()
-            return Datatypes.BreakNode()
-        elif token_type == Datatypes.CONTINUE:
-            self.next_token()
-            return Datatypes.ContinueNode()
-        elif token_type == Datatypes.REP:
-            self.next_token()
-            return self.gen_rep()
-        elif token_type == Datatypes.FOR:
-            self.next_token()
-            return self.gen_for()
-        elif token_type == Datatypes.IF:
-            return self.gen_if()
-        elif token_type == Datatypes.ITERATE:
-            return self.gen_iterate()
-        elif token_type == Datatypes.WHILE:
-            return self.gen_while()
-        elif token_type == Datatypes.LBRACKET:
-            arr = self.gen_arr()
-            self.next_token()
-            if self.current_token_type == Datatypes.LBRACKET:
-                return self.gen_bracketcall(arr)
-            return arr
-        elif token_type == Datatypes.LCURLY:
-            new_dict = self.gen_dict()
-            self.next_token()
-            if self.current_token_type == Datatypes.LBRACKET:
-                return self.gen_bracketcall(new_dict)
-            return new_dict
-        elif token_type == Datatypes.TRUE:
-            self.next_token()
-            return Datatypes.Bool(True)
-        elif token_type == Datatypes.FALSE:
-            self.next_token()
-            return Datatypes.Bool(False)
-        elif token_type == Datatypes.NOT:
-            self.next_token()
-            return Datatypes.BooleanNegationNode(value=self.term())
-        # Will handle unary plus und minus signs
-        elif token_type == Datatypes.PLUS_SIGN:
-            self.next_token()
-            return self.exponential()
-        elif token_type == Datatypes.MINUS_SIGN:
-            self.next_token()
-            return Datatypes.MultNode(a=-1.0, b=self.factor())
-        # Will handle parentheses and throw an exception in case of a missing parenthesis
-        elif token_type == Datatypes.LPAREN:
-            self.next_token()
-            if self.current_token_type == Datatypes.RPAREN:
-                raise SyntaxError("Empty parentheses cannot be evaluated.")
-            result = self.statement()
-            if self.current_token is None or self.current_token_type != Datatypes.RPAREN:
-                raise SyntaxError("Expected a closing parenthesis")
-            elif type(result).__name__ == "ComparisonNode":
+        match token_type:
+            case Datatypes.NUMBER | Datatypes.STRING:
+                if self.current_token_type == Datatypes.IDENTIFIER:
+                    return Datatypes.MultNode(token.value, self.exponential())
+                elif self.current_token_type == Datatypes.LBRACKET:
+                    return self.gen_bracketcall(token.value)
+                return token.value
+            # In case of a FUNCTION_KEYWORD, the parsing process will continue declare_function() function
+            case Datatypes.FUNCTION_KEYWORD:
+                return self.declare_function()
+            case Datatypes.RETURN:
+                if self.current_token_type == Datatypes.LINEBREAK:
+                    return Datatypes.ReturnNode(statement=None)
+                else:
+                    return Datatypes.ReturnNode(statement=self.statement())
+            # In case of the loop keyword REP, the parsing process will continue declare_function() function
+            case Datatypes.BREAK:
+                return Datatypes.BreakNode()
+            case Datatypes.CONTINUE:
+                return Datatypes.ContinueNode()
+            case Datatypes.REP:
+                return self.gen_rep()
+            case Datatypes.FOR:
+                return self.gen_for()
+            case Datatypes.IF:
+                return self.gen_if()
+            case Datatypes.ITERATE:
+                return self.gen_iterate()
+            case Datatypes.WHILE:
+                return self.gen_while()
+            case Datatypes.LBRACKET:
+                arr = self.gen_arr()
                 self.next_token()
-                return Datatypes.BooleanConversionNode(value=result)
-            else:
+                if self.current_token_type == Datatypes.LBRACKET:
+                    return self.gen_bracketcall(arr)
+                return arr
+            case Datatypes.LCURLY:
+                new_dict = self.gen_dict()
                 self.next_token()
-                return result
-        # Will return either a variable node or a function call node if brackets or a period come after the identifier
-        elif token_type == Datatypes.IDENTIFIER:
-            identifier = token.value
-            self.next_token()
-            if self.current_token_type == Datatypes.DOUBLE_PLUS:
-                self.next_token()
-                return Datatypes.AssignNode(identifier, Datatypes.AddNode(Datatypes.VariableNode(identifier), 1.0))
-            elif self.current_token_type == Datatypes.DOUBLE_MINUS:
-                self.next_token()
-                return Datatypes.AssignNode(identifier, Datatypes.SubNode(Datatypes.VariableNode(identifier), 1.0))
-            elif self.current_token_type == Datatypes.LPAREN:
-                return self.gen_funccall(identifier)
-            elif self.current_token_type == Datatypes.LBRACKET:
-                return self.gen_bracketcall(Datatypes.VariableNode(identifier))
-            else:
-                return Datatypes.VariableNode(identifier=identifier)
-        elif token_type == Datatypes.DEL:
-            self.next_token()
-            if self.current_token_type == Datatypes.LPAREN:
-                return self.gen_funccall("del")
-            return token
-        elif token_type == Datatypes.LET:
-            self.next_token()
-            identifier = self.current_token.value
-            self.next_token()
-            return Datatypes.AssignNode(identifier=identifier, value=self.statement())
-        elif token_type == Datatypes.BLOCK_END:
-            return
-        else:
-            msg = f"Expected any factor, got {Datatypes.type_dict.get(token_type)}"
-            if token.value is not None:
-                msg += token.value
-            raise SyntaxError(msg)
+                if self.current_token_type == Datatypes.LBRACKET:
+                    return self.gen_bracketcall(new_dict)
+                return new_dict
+            case Datatypes.TRUE:
+                return Datatypes.Bool(True)
+            case Datatypes.FALSE:
+                return Datatypes.Bool(False)
+            case Datatypes.NOT:
+                return Datatypes.BooleanNegationNode(value=self.term())
+            # Will handle unary plus und minus signs
+            case Datatypes.PLUS_SIGN:
+                return self.exponential()
+            case Datatypes.MINUS_SIGN:
+                return Datatypes.MultNode(a=-1.0, b=self.factor())
+            # Will handle parentheses and throw an exception in case of a missing parenthesis
+            case Datatypes.LPAREN:
+                if self.current_token_type == Datatypes.RPAREN:
+                    raise SyntaxError("Empty parentheses cannot be evaluated.")
+                result = self.statement()
+                if self.current_token is None or self.current_token_type != Datatypes.RPAREN:
+                    raise SyntaxError("Expected a closing parenthesis")
+                elif type(result).__name__ == "ComparisonNode":
+                    self.next_token()
+                    return Datatypes.BooleanConversionNode(value=result)
+                else:
+                    self.next_token()
+                    return result
+            # Will return either a variable node or a function call node if brackets or a period come after the identifier
+            case Datatypes.IDENTIFIER:
+                identifier = token.value
+                if self.current_token_type == Datatypes.DOUBLE_PLUS:
+                    self.next_token()
+                    return Datatypes.AssignNode(identifier, Datatypes.AddNode(Datatypes.VariableNode(identifier), 1.0))
+                elif self.current_token_type == Datatypes.DOUBLE_MINUS:
+                    self.next_token()
+                    return Datatypes.AssignNode(identifier, Datatypes.SubNode(Datatypes.VariableNode(identifier), 1.0))
+                elif self.current_token_type == Datatypes.LPAREN:
+                    return self.gen_funccall(identifier)
+                elif self.current_token_type == Datatypes.LBRACKET:
+                    return self.gen_bracketcall(Datatypes.VariableNode(identifier))
+                else:
+                    return Datatypes.VariableNode(identifier=identifier)
+            case Datatypes.DEL:
+                if self.current_token_type == Datatypes.LPAREN:
+                    return self.gen_funccall("del")
+                return token
+            case Datatypes.LET:
+                identifier = token.value
+                return Datatypes.AssignNode(identifier=identifier, value=self.statement())
+            case Datatypes.BLOCK_END:
+                return
+            case None:
+                raise SyntaxError("Expected number or identifier")
+            case _:
+                msg = f"Expected any factor, got {Datatypes.type_dict.get(token_type)}"
+                if token.value is not None:
+                    msg += token.value
+                raise SyntaxError(msg)
 
     # Will follow the pre-defined syntax of a function declaration linearly
     # and will throw exceptions if the syntax is incorrect
@@ -365,7 +327,6 @@ class Parser:
             raise SyntaxError("Expected comma or \"in\" after statement")
 
     def gen_iterate(self):
-        self.next_token()
         iterable = self.term()
         items = []
         if self.current_token_type == Datatypes.AS:
@@ -378,13 +339,11 @@ class Parser:
                                      statements=self.statement_block())
 
     def gen_while(self):
-        self.next_token()
         condition = self.statement()
         return Datatypes.WhileNode(condition=condition, statements=self.statement_block())
 
     def gen_if(self):
         if_node = Datatypes.IfNode()
-        self.next_token()
         condition = self.statement()
         block = self.statement_block()
         if_node.add_block(Datatypes.IF, block, condition)
@@ -403,7 +362,6 @@ class Parser:
         return if_node
 
     def gen_arr(self):
-        self.next_token()
         contents = []
         while self.current_token is not None and self.current_token_type != Datatypes.RBRACKET:
             contents.append(self.statement())
@@ -418,7 +376,6 @@ class Parser:
         return Datatypes.Array(contents)
 
     def gen_dict(self):
-        self.next_token()
         contents = []
         while self.current_token is not None and self.current_token_type != Datatypes.RCURLY:
             key = self.expression()
