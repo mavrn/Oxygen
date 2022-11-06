@@ -25,8 +25,13 @@ class Interface:
             except KeyboardInterrupt:
                 exit(0)
             if self.quit_after_exceptions:
-                out = self.get_out()
-                print_output(out)
+                try:
+                    out = self.get_out(user_input)
+                    print_output(out)
+                except Exception as e:
+                    out = self.interpreter.output_lines
+                    print_output(out)
+                    raise(e)
             else:
                 self.interpreter.backup_fields = self.interpreter.fields.copy()
                 try:
@@ -93,11 +98,16 @@ class Interface:
         ast_list = parser.parse()
         if self.debug:
             print(ast_list)
-        output_lines = self.interpreter.get_output(ast_list, self.printall)
-        if return_out:
-            return output_lines
-        else:
-            print_output(output_lines)
+        self.interpreter.get_output(ast_list, printall=self.printall)
+        try:
+            if return_out:
+                return self.interpreter.output_lines
+            else:
+                print_output(self.interpreter.output_lines)
+        except Exception as e:
+            if not return_out:
+                print_output(self.interpreter.output_lines)
+            raise(e)
 
     def run_from_file(self, filepath):
         with open(filepath) as program:

@@ -1,5 +1,5 @@
-# array.flatten()
-# array.
+#add testcases
+#code testing
 #fileopen
 #redo exceptions + add trycatch
 #update comments
@@ -7,13 +7,5 @@
 #name unittests
 #implement switch case
 #enable passing by reference
-
+#let print work in case of exceptions
 #kwargs
-
-testmodules to add
-
-one liner if without else
-#slices
-ranges iter
-#remove, removeall
-#let

@@ -24,11 +24,14 @@ class Parser:
     
     def previous_token(self):
         self.update_token(-1)
+    
+    def skip_linebreaks(self):
+        while self.current_token_type == Datatypes.LINEBREAK:
+            self.next_token()
 
     def parse(self):
         while self.current_token is not None:
-            while self.current_token_type == Datatypes.LINEBREAK:
-                self.next_token()
+            self.skip_linebreaks()
             if self.current_token is not None:
                 self.ast_list.append(self.statement())
             if self.current_token_type not in (Datatypes.LINEBREAK, None):
@@ -43,8 +46,7 @@ class Parser:
             return self.statement() if func_block else [self.statement()]
         block = []
         while self.current_token_type not in (Datatypes.BLOCK_END, None):
-            while self.current_token_type == Datatypes.LINEBREAK:
-                self.next_token()
+            self.skip_linebreaks()
             block.append(self.statement())
             if self.current_token_type is None:
                 raise SyntaxError("Expected expression")
@@ -99,8 +101,6 @@ class Parser:
                     result = Datatypes.AssignNode(variable=result, value=operator_node(result, self.statement()))
                 case Datatypes.ARRAYAPPLY:
                     result = Datatypes.ArrayApplyNode(identifier=result, function=self.statement())
-                case Datatypes.IN:
-                    result = Datatypes.ContainsNode(iterable=self.exponential(), item=result)
                 case Datatypes.COLON:
                     start = result
                     stop = self.exponential()
@@ -114,9 +114,7 @@ class Parser:
                     if self.current_token_type == Datatypes.IN:
                         self.next_token()
                         result = Datatypes.BooleanNegationNode(
-                            Datatypes.ContainsNode(iterable=self.exponential(), item=result))
-                    else:
-                        Datatypes.ComparisonNode(a=result, b=self.exponential(), operator=Datatypes.COMP_NOT_EQUALS)
+                            Datatypes.ComparisonNode(a=result, b=self.exponential(), operator=Datatypes.IN))
                 case _:
                     result = Datatypes.ComparisonNode(a=result, b=self.exponential(), operator=token_type)
         return result
@@ -131,6 +129,13 @@ class Parser:
             elif token_type == Datatypes.PERIOD_CALL:
                 right_side = self.factor()
                 result = Datatypes.PeriodCallNode(left_side=result, right_side=right_side)
+            elif token_type == Datatypes.DOUBLE_PLUS:
+                result = Datatypes.PostIncrementNode(factor=result, value=1.0)
+            elif token_type == Datatypes.DOUBLE_MINUS:
+                result = Datatypes.PostIncrementNode(factor=result, value=-1.0)
+            elif token_type == Datatypes.LBRACKET:
+                self.previous_token()
+                result = self.gen_bracketcall(result)
         return result
 
     def factor(self):
@@ -142,8 +147,6 @@ class Parser:
             case Datatypes.NUMBER | Datatypes.STRING:
                 if self.current_token_type == Datatypes.IDENTIFIER:
                     return Datatypes.MultNode(token.value, self.exponential())
-                elif self.current_token_type == Datatypes.LBRACKET:
-                    return self.gen_bracketcall(token.value)
                 return token.value
             case Datatypes.FUNCTION_KEYWORD:
                 return self.declare_function()
@@ -169,14 +172,10 @@ class Parser:
             case Datatypes.LBRACKET:
                 arr = self.gen_arr()
                 self.next_token()
-                if self.current_token_type == Datatypes.LBRACKET:
-                    return self.gen_bracketcall(arr)
                 return arr
             case Datatypes.LCURLY:
                 new_dict = self.gen_dict()
                 self.next_token()
-                if self.current_token_type == Datatypes.LBRACKET:
-                    return self.gen_bracketcall(new_dict)
                 return new_dict
             case Datatypes.TRUE:
                 return Datatypes.Bool(True)
@@ -197,18 +196,16 @@ class Parser:
                 else:
                     self.next_token()
                     return result
+            case Datatypes.DOUBLE_MINUS:
+                fct = self.factor()
+                return Datatypes.AssignNode(fct, Datatypes.AddNode(fct, -1.0))
+            case Datatypes.DOUBLE_PLUS:
+                fct = self.factor()
+                return Datatypes.AssignNode(fct, Datatypes.AddNode(fct, 1.0))
             case Datatypes.IDENTIFIER:
                 identifier = token.value
-                if self.current_token_type == Datatypes.DOUBLE_PLUS:
-                    self.next_token()
-                    return Datatypes.AssignNode(Datatypes.VariableNode(identifier), Datatypes.AddNode(Datatypes.VariableNode(identifier), 1.0))
-                elif self.current_token_type == Datatypes.DOUBLE_MINUS:
-                    self.next_token()
-                    return Datatypes.AssignNode(Datatypes.VariableNode(identifier), Datatypes.SubNode(Datatypes.VariableNode(identifier), 1.0))
-                elif self.current_token_type == Datatypes.LPAREN:
+                if self.current_token_type == Datatypes.LPAREN:
                     return self.gen_funccall(identifier)
-                elif self.current_token_type == Datatypes.LBRACKET:
-                    return self.gen_bracketcall(Datatypes.VariableNode(identifier))
                 else:
                     return Datatypes.VariableNode(identifier=identifier)
             case Datatypes.DEL:
@@ -216,7 +213,8 @@ class Parser:
                     return self.gen_funccall("del")
                 return token
             case Datatypes.LET:
-                identifier = token.value
+                identifier = self.current_token.value
+                self.next_token()
                 return Datatypes.AssignNode(variable=Datatypes.VariableNode(identifier), value=self.statement())
             case Datatypes.BLOCK_END:
                 return
@@ -265,8 +263,12 @@ class Parser:
                 raise SyntaxError("Expected identifier after 'as' keyword")
             count_identifier = self.current_token.value
             self.next_token()
-        return Datatypes.RepNode(repetitions=loop_reps, count_identifier=count_identifier,
-                                 statements=self.statement_block())
+        assignment = Datatypes.AssignNode(Datatypes.VariableNode(count_identifier), Datatypes.Number(0))
+        increment = Datatypes.AssignNode(Datatypes.VariableNode(count_identifier),
+                                         Datatypes.AddNode(Datatypes.VariableNode(count_identifier), Datatypes.Number(1)))
+        condition = Datatypes.ComparisonNode(Datatypes.VariableNode(count_identifier), loop_reps, Datatypes.LESS_THAN)
+        return Datatypes.ForNode(assignment=assignment, condition=condition, increment=increment,
+                                     statements=self.statement_block())
 
     def gen_for(self):
         assignment = self.statement()
@@ -279,8 +281,8 @@ class Parser:
             increment = self.statement()
             return Datatypes.ForNode(assignment=assignment, condition=condition, increment=increment,
                                      statements=self.statement_block())
-        elif type(assignment).__name__ == "ContainsNode":
-            return Datatypes.IterateNode(iterable=assignment.iterable, items=[assignment.item.identifier],
+        elif type(assignment).__name__ == "ComparisonNode" and assignment.operator == Datatypes.IN:
+            return Datatypes.IterateNode(iterable=assignment.b, items=[assignment.a.identifier],
                                          statements=self.statement_block())
         else:
             raise SyntaxError("Expected comma or \"in\" after statement")
@@ -299,7 +301,7 @@ class Parser:
 
     def gen_while(self):
         condition = self.statement()
-        return Datatypes.WhileNode(condition=condition, statements=self.statement_block())
+        return Datatypes.ForNode(assignment=None, condition=condition, increment=None, statements=self.statement_block())
 
     def gen_if(self):
         if_node = Datatypes.IfNode()
@@ -307,6 +309,7 @@ class Parser:
         block = self.statement_block()
         if_node.add_block(Datatypes.IF, block, condition)
         self.next_token()
+        self.skip_linebreaks()
         while self.current_token_type in (Datatypes.OR, Datatypes.ELSE):
             keyword = self.current_token_type
             self.next_token()
@@ -314,6 +317,7 @@ class Parser:
             block = self.statement_block()
             if_node.add_block(keyword, block, condition)
             self.next_token()
+            self.skip_linebreaks()
         self.previous_token()
         return if_node
 
@@ -325,8 +329,7 @@ class Parser:
                 self.next_token()
             elif self.current_token_type != Datatypes.RBRACKET:
                 raise SyntaxError("Expected comma or closing parenthesis")
-            while self.current_token_type == Datatypes.LINEBREAK:
-                self.next_token()
+            self.skip_linebreaks()
         if self.current_token_type != Datatypes.RBRACKET:
             raise SyntaxError("Expected closing parenthesis")
         return Datatypes.Array(contents)
@@ -344,8 +347,7 @@ class Parser:
                 self.next_token()
             elif self.current_token_type != Datatypes.RCURLY:
                 raise SyntaxError("Expected comma or closing parenthesis")
-            while self.current_token_type == Datatypes.LINEBREAK:
-                self.next_token()
+            self.skip_linebreaks()
         if self.current_token_type != Datatypes.RCURLY:
             raise SyntaxError("Expected closing parenthesis")
         return Datatypes.DictCreateNode(items=contents)

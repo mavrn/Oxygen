@@ -30,9 +30,10 @@ OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS +
 
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode"]
 
-BUILT_IN_FIELDS = {"pi": math.pi, "e": math.e, "golden": (1 + 5 ** 0.5) / 2, "h": 6.62607004 * (10 ** (-34)),
-                   "alphabet": Datatypes.String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"),
-                   "numbers": Datatypes.String("123456789")}
+BUILT_IN_FIELDS = {"PI": Datatypes.Number(math.pi), "E": Datatypes.Number(math.e),
+                   "GOLDEN": Datatypes.Number((1 + 5 ** 0.5) / 2), "H": Datatypes.Number(6.62607004 * (10 ** (-34))),
+                   "ALPHABET": Datatypes.String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"),
+                   "NUMBERS": Datatypes.String("123456789")}
 
 
 def standardize(val):
@@ -62,7 +63,7 @@ def stringify(elem):
     if isinstance(elem, Datatypes.Number):
         elem = elem.get_num()
     if elem is not None:
-        return repr(elem).replace(r'\n', '\n')
+        return repr(elem)
 
 
 def convert_to_builtins(argument_list):
@@ -102,20 +103,30 @@ class Interpreter:
                 assignment_value = self.evaluate(node.value)
                 if isinstance(node.variable, Datatypes.BracketCallNode):
                     last_index = node.variable.index.pop()
-                    arr = self.evaluate(node.variable.identifier)
+                    arr = self.evaluate(node.variable)
                     arr[self.evaluate(last_index)] = assignment_value
                     node.variable.index.append(last_index)
                 elif isinstance(node.variable.identifier, str):
                     global_value = self.fields["global"].get(node.variable.identifier)
+                    super_scope = None
+                    super_scopes = self.scope.split(">")
+                    while len(super_scopes) > 0:
+                        scope = ">".join(super_scopes)
+                        result = self.fields[scope].get(node.variable.identifier)
+                        if result is not None:
+                            super_scope = scope
+                            break
+                        super_scopes.pop()
                     local_value = self.fields[self.scope].get(node.variable.identifier)
                     if local_value is not None:
                         self.fields[self.scope][node.variable.identifier] = assignment_value
+                    elif super_scope is not None:
+                        self.fields[super_scope][node.variable.identifier] = assignment_value
                     elif global_value is not None:
                         self.fields["global"][node.variable.identifier] = assignment_value
                     else:
                         self.fields[self.scope][node.variable.identifier] = assignment_value
                 else:
-                    print(node)
                     raise SyntaxError(f"Cannot assign to type {type(node.variable.identifier).__name__}")
                 return assignment_value
             case "SolveNode":
@@ -133,6 +144,10 @@ class Interpreter:
                     else:
                         arr = arr[self.evaluate(index)]
                 return arr
+            case "PostIncrementNode":
+                pre_assignment_value = self.evaluate(node.factor)
+                self.evaluate(Datatypes.AssignNode(node.factor, Datatypes.AddNode(node.factor, node.value)))
+                return pre_assignment_value
             case "ArrayApplyNode":
                 arr = self.evaluate(node.identifier)
                 if not hasattr(arr, "__iter__"):
@@ -163,8 +178,6 @@ class Interpreter:
                 custom_bool = Datatypes.Bool(boolean)
                 custom_bool.rev()
                 return custom_bool
-            case "ContainsNode":
-                return Datatypes.Bool(self.evaluate(node.item) in self.evaluate(node.iterable))
             case "LogicalOperationNode":
                 if node.operation == Datatypes.AND:
                     return Datatypes.Bool(
@@ -189,40 +202,29 @@ class Interpreter:
                 return out
             case "VariableNode":
                 global_value = self.fields["global"].get(node.identifier)
+                super_value = None
+                super_scopes = self.scope.split(">")
+                while len(super_scopes) > 0:
+                    result = self.fields[">".join(super_scopes)].get(node.identifier)
+                    if result is not None:
+                        super_value = result
+                        break
+                    super_scopes.pop()
                 local_value = self.fields[self.scope].get(node.identifier)
                 if local_value is not None:
                     result = local_value
+                elif super_value is not None:
+                    result = super_value
                 elif global_value is not None:
                     result = global_value
                 else:
                     raise NameError(f"Name \"{node.identifier}\" is not defined.")
                 return result
-            case "RepNode":
-                reps = self.evaluate(node.repetitions)
-                if not isinstance(reps, Datatypes.Number) or reps < 0 or reps % 1 != 0:
-                    raise ValueError(f"Invalid repetition count, expected a whole positive number, got {reps}")
-                out = []
-                for i in range(int(reps)):
-                    self.fields["global"][node.count_identifier] = Datatypes.Number(i)
-                    for statement in node.statements:
-                        lines = standardize(self.evaluate(statement))
-                        if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
-                            break
-                        if "__return__" in self.fields[self.scope]:
-                            return out
-                        merge(out, lines)
-                    else:
-                        continue
-                    if "__break__" in self.fields[self.scope]:
-                        self.fields[self.scope].pop("__break__")
-                        break
-                    elif "__continue__" in self.fields[self.scope]:
-                        self.fields[self.scope].pop("__continue__")
-                    self.fields[self.scope].pop(node.count_identifier)
-                return out
             case "ForNode":
                 self.evaluate(node.assignment)
                 out = []
+                self.scope = self.scope + ">ForLoop"
+                self.fields[self.scope] = {}
                 while bool(self.evaluate(node.condition)):
                     for statement in node.statements:
                         lines = standardize(self.evaluate(statement))
@@ -237,7 +239,8 @@ class Interpreter:
                     elif "__continue__" in self.fields[self.scope]:
                         self.fields[self.scope].pop("__continue__")
                     self.evaluate(node.increment)
-                self.fields[self.scope].pop(node.assignment.variable.identifier)
+                self.fields.pop(self.scope)
+                self.scope = ">".join(self.scope.split(">")[:-1])
                 return out
             case "IterateNode":
                 out = []
@@ -251,6 +254,8 @@ class Interpreter:
                     id = "_x"
                     index_id = "_i"
                 iterable = self.evaluate(node.iterable)
+                self.scope = self.scope + ">IterLoop"
+                self.fields[self.scope] = {}
                 for i, element in enumerate(iterable):
                     self.evaluate(Datatypes.AssignNode(Datatypes.VariableNode(id), element))
                     self.evaluate(Datatypes.AssignNode(Datatypes.VariableNode(index_id), Datatypes.Number(i)))
@@ -266,26 +271,15 @@ class Interpreter:
                         break
                     elif "__continue__" in self.fields[self.scope]:
                         self.fields[self.scope].pop("__continue__")
-                self.fields[self.scope].pop(id)
-                return out
-            case "WhileNode":
-                out = []
-                while bool(self.evaluate(node.condition)):
-                    for statement in node.statements:
-                        lines = standardize(self.evaluate(statement))
-                        merge(out, lines)
-                        if "__break__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope]:
-                            break
-                        if "__return__" in self.fields[self.scope]:
-                            return out
-                    if "__break__" in self.fields[self.scope]:
-                        self.fields[self.scope].pop("__break__")
-                        break
-                    elif "__continue__" in self.fields[self.scope]:
-                        self.fields[self.scope].pop("__continue__")
+                self.fields.pop(self.scope)
+                self.scope = ">".join(self.scope.split(">")[:-1])
                 return out
             case "RangeNode":
-                return Datatypes.Array(list(np.arange(node.start, node.stop, node.step)))
+                return Datatypes.Array(list(np.arange(
+                    self.evaluate(node.start),
+                    self.evaluate(node.stop),
+                    self.evaluate(node.step)
+                )))
             case "ReturnNode":
                 if self.scope == "global":
                     raise SyntaxError("Return statement outside function")
@@ -413,6 +407,8 @@ class Interpreter:
                 result = Datatypes.Bool(a >= b)
             case Datatypes.LESS_OR_EQUALS:
                 result = Datatypes.Bool(a <= b)
+            case Datatypes.IN:
+                result = Datatypes.Bool(a in b)
             case _:
                 raise Exception("An unknown error occurred")
         return result
@@ -454,7 +450,7 @@ class Interpreter:
             return
         out = ""
         for line in lines:
-            out += str(*process_nums([line])) + " "
+            out += str(*process_nums([line])).replace(r"\n", "\n") + " "
         out = [out.strip()]
         merge(self.output_lines, out)
         return

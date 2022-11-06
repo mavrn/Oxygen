@@ -34,6 +34,9 @@ class Number:
             self.num = float(value.str)
         else:
             raise ValueError(f"Couldn't convert type {type(value).__name__} to number.")
+    
+    def __hash__(self):
+        return hash(self.num)
 
     def __add__(self, other):
         return Number(self.num + float(other))
@@ -81,7 +84,7 @@ class Number:
         return self.num >= float(other)
 
     def __bool__(self):
-        return Bool(self)
+        return False if self.num == 0 else True
 
     def __len__(self):
         return len(str(self.num))
@@ -124,6 +127,9 @@ class String:
 
     def __len__(self):
         return len(self.str)
+    
+    def __hash__(self):
+        return hash(self.str)
 
     def __str__(self):
         return self.str
@@ -133,6 +139,9 @@ class String:
 
     def copy(self):
         return String(self.str)
+
+    def __bool__(self):
+        return False if len(self) == 0 else True
 
     def __iter__(self):
         self.n.append(0)
@@ -202,12 +211,14 @@ class String:
 
     def delete(self):
         del self.str_arr[-1][self.n[-1] - 1]
-        self.n[-1] -= 1
+        self.n = [n - 1 for n in self.n]
         self.max -= 1
         return self
 
     def delete_at(self, *args):
         for arg in convert_to_ints(args):
+            self.n = [n - 1 for n in self.n]
+            self.max -= 1
             self.str.pop(arg)
 
     def remove(self, *args):
@@ -220,12 +231,18 @@ class String:
         return self
 
     def remove_all(self, *args):
+        arr = Array(list(self.str))
         for arg in args:
-            while arg in self:
-                self.remove(arg)
+            while arg in arr:
+                arr.remove(arg)
+                self.n = [n-1 for n in self.n]
+                self.max -= 1
+        self.str = "".join(arr)
         return self
 
     def pop(self, *args):
+        self.n = [n - 1 for n in self.n]
+        self.max -= 1
         return self.str.pop(*convert_to_ints(args))
 
     def posof(self, value):
@@ -327,19 +344,10 @@ class String:
 
 class Bool:
     def __init__(self, value=None):
-        if isinstance(value, bool):
-            self.boolean_value = value
-        elif isinstance(value, Bool):
-            self.boolean_value = value.boolean_value
-        elif isinstance(value, Number):
-            if value == 0:
-                self.boolean_value = False
-            else:
-                self.boolean_value = True
-        elif value is None:
-            self.boolean_value = False
-        else:
-            raise TypeError(f"Type {type(value).__name__} could not be converted to bool.")
+        self.boolean_value = bool(value)
+
+    def __hash__(self):
+        return hash(self.boolean_value)
 
     def __repr__(self):
         if self.boolean_value is False:
@@ -396,7 +404,13 @@ class Array:
         num = int(num)
         if num < 1:
             raise TypeError("Cannot divide arrays.")
-        self.contents *= num
+        arrcopy = self.contents.copy()
+        for _ in range(num-1):
+            for elem in arrcopy:
+                if isinstance(elem,Array):
+                    self.contents.append(elem.copy())
+                else:
+                    self.contents.append(elem)
         return self
 
     def __sub__(self, elem):
@@ -438,6 +452,9 @@ class Array:
 
     def __setitem__(self, index, val):
         self.contents[index.get_num()] = val
+    
+    def __bool__(self):
+        return False if len(self) == 0 else True
 
     def append(self, *args):
         for arg in args:
@@ -549,15 +566,21 @@ class Array:
 
     def delete_at(self, *args):
         for arg in convert_to_ints(args):
+            self.n = [n - 1 for n in self.n]
+            self.max -= 1
             del self.contents[arg]
 
-    def removeall(self, *args):
+    def remove_all(self, *args):
         for arg in args:
             while arg in self.contents:
+                self.n = [n-1 for n in self.n]
+                self.max -= 1
                 self.remove(arg)
         return self
 
     def pop(self, *args):
+        self.n = [n - 1 for n in self.n]
+        self.max -= 1
         return self.contents.pop(*convert_to_ints(args))
 
     def posof(self, value):
@@ -642,7 +665,10 @@ class Dictionary:
         return convert_to_builtin(elem) in self.contents
 
     def __setitem__(self, key, val):
-        self.contents[convert_to_builtin(key)] = val
+        self.contents[key] = val
+
+    def __bool__(self):
+        return False if len(self.contents) == 0 else True
 
     def delete(self, *keys):
         for key in keys:
@@ -768,7 +794,6 @@ FuncCallNode = namedtuple("FuncCallNode", ["identifier", "arguments"])
 ComparisonNode = namedtuple("ComparisonNode", ["a", "b", "operator"])
 BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])
 LogicalOperationNode = namedtuple("LogicalOperationNode", ["a", "b", "operation"])
-RepNode = namedtuple("RepNode", ["repetitions", "count_identifier", "statements"])
 ForNode = namedtuple("ForNode", ["assignment", "condition", "increment", "statements"])
 ReturnNode = namedtuple("ReturnNode", ["statement"])
 PrintNode = namedtuple("PrintNode", ["statement"])
@@ -777,11 +802,10 @@ SolveAssignNode = namedtuple("SolveAssignNode", ["left_side", "right_side"])
 BracketCallNode = namedtuple("BracketCallNode", ["identifier", "index"])
 ArrayApplyNode = namedtuple("ArrayApplyNode", ["identifier", "function"])
 PeriodCallNode = namedtuple("PeriodCallNode", ["left_side", "right_side"])
-WhileNode = namedtuple("WhileNode", ["condition", "statements"])
-ContainsNode = namedtuple("ContainsNode", ["iterable", "item"])
 IterateNode = namedtuple("IterateNode", ["iterable", "items", "statements"])
 RangeNode = namedtuple("RangeNode", ["start", "stop", "step"])
 DictCreateNode = namedtuple("DictCreateNode", ["items"])
+PostIncrementNode = namedtuple("PostIncrementNode", ["factor", "value"])
 
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
                       MODULUS_SIGN: ModulusNode, EQUALS: AssignNode, PLUS_ASSIGN: AddNode, MINUS_ASSIGN: SubNode,
@@ -789,32 +813,31 @@ OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNo
                       ARRAYAPPLY_ASSIGN: ArrayApplyNode}
 
 STATEMENT_TOKENS = (IF, SOLVE_ASSIGN, SOLVE)
+
 EXPRESSION_TOKENS = (PLUS_SIGN, MINUS_SIGN, AND, OR)
+
 TERM_TOKENS = (MULT_SIGN, DIV_SIGN, MODULUS_SIGN, EQUALS,
                 PLUS_ASSIGN, MINUS_ASSIGN, MULT_ASSIGN,
                 DIV_ASSIGN, MODULUS_ASSIGN, ARRAYAPPLY_ASSIGN,
                 COMP_EQUALS, COMP_NOT_EQUALS, GREATER_THAN,
                 LESS_THAN, GREATER_OR_EQUALS, LESS_OR_EQUALS, 
                 IN, NOT, ARRAYAPPLY, COLON)
-EXPONENTIAL_TOKENS = (EXP, PERIOD_CALL)
+                
+EXPONENTIAL_TOKENS = (EXP, PERIOD_CALL, DOUBLE_MINUS, DOUBLE_PLUS, LBRACKET)
 
 OP_ASSIGN_TOKENS = (PLUS_ASSIGN, MINUS_ASSIGN, MULT_ASSIGN, DIV_ASSIGN, MODULUS_ASSIGN, ARRAYAPPLY_ASSIGN)
 
-
 type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN", MULT_SIGN: "MULT_SIGN",
              DIV_SIGN: "DIV_SIGN", MODULUS_SIGN: "MODULUS_SIGN", PLUS_ASSIGN: "PLUS_ASSIGN",
-             MINUS_ASSIGN: "MINUS_ASSIGN",
-             MULT_ASSIGN: "MULT_ASSIGN", DIV_ASSIGN: "DIV_ASSIGN", MODULUS_ASSIGN: "MODULUS_ASSIGN", LPAREN: "LPAREN",
-             RPAREN: "RPAREN", IDENTIFIER: "IDENTIFIER", EQUALS: "EQUALS", EXP: "EXPONENTIAL_SIGN", ARROW: "ARROW",
-             FUNCTION_KEYWORD: "FUNCTION_KEYWORD", PERIOD_CALL: "PERIOD_FUNC_CALL", COMMA: "COMMA",
-             COMP_EQUALS: "COMP_EQUALS",
+             MINUS_ASSIGN: "MINUS_ASSIGN", MULT_ASSIGN: "MULT_ASSIGN", DIV_ASSIGN: "DIV_ASSIGN",
+             MODULUS_ASSIGN: "MODULUS_ASSIGN", LPAREN: "LPAREN", RPAREN: "RPAREN", IDENTIFIER: "IDENTIFIER",
+             EQUALS: "EQUALS", EXP: "EXPONENTIAL_SIGN", ARROW: "ARROW", FUNCTION_KEYWORD: "FUNCTION_KEYWORD",
+             PERIOD_CALL: "PERIOD_FUNC_CALL", COMMA: "COMMA", COMP_EQUALS: "COMP_EQUALS",
              COMP_NOT_EQUALS: "COMP_NOT_EQUALS", GREATER_THAN: "GREATER_THAN", LESS_THAN: "LESS_THAN",
              GREATER_OR_EQUALS: "GREATER_OR_EQUALS", LESS_OR_EQUALS: "LESS_OR_EQUALS", TRUE: "TRUE", FALSE: "FALSE",
-             NOT: "NOT",
-             AND: "AND", OR: "OR", IF: "IF", ELSE: "ELSE", REP: "REP", FOR: "FOR", STRING: "STRING", AS: "AS",
+             NOT: "NOT", AND: "AND", OR: "OR", IF: "IF", ELSE: "ELSE", REP: "REP", FOR: "FOR", STRING: "STRING", AS: "AS",
              DOUBLE_MINUS: "DOUBLE_MINUS", DOUBLE_PLUS: "DOUBLE_PLUS", BLOCK_END: "BLOCK_END", RETURN: "RETURN",
              LCURLY: "LCURLY", RCURLY: "RCURLY", SOLVE_ASSIGN: "SOLVE_ASSIGN", SOLVE: "SOLVE", LINEBREAK: "LINEBREAK",
              BREAK: "BREAK", CONTINUE: "CONTINUE", LBRACKET: "LBRACKET", RBRACKET: "RBRACKET", ARRAYAPPLY: "ARRAYAPPLY",
              IN: "IN", ITERATE: "ITERATE", DEL: "DEL", ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN", LET: "LET",
-             COLON: "COLON",
-             WHILE: "WHILE", BIND: "BIND"}
+             COLON: "COLON", WHILE: "WHILE", BIND: "BIND"}
