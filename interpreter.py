@@ -314,8 +314,18 @@ class Interpreter:
                 f"Expected {len(func.arguments)} arguments for function {node.identifier}, got {len(arguments)}.")
         new_function_scope = self.scope + " >> " + node.identifier
         self.fields[new_function_scope] = {}
+        reached_kwargs = False
         for i, argument in enumerate(arguments):
-            self.fields[new_function_scope][func.arguments[i]] = self.evaluate(argument)
+            if isinstance(argument, Datatypes.AssignNode):
+                reached_kwargs = True
+                if argument.variable.identifier in func.arguments:
+                    self.fields[new_function_scope][argument.variable.identifier] = self.evaluate(argument.value)
+                else:
+                    raise TypeError(f"Function argument {argument.identifier} not found in function {node.identifier}.")
+            elif reached_kwargs:
+                raise SyntaxError("Positional arguments are not allowed after keyword arguments.")
+            else:
+                self.fields[new_function_scope][func.arguments[i]] = self.evaluate(argument)
         for k, v in optional_funcargs.items():
             self.fields[new_function_scope][k] = v
         self.scope = new_function_scope
