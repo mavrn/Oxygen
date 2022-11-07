@@ -98,8 +98,8 @@ class Interface:
         ast_list = parser.parse()
         if self.debug:
             print(ast_list)
-        self.interpreter.get_output(ast_list, printall=self.printall)
         try:
+            self.interpreter.get_output(ast_list, printall=self.printall)
             if return_out:
                 return self.interpreter.output_lines
             else:

@@ -1,11 +1,27 @@
-#add testcases
-#code testing
-#fileopen
 #redo exceptions + add trycatch
 #update comments
-#delegate arrays to numpy
-#name unittests
 #implement switch case
 #enable passing by reference
 #let print work in case of exceptions
 #kwargs
+
+testcases to add
+#getfield
+#dicts
+
+fn one => 
+    x=0
+    getscope().p
+    return x
+<<
+
+fn plus_two =>
+    getscope().p
+    rep 1 =>
+        getscope().p
+    <<
+    return one() + 2
+<<
+
+getscope().p
+plus_two()

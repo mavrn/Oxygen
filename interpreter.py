@@ -19,11 +19,11 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "input": [0], "sort": [1], "posof": [2], "combinations": [2], "allcombinations": [1],
                          "permutations": [1], "mostcommon": [1, 2], "multicombinations": [1, 2],
                          "removeduplicates": [1], "range": [1, 2, 3], "delete_at": range(2, 100), "pop": [1, 2],
-                         "getfields": [0], "quit": [0], "remove_all": range(2, 100), "remove": range(2, 100),
-                         "keys": [1], "values": [1], "flatten": [1]}
+                         "getfields": [0, 1], "quit": [0], "remove_all": range(2, 100), "remove": range(2, 100),
+                         "keys": [1], "values": [1], "flatten": [1], "getscope": [0]}
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["p", "apply", "plot", "getfields"]
+INTERNAL_KEYWORDS = ["p", "apply", "plot", "getfields", "getscope"]
 BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["arr", "bool", "type"]
 BUILTIN_KEYWORDS = ["midnight", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit"]
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS + INTERNAL_KEYWORDS + BUILTIN_KEYWORDS)]
@@ -75,7 +75,6 @@ class Interpreter:
         self.fields = {"global": BUILT_IN_FIELDS.copy()}
         self.backup_fields = {}
         self.scope = "global"
-        self.nested_scopes = []
         self.output_lines = []
 
     def get_output(self, ast_list, printall=True):
@@ -109,18 +108,17 @@ class Interpreter:
                 elif isinstance(node.variable.identifier, str):
                     global_value = self.fields["global"].get(node.variable.identifier)
                     super_scope = None
-                    super_scopes = self.scope.split(">")
+                    temp = self.scope.split(" >> ")
+                    funcpath = " >> ".join(temp[:-1]) + " >> " if len(temp) > 1 else ""
+                    super_scopes = temp[-1].split(" > ")
                     while len(super_scopes) > 0:
-                        scope = ">".join(super_scopes)
+                        scope = funcpath + " > ".join(super_scopes)
                         result = self.fields[scope].get(node.variable.identifier)
                         if result is not None:
                             super_scope = scope
                             break
                         super_scopes.pop()
-                    local_value = self.fields[self.scope].get(node.variable.identifier)
-                    if local_value is not None:
-                        self.fields[self.scope][node.variable.identifier] = assignment_value
-                    elif super_scope is not None:
+                    if super_scope is not None:
                         self.fields[super_scope][node.variable.identifier] = assignment_value
                     elif global_value is not None:
                         self.fields["global"][node.variable.identifier] = assignment_value
@@ -203,17 +201,16 @@ class Interpreter:
             case "VariableNode":
                 global_value = self.fields["global"].get(node.identifier)
                 super_value = None
-                super_scopes = self.scope.split(">")
+                temp = self.scope.split(" >> ")
+                funcpath = " >> ".join(temp[:-1]) + " >> " if len(temp) > 1 else ""
+                super_scopes = temp[-1].split(" > ")
                 while len(super_scopes) > 0:
-                    result = self.fields[">".join(super_scopes)].get(node.identifier)
+                    result = self.fields[funcpath + " > ".join(super_scopes)].get(node.identifier)
                     if result is not None:
                         super_value = result
                         break
                     super_scopes.pop()
-                local_value = self.fields[self.scope].get(node.identifier)
-                if local_value is not None:
-                    result = local_value
-                elif super_value is not None:
+                if super_value is not None:
                     result = super_value
                 elif global_value is not None:
                     result = global_value
@@ -221,10 +218,10 @@ class Interpreter:
                     raise NameError(f"Name \"{node.identifier}\" is not defined.")
                 return result
             case "ForNode":
-                self.evaluate(node.assignment)
                 out = []
-                self.scope = self.scope + ">ForLoop"
+                self.scope = self.scope + " > ForLoop"
                 self.fields[self.scope] = {}
+                self.evaluate(node.assignment)
                 while bool(self.evaluate(node.condition)):
                     for statement in node.statements:
                         lines = standardize(self.evaluate(statement))
@@ -240,7 +237,7 @@ class Interpreter:
                         self.fields[self.scope].pop("__continue__")
                     self.evaluate(node.increment)
                 self.fields.pop(self.scope)
-                self.scope = ">".join(self.scope.split(">")[:-1])
+                self.scope = " > ".join(self.scope.split(" > ")[:-1])
                 return out
             case "IterateNode":
                 out = []
@@ -254,7 +251,7 @@ class Interpreter:
                     id = "_x"
                     index_id = "_i"
                 iterable = self.evaluate(node.iterable)
-                self.scope = self.scope + ">IterLoop"
+                self.scope = self.scope + " > IterLoop"
                 self.fields[self.scope] = {}
                 for i, element in enumerate(iterable):
                     self.evaluate(Datatypes.AssignNode(Datatypes.VariableNode(id), element))
@@ -272,7 +269,7 @@ class Interpreter:
                     elif "__continue__" in self.fields[self.scope]:
                         self.fields[self.scope].pop("__continue__")
                 self.fields.pop(self.scope)
-                self.scope = ">".join(self.scope.split(">")[:-1])
+                self.scope = " > ".join(self.scope.split(" > ")[:-1])
                 return out
             case "RangeNode":
                 return Datatypes.Array(list(np.arange(
@@ -300,7 +297,6 @@ class Interpreter:
     def rollback(self):
         self.fields = self.backup_fields
         self.scope = "global"
-        self.nested_scopes = []
         self.output_lines = []
 
     def function_call_handler(self, node, optional_funcargs=dict()):
@@ -316,13 +312,13 @@ class Interpreter:
         if len(arguments) != len(func.arguments):
             raise TypeError(
                 f"Expected {len(func.arguments)} arguments for function {node.identifier}, got {len(arguments)}.")
-        self.fields[node.identifier + str(len(self.nested_scopes) + 1)] = {}
+        new_function_scope = self.scope + " >> " + node.identifier
+        self.fields[new_function_scope] = {}
         for i, argument in enumerate(arguments):
-            self.fields[node.identifier + str(len(self.nested_scopes) + 1)][func.arguments[i]] = self.evaluate(argument)
+            self.fields[new_function_scope][func.arguments[i]] = self.evaluate(argument)
         for k, v in optional_funcargs.items():
-            self.fields[node.identifier + str(len(self.nested_scopes) + 1)][k] = v
-        self.nested_scopes.append(self.scope)
-        self.scope = node.identifier + str(len(self.nested_scopes))
+            self.fields[new_function_scope][k] = v
+        self.scope = new_function_scope
         returned_result = None
         if isinstance(func.body, list):
             for statement in func.body:
@@ -335,7 +331,7 @@ class Interpreter:
         else:
             returned_result = self.evaluate(func.body)
         self.fields[self.scope].clear()
-        self.scope = self.nested_scopes.pop()
+        self.scope = " >> ".join(self.scope.split(" >> ")[:-1])
         return returned_result
 
     def builtin_handler(self, node):
@@ -464,5 +460,10 @@ class Interpreter:
                 args[0][Datatypes.Number(i)] = res
         return args[0]
 
-    def getfields(self):
+    def getfields(self, *args):
+        if len(args) == 1:
+            return self.fields[args[0]]
         return self.fields
+    
+    def getscope(self):
+        return self.scope

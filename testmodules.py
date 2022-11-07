@@ -45,7 +45,8 @@ return a-1<<
 0.x
 """
 
-input10 = """if False =>
+input10 = """x=-1
+if False =>
 x=0 <<
 else =>
 x=1 <<
@@ -776,7 +777,7 @@ output6 = ['"FizzBuzz"', '1', '2', '"Fizz"', '4', '"Buzz"', '"Fizz"', '7', '8', 
 output7 = ['0.19163898275344238']
 output8 = ['10', '"Warning: Built-in function n has been overridden."', 'True', 'False']
 output9 = ['1', '2', '-1']
-output10 = ['1', '1']
+output10 = ['-1', '1', '1']
 output11 = ['1', '2', 'Fizz', '4', 'Buzz', 'Fizz', '7', '8', 'Fizz', 'Buzz']
 output12 = ['"Yes"']
 output13 = ['"Negative number"', '"Positive number"', '"Greater than 10"']
