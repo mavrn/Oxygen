@@ -62,6 +62,12 @@ class Number:
     def __rtruediv__(self, other):
         return Number(float(other) / self.num)
 
+    def __floordiv__(self, other):
+        return Number(self.num // float(other))
+    
+    def __rfloordiv__(self, other):
+        return Number(float(other) // self.num)
+
     def __mod__(self, other):
         return Number(int(self) % int(other))
 
@@ -137,7 +143,7 @@ class String:
     def __repr__(self):
         return "\"" + self.str + "\""
 
-    def copy(self):
+    def clone(self):
         return String(self.str)
 
     def __bool__(self):
@@ -397,7 +403,7 @@ class Array:
     def __add__(self, elem):
         return Array(self.contents.copy() + [elem])
 
-    def copy(self):
+    def clone(self):
         return Array(self.contents.copy())
 
     def __mul__(self, num):
@@ -408,15 +414,18 @@ class Array:
         for _ in range(num-1):
             for elem in arrcopy:
                 if isinstance(elem,Array):
-                    self.contents.append(elem.copy())
+                    self.contents.append(elem.clone())
                 else:
                     self.contents.append(elem)
         return self
 
     def __sub__(self, elem):
-        for i in reversed(range(len(self))):
-            if self[i] == elem:
-                del self.contents[i]
+        elem = [elem] if not isinstance(elem, Array) else elem
+        while len(elem) > 0:
+            for i in reversed(range(len(self))):
+                if self[Number(i)] in elem:
+                    elem.remove(self.contents[i])
+                    del self.contents[i]
         return self
 
     def __next__(self):
@@ -643,7 +652,7 @@ class Dictionary:
     def __iter__(self):
         return iter(Array([Array(list(item)) for item in self.contents.items()]))
 
-    def copy(self):
+    def clone(self):
         return Dictionary(self.contents.copy())
 
     def __sub__(self, key):
@@ -780,11 +789,13 @@ LET = 55
 COLON = 56
 WHILE = 57
 BIND = 58
+FLOORDIV_SIGN = 59
 
 AddNode = namedtuple("AddNode", ["a", "b"])
 SubNode = namedtuple("SubNode", ["a", "b"])
 MultNode = namedtuple("MultNode", ["a", "b"])
 DivNode = namedtuple("DivNode", ["a", "b"])
+FloorDivNode = namedtuple("FloorDivNode", ["a", "b"])
 ModulusNode = namedtuple("ModulusNode", ["a", "b"])
 ExpNode = namedtuple("ExpNode", ["a", "b"])
 AssignNode = namedtuple("AssignNode", ["variable", "value"])
@@ -804,13 +815,14 @@ ArrayApplyNode = namedtuple("ArrayApplyNode", ["identifier", "function"])
 PeriodCallNode = namedtuple("PeriodCallNode", ["left_side", "right_side"])
 IterateNode = namedtuple("IterateNode", ["iterable", "items", "statements"])
 RangeNode = namedtuple("RangeNode", ["start", "stop", "step"])
+ArrayCreateNode = namedtuple("ArrayCreateNode", ["items"])
 DictCreateNode = namedtuple("DictCreateNode", ["items"])
 PostIncrementNode = namedtuple("PostIncrementNode", ["factor", "value"])
 
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
                       MODULUS_SIGN: ModulusNode, EQUALS: AssignNode, PLUS_ASSIGN: AddNode, MINUS_ASSIGN: SubNode,
                       MULT_ASSIGN: MultNode, DIV_ASSIGN: DivNode, MODULUS_ASSIGN: ModulusNode,
-                      ARRAYAPPLY_ASSIGN: ArrayApplyNode}
+                      ARRAYAPPLY_ASSIGN: ArrayApplyNode, FLOORDIV_SIGN: FloorDivNode}
 
 STATEMENT_TOKENS = (IF, SOLVE_ASSIGN, SOLVE)
 
@@ -821,7 +833,7 @@ TERM_TOKENS = (MULT_SIGN, DIV_SIGN, MODULUS_SIGN, EQUALS,
                 DIV_ASSIGN, MODULUS_ASSIGN, ARRAYAPPLY_ASSIGN,
                 COMP_EQUALS, COMP_NOT_EQUALS, GREATER_THAN,
                 LESS_THAN, GREATER_OR_EQUALS, LESS_OR_EQUALS, 
-                IN, NOT, ARRAYAPPLY, COLON)
+                IN, NOT, ARRAYAPPLY, COLON, FLOORDIV_SIGN)
                 
 EXPONENTIAL_TOKENS = (EXP, PERIOD_CALL, DOUBLE_MINUS, DOUBLE_PLUS, LBRACKET)
 
@@ -840,4 +852,4 @@ type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN",
              LCURLY: "LCURLY", RCURLY: "RCURLY", SOLVE_ASSIGN: "SOLVE_ASSIGN", SOLVE: "SOLVE", LINEBREAK: "LINEBREAK",
              BREAK: "BREAK", CONTINUE: "CONTINUE", LBRACKET: "LBRACKET", RBRACKET: "RBRACKET", ARRAYAPPLY: "ARRAYAPPLY",
              IN: "IN", ITERATE: "ITERATE", DEL: "DEL", ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN", LET: "LET",
-             COLON: "COLON", WHILE: "WHILE", BIND: "BIND"}
+             COLON: "COLON", WHILE: "WHILE", BIND: "BIND", FLOORDIV_SIGN: "FLOORDIV_SIGN"}

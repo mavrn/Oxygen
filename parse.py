@@ -92,7 +92,7 @@ class Parser:
             token_type = self.current_token_type
             self.next_token()
             match token_type:
-                case Datatypes.MULT_SIGN | Datatypes.DIV_SIGN | Datatypes.MODULUS_SIGN:
+                case Datatypes.MULT_SIGN | Datatypes.DIV_SIGN | Datatypes.MODULUS_SIGN | Datatypes.FLOORDIV_SIGN:
                     result = Datatypes.OPERATOR_NODE_DICT[token_type](a=result, b=self.exponential())
                 case Datatypes.EQUALS:
                     result = Datatypes.AssignNode(variable=result, value=self.statement())
@@ -332,7 +332,7 @@ class Parser:
             self.skip_linebreaks()
         if self.current_token_type != Datatypes.RBRACKET:
             raise SyntaxError("Expected closing parenthesis")
-        return Datatypes.Array(contents)
+        return Datatypes.ArrayCreateNode(items=contents)
 
     def gen_dict(self):
         contents = []

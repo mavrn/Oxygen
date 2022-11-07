@@ -37,6 +37,7 @@ class Interface:
                 try:
                     out = self.get_out(user_input)
                 except Exception as e:
+                    print_output(self.interpreter.output_lines)
                     self.interpreter.rollback()
                     print(f"{type(e).__name__}: {e}")
                     self.tokens_list = []

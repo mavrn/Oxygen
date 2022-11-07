@@ -370,13 +370,13 @@ fn check sudoku =>
     count = 0
 
     for row in sudoku =>
-        if not uniquecheck(row) => return False
+        if not uniquecheck(row.clone) => return False
     <<
     for i=0, i<9, i++ =>
         for x=0, x<9, x++ =>
             column[x] = sudoku[x][i]
         <<
-        if not uniquecheck(column) => return False
+        if not uniquecheck(column.clone) => return False
     <<
     for i=0, i<9, i+=3 =>
         for x=0, x<9, x+=3 =>
@@ -386,7 +386,7 @@ fn check sudoku =>
                     count++
                 <<
             <<
-            if not uniquecheck(grid) => return False
+            if not uniquecheck(grid.clone) => return False
             grid = [0]*9
             count = 0
         <<

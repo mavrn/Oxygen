@@ -13,7 +13,7 @@ OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datat
                  "--": Datatypes.DOUBLE_MINUS, "++": Datatypes.DOUBLE_PLUS, "<<": Datatypes.BLOCK_END,
                  "{": Datatypes.LCURLY, "}": Datatypes.RCURLY, "?=": Datatypes.SOLVE_ASSIGN, "?": Datatypes.SOLVE,
                  "[": Datatypes.LBRACKET, "]": Datatypes.RBRACKET, ">>": Datatypes.ARRAYAPPLY,
-                 ">>>": Datatypes.ARRAYAPPLY_ASSIGN, ":": Datatypes.COLON}
+                 ">>>": Datatypes.ARRAYAPPLY_ASSIGN, ":": Datatypes.COLON, "//": Datatypes.FLOORDIV_SIGN}
 KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD, "True": Datatypes.TRUE,
                 "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR, "and": Datatypes.AND,
                 "rep": Datatypes.REP, "as": Datatypes.AS, "for": Datatypes.FOR, "return": Datatypes.RETURN,
