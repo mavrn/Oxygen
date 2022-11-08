@@ -291,6 +291,17 @@ class Interpreter:
                 for item in node.items:
                     new_dict[self.evaluate(item[0])] = self.evaluate(item[1])
                 return new_dict
+            case "StringBuilderNode":
+                tokens = node.tokens
+                if len(tokens) == 0:
+                    return node.string
+                strarr = node.string.split("#")
+                new_string = ""
+                for elem in strarr:
+                    new_string += elem
+                    if len(tokens) > 0:
+                        new_string += str(self.evaluate(tokens.pop(0)))
+                return Datatypes.String(new_string)
             case _:
                 return node
 

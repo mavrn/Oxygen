@@ -20,7 +20,7 @@ KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNC
                 "break": Datatypes.BREAK, "continue": Datatypes.CONTINUE, "in": Datatypes.IN, "iter": Datatypes.ITERATE,
                 "del": Datatypes.DEL, "let": Datatypes.LET, "equals": Datatypes.EQUALS,
                 "greater": Datatypes.GREATER_THAN, "smaller": Datatypes.LESS_THAN, "while": Datatypes.WHILE,
-                "bind": Datatypes.BIND}
+                }
 
 
 class Lexer:
@@ -96,10 +96,27 @@ class Lexer:
         quotation_mark = self.current_char
         self.next_char()
         string = ""
-        while self.current_char is not None and self.current_char != quotation_mark:
-            string += self.current_char
+        tokens = []
+        escaped = False
+        while self.current_char not in (None, quotation_mark):
+            if self.current_char == "#" and not escaped:
+                string += self.current_char
+                self.next_char()
+                token_string = ""
+                while self.current_char not in (None, "#", quotation_mark):
+                    token_string += self.current_char
+                    self.next_char()
+                    print(self.current_char)
+                if self.current_char in (None, quotation_mark):
+                    raise SyntaxError("Expected '#'")
+                tokens.append(Lexer(token_string).gen_tokens())
+            else:
+                escaped = False
+                string += self.current_char
+            if self.current_char == "\\":
+                escaped = True
             self.next_char()
         if self.current_char != quotation_mark:
             raise SyntaxError(f"Expected {quotation_mark}")
         self.next_char()
-        return Token(Datatypes.STRING, Datatypes.String(string))
+        return Token(Datatypes.STRING, Datatypes.StringBuilderNode(string=Datatypes.String(string), tokens=tokens))

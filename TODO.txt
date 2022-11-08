@@ -1,9 +1,6 @@
-free operators: # $ § << =>> ==> <= =>)
-fstrings
-
+free operators: $ § << =>> ==> <= =>)
 #redo exceptions + add trycatch
 #update comments
-#implement switch case
 array.filter
 
 testcases to add

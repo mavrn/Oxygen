@@ -144,10 +144,18 @@ class Parser:
         if token_type not in (None, Datatypes.BLOCK_END):
             self.next_token()
         match token_type:
-            case Datatypes.NUMBER | Datatypes.STRING:
+            case Datatypes.NUMBER:
                 if self.current_token_type == Datatypes.IDENTIFIER:
                     return Datatypes.MultNode(token.value, self.exponential())
                 return token.value
+            case Datatypes.STRING:
+                new_tokens = []
+                for tokens in token.value.tokens:
+                    ast = Parser(tokens).parse()
+                    if len(ast) > 1:
+                        raise SyntaxError("Too many statements inside dstring argument.")
+                    new_tokens.append(ast[0])
+                return Datatypes.StringBuilderNode(token.value.string, new_tokens)
             case Datatypes.FUNCTION_KEYWORD:
                 return self.declare_function()
             case Datatypes.RETURN:

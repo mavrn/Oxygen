@@ -127,6 +127,7 @@ class String:
             self.str = value.str
         else:
             self.str = str(value)
+        self.str = self.str.replace("\#", "#")
         self.str_arr = []
         self.n = []
         self.max = len(self.str)
@@ -644,7 +645,12 @@ class Dictionary:
         self.max = len(self.contents)
 
     def __str__(self):
-        return str(self.contents)
+        str = "{"
+        for k,v in self.contents.items():
+            str += repr(k) + " > " + repr(v) + ", "
+        str = str[:-2]
+        str+= "}"         
+        return str
 
     def __len__(self):
         return len(self.contents)
@@ -788,7 +794,7 @@ DEL = 54
 LET = 55
 COLON = 56
 WHILE = 57
-BIND = 58
+BIND = ARROW
 FLOORDIV_SIGN = 59
 
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -818,6 +824,7 @@ RangeNode = namedtuple("RangeNode", ["start", "stop", "step"])
 ArrayCreateNode = namedtuple("ArrayCreateNode", ["items"])
 DictCreateNode = namedtuple("DictCreateNode", ["items"])
 PostIncrementNode = namedtuple("PostIncrementNode", ["factor", "value"])
+StringBuilderNode = namedtuple("StringBuilderNode", ["string", "tokens"])
 
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
                       MODULUS_SIGN: ModulusNode, EQUALS: AssignNode, PLUS_ASSIGN: AddNode, MINUS_ASSIGN: SubNode,
@@ -852,4 +859,4 @@ type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN",
              LCURLY: "LCURLY", RCURLY: "RCURLY", SOLVE_ASSIGN: "SOLVE_ASSIGN", SOLVE: "SOLVE", LINEBREAK: "LINEBREAK",
              BREAK: "BREAK", CONTINUE: "CONTINUE", LBRACKET: "LBRACKET", RBRACKET: "RBRACKET", ARRAYAPPLY: "ARRAYAPPLY",
              IN: "IN", ITERATE: "ITERATE", DEL: "DEL", ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN", LET: "LET",
-             COLON: "COLON", WHILE: "WHILE", BIND: "BIND", FLOORDIV_SIGN: "FLOORDIV_SIGN"}
+             COLON: "COLON", WHILE: "WHILE", FLOORDIV_SIGN: "FLOORDIV_SIGN"}

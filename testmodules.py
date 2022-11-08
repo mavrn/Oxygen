@@ -434,8 +434,8 @@ fn stripcomments str delimiters =>
     <<
     return newlines.join("\n")
 <<
-stripcomments("apples, pears # and bananas\ngrapes\nbananas !apples", ["#", "!"])
-stripcomments("a #b\nc\nd $e f g", ["#", "$"])"""
+stripcomments("apples, pears \# and bananas\ngrapes\nbananas !apples", ["\#", "!"])
+stripcomments("a \#b\nc\nd $e f g", ["\#", "$"])"""
 
 #https://www.codewars.com/kata/55983863da40caa2c900004e
 codewars_input16 = """
@@ -720,7 +720,7 @@ codewars_input27 = """fn spiralize size =>
 
 #https://www.codewars.com/kata/5279f6fe5ab7f447890006a7
 codewars_input28 = """fn pick_peaks array =>
-    result = {"pos" bind [], "peaks" bind []}
+    result = {"pos" => [], "peaks" => []}
     pos = 0
     iter 1:(array.l-1) as i =>
         if array[i] != array[pos] => pos = i
@@ -825,7 +825,7 @@ codewars_output24 = ['"theStealthWarrior"', '"TheStealthWarrior"']
 codewars_output25 = ['2', '0.55']
 codewars_output26 = ["True", "False", "True"]
 codewars_output27 = ['[[1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 1], [1, 1, 1, 1, 1, 0, 1], [1, 0, 0, 0, 1, 0, 1], [1, 0, 1, 1, 1, 0, 1], [1, 0, 0, 0, 0, 0, 1], [1, 1, 1, 1, 1, 1, 1]]']
-codewars_output28 = ['{"pos": [3, 7], "peaks": [6, 3]}','{"pos": [1], "peaks": [2]}']
+codewars_output28 = ['{"pos" > [3, 7], "peaks" > [6, 3]}','{"pos" > [1], "peaks" > [2]}']
 codewars_output29 = ['"-10--8,-6,-3-1,3-5,7-11,14,15,17-20"']
 
 
