@@ -10,7 +10,7 @@ import equation_solver
 
 BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos": [1], "atan": [1], "abs": [1],
                          "sqrt": [1], "factorial": [1], "bool": [1], "plot": [3, 4], "p": range(1, 100),
-                         "midnight": [3], "rick": [0], "leet": [1], "type": [1], "arr": [1], "apply": range(1, 100),
+                         "midnight": [3], "rick": [0], "leet": [1], "type": [1], "arr": [1], "apply": [2],
                          "append": [2], "union": [2], "intersection": [2], "l": [1], "join": [0, 1], "rev": [1],
                          "sum": [1], "slice": [1, 2, 3], "openurl": [1], "min": [1], "max": [1],
                          "s": [1], "split": [1, 2], "n": [1], "difference": range(2, 100),
@@ -20,12 +20,13 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "permutations": [1], "mostcommon": [1, 2], "multicombinations": [1, 2],
                          "removeduplicates": [1], "range": [1, 2, 3], "delete_at": range(2, 100), "pop": [1, 2],
                          "getfields": [0, 1], "quit": [0], "remove_all": range(2, 100), "remove": range(2, 100),
-                         "keys": [1], "values": [1], "flatten": [1], "getscope": [0], "clone": [1]}
+                         "keys": [1], "values": [1], "flatten": [1], "getscope": [0], "clone": [1], "filter": [2],
+                         "divmod": [2]}
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["p", "apply", "plot", "getfields", "getscope"]
+INTERNAL_KEYWORDS = ["p", "apply", "filter", "plot", "getfields", "getscope"]
 BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["arr", "bool", "type"]
-BUILTIN_KEYWORDS = ["midnight", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit"]
+BUILTIN_KEYWORDS = ["midnight", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit", "divmod"]
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS + INTERNAL_KEYWORDS + BUILTIN_KEYWORDS)]
 
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode", "FloorDivNode"]
@@ -62,7 +63,7 @@ def process_nums(argument_list):
 def stringify(elem):
     if isinstance(elem, Datatypes.Number):
         elem = elem.get_num()
-    if elem is not None:
+    if not isinstance(elem, (type(None), Datatypes.Function)):
         return repr(elem)
 
 
@@ -92,6 +93,7 @@ class Interpreter:
                 self.fields["global"][node.identifier] = Datatypes.Function(node.arguments, node.body, node.identifier)
                 if node.identifier in BUILTIN_EXPECTED_ARGS:
                     return Datatypes.String(f"Warning: Built-in function {node.identifier} has been overridden.")
+                return Datatypes.Function(node.arguments, node.body, node.identifier)
             case "FuncCallNode":
                 return self.function_call_handler(node)
             case "PeriodCallNode":
@@ -463,7 +465,7 @@ class Interpreter:
     def p(self, *args):
         lines = []
         for arg in args:
-            if arg is not None:
+            if not isinstance(arg, (type(None), Datatypes.Function)):
                 lines.append(arg)
         if len(lines) == 0:
             return
@@ -481,6 +483,15 @@ class Interpreter:
                 args[0][Datatypes.Number(i)] = res[0]
             else:
                 args[0][Datatypes.Number(i)] = res
+        return args[0]
+    
+    def filter(self, *args):
+        for elem in args[0]:
+            res = self.function_call_handler(Datatypes.FuncCallNode(args[1].identifier, [elem]))
+            if isinstance(res, list):
+                res = res[0]
+            if not Datatypes.Bool(res):
+                args[0].delete()
         return args[0]
 
     def getfields(self, *args):

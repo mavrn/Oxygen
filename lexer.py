@@ -72,6 +72,8 @@ class Lexer:
                 tokens.append(Token(Datatypes.PERIOD_CALL))
             elif current_char in ("\"", "\'"):
                 tokens.append(self.gen_string())
+            else:
+                raise SyntaxError(f"Unexpected character {current_char}")
         return tokens
 
     def gen_number(self):

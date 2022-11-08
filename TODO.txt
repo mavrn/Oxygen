@@ -1,12 +1,14 @@
 free operators: $ § << =>> ==> <= =>)
 #redo exceptions + add trycatch
 #update comments
-array.filter
 
 testcases to add
 #getfield
 #dicts
 #kwargs
+array.filter
+#hashstrings
+
 
 fn one => 
     x=0

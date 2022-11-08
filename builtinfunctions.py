@@ -86,3 +86,6 @@ def arr(obj):
 
 def bool(obj):
     return Datatypes.Bool(obj)
+
+def divmod(*args):
+    return Datatypes.Array(list(builtins.divmod(*args)))

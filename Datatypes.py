@@ -20,6 +20,8 @@ def convert_to_builtin(arg):
     else:
         return arg
 
+#TODO: Let Dataclasses inherit from Python Types
+
 
 class Number:
     def __init__(self, value):
@@ -206,6 +208,9 @@ class String:
         else:
             start, stop, step = args
         return String(self.str[start:stop:step])
+    
+    def enumerate(self):
+        return self.n[-1], next(self)
 
     def nummap(self):
         new = Array([])
@@ -466,6 +471,9 @@ class Array:
     def __bool__(self):
         return False if len(self) == 0 else True
 
+    def enumerate(self):
+        return self.n[-1], next(self)
+        
     def append(self, *args):
         for arg in args:
             self.contents.append(arg)
@@ -690,6 +698,8 @@ class Dictionary:
             del self.contents[convert_to_builtin(key)]
 
     def pop(self, key):
+        self.n = [n-1 for n in self.n]
+        self.max -= 1
         return self.contents.pop(convert_to_builtin(key))
 
     def keys(self):
@@ -706,7 +716,10 @@ class Function:
         self.identifier = identifier
 
     def __repr__(self):
-        return f"FUNCTION: \n ARGS = {self.arguments} \n BODY = {self.body}"
+        return f"Function {self.identifier}"
+    
+    def __str__(self):
+        return repr(self)
 
 
 class Token:
