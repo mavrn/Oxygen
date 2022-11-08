@@ -9,7 +9,7 @@ import builtinfunctions
 import equation_solver
 
 BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos": [1], "atan": [1], "abs": [1],
-                         "sqrt": [1], "factorial": [1], "bool": [1], "plot": [3, 4], "p": range(1, 100),
+                         "sqrt": [1], "factorial": [1], "bool": [1], "plot": [3, 4], "out": range(1, 100),
                          "midnight": [3], "rick": [0], "leet": [1], "type": [1], "arr": [1], "apply": [2],
                          "append": [2], "union": [2], "intersection": [2], "l": [1], "join": [0, 1], "rev": [1],
                          "sum": [1], "slice": [1, 2, 3], "openurl": [1], "min": [1], "max": [1],
@@ -24,7 +24,7 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "divmod": [2]}
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["p", "apply", "filter", "plot", "getfields", "getscope"]
+INTERNAL_KEYWORDS = ["out", "apply", "filter", "plot", "getfields", "getscope"]
 BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["arr", "bool", "type"]
 BUILTIN_KEYWORDS = ["midnight", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit", "divmod"]
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS + INTERNAL_KEYWORDS + BUILTIN_KEYWORDS)]
@@ -462,7 +462,7 @@ class Interpreter:
         plt.legend()
         plt.show()
 
-    def p(self, *args):
+    def out(self, *args):
         lines = []
         for arg in args:
             if not isinstance(arg, (type(None), Datatypes.Function)):

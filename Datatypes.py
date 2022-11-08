@@ -859,6 +859,25 @@ EXPONENTIAL_TOKENS = (EXP, PERIOD_CALL, DOUBLE_MINUS, DOUBLE_PLUS, LBRACKET)
 
 OP_ASSIGN_TOKENS = (PLUS_ASSIGN, MINUS_ASSIGN, MULT_ASSIGN, DIV_ASSIGN, MODULUS_ASSIGN, ARRAYAPPLY_ASSIGN)
 
+OPERATOR_DICT = {"+": PLUS_SIGN, "-": MINUS_SIGN, "*": MULT_SIGN, "/": DIV_SIGN,
+                 "%": MODULUS_SIGN, "+=": PLUS_ASSIGN, "-=": MINUS_ASSIGN,
+                 "*=": MULT_ASSIGN, "/=": DIV_ASSIGN, "%=": MODULUS_ASSIGN,
+                 "(": LPAREN, ")": RPAREN, "**": EXP, ",": COMMA,
+                 "&": AND, "|": OR, "==": COMP_EQUALS, "!=": COMP_NOT_EQUALS,
+                 "<": LESS_THAN, ">": GREATER_THAN, "<=": LESS_OR_EQUALS,
+                 ">=": GREATER_OR_EQUALS, "=>": ARROW, "=": EQUALS, "!": NOT,
+                 "--": DOUBLE_MINUS, "++": DOUBLE_PLUS, "<<": BLOCK_END,
+                 "{": LCURLY, "}": RCURLY, "?=": SOLVE_ASSIGN, "?": SOLVE,
+                 "[": LBRACKET, "]": RBRACKET, ">>": ARRAYAPPLY,
+                 ">>>": ARRAYAPPLY_ASSIGN, ":": COLON, "//": FLOORDIV_SIGN}
+KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
+                "False": FALSE, "not": NOT, "or": OR, "and": AND,
+                "rep": REP, "as": AS, "for": FOR, "return": RETURN,
+                "break": BREAK, "continue": CONTINUE, "in": IN, "iter": ITERATE,
+                "del": DEL, "let": LET, "equals": COMP_EQUALS,
+                "greater": GREATER_THAN, "smaller": LESS_THAN, "while": WHILE,
+                }
+
 type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN", MULT_SIGN: "MULT_SIGN",
              DIV_SIGN: "DIV_SIGN", MODULUS_SIGN: "MODULUS_SIGN", PLUS_ASSIGN: "PLUS_ASSIGN",
              MINUS_ASSIGN: "MINUS_ASSIGN", MULT_ASSIGN: "MULT_ASSIGN", DIV_ASSIGN: "DIV_ASSIGN",

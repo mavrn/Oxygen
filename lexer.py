@@ -1,26 +1,9 @@
 import Datatypes
-from Datatypes import Token
+from Datatypes import Token, OPERATOR_DICT, KEYWORD_DICT
 
 NUM_CHARS = "0123456789"
 LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
-OPERATOR_DICT = {"+": Datatypes.PLUS_SIGN, "-": Datatypes.MINUS_SIGN, "*": Datatypes.MULT_SIGN, "/": Datatypes.DIV_SIGN,
-                 "%": Datatypes.MODULUS_SIGN, "+=": Datatypes.PLUS_ASSIGN, "-=": Datatypes.MINUS_ASSIGN,
-                 "*=": Datatypes.MULT_ASSIGN, "/=": Datatypes.DIV_ASSIGN, "%=": Datatypes.MODULUS_ASSIGN,
-                 "(": Datatypes.LPAREN, ")": Datatypes.RPAREN, "^": Datatypes.EXP, ",": Datatypes.COMMA,
-                 "&": Datatypes.AND, "|": Datatypes.OR, "==": Datatypes.COMP_EQUALS, "!=": Datatypes.COMP_NOT_EQUALS,
-                 "<": Datatypes.LESS_THAN, ">": Datatypes.GREATER_THAN, "<=": Datatypes.LESS_OR_EQUALS,
-                 ">=": Datatypes.GREATER_OR_EQUALS, "=>": Datatypes.ARROW, "=": Datatypes.EQUALS, "!": Datatypes.NOT,
-                 "--": Datatypes.DOUBLE_MINUS, "++": Datatypes.DOUBLE_PLUS, "<<": Datatypes.BLOCK_END,
-                 "{": Datatypes.LCURLY, "}": Datatypes.RCURLY, "?=": Datatypes.SOLVE_ASSIGN, "?": Datatypes.SOLVE,
-                 "[": Datatypes.LBRACKET, "]": Datatypes.RBRACKET, ">>": Datatypes.ARRAYAPPLY,
-                 ">>>": Datatypes.ARRAYAPPLY_ASSIGN, ":": Datatypes.COLON, "//": Datatypes.FLOORDIV_SIGN}
-KEYWORD_DICT = {"if": Datatypes.IF, "else": Datatypes.ELSE, "fn": Datatypes.FUNCTION_KEYWORD, "True": Datatypes.TRUE,
-                "False": Datatypes.FALSE, "not": Datatypes.NOT, "or": Datatypes.OR, "and": Datatypes.AND,
-                "rep": Datatypes.REP, "as": Datatypes.AS, "for": Datatypes.FOR, "return": Datatypes.RETURN,
-                "break": Datatypes.BREAK, "continue": Datatypes.CONTINUE, "in": Datatypes.IN, "iter": Datatypes.ITERATE,
-                "del": Datatypes.DEL, "let": Datatypes.LET, "equals": Datatypes.EQUALS,
-                "greater": Datatypes.GREATER_THAN, "smaller": Datatypes.LESS_THAN, "while": Datatypes.WHILE,
-                }
+
 
 
 class Lexer:

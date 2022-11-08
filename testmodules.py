@@ -2,9 +2,9 @@ import unittest
 
 from interface import Interface
 
-input1 = "1 == (0.5 + 2 / 2^2)"
+input1 = "1 == (0.5 + 2 / 2**2)"
 
-input2 = """fn get_c a b => sqrt(a^2+b^2)
+input2 = """fn get_c a b => sqrt(a**2+b**2)
 get_c(3,4)
 """
 
@@ -27,7 +27,7 @@ input6 = """fn fizz_buzz i => rep i as c => "FizzBuzz" if c % 3 == 0 and c % 5 =
 """
 
 input7 = """fn bin_cof n k => n.factorial / (k.factorial * (n-k).factorial)
-fn P p n x => bin_cof(n,x) * p^x * (1-p)^(n-x)
+fn P p n x => bin_cof(n,x) * p**x * (1-p)**(n-x)
 P(0.3, 20, 6)
 """
 
@@ -39,8 +39,8 @@ return a == (x /2)<<
 """
 
 input9 = """fn x a =>
-p(a+1)
-p(a+2)
+out(a+1)
+out(a+2)
 return a-1<<
 0.x
 """
@@ -56,16 +56,16 @@ x
 input11 = """fn fizz_buzz i => 
      for x=1, x<=i, x++ => 
              if x%3 == 0 and x%5 == 0 =>
-                     p("FizzBuzz")
+                     out("FizzBuzz")
              <<
              or x%5 == 0 =>
-                     p("Buzz")
+                     out("Buzz")
              <<
              or x%3 == 0 =>
-                     p("Fizz")
+                     out("Fizz")
              <<
              else =>
-                     p(x)
+                     out(x)
              <<
      <<
 <<
@@ -137,7 +137,7 @@ input19 = """fn fib n =>
     <<
 <<
 for i=1, i<=15, i++ =>
-    p(i, i.fib)
+    out(i, i.fib)
 <<
 """
 
@@ -153,7 +153,7 @@ input20 = """fn x a =>
 input21 = """x = [0,1,2,3,4,5,6]
 [1,2,3,4,10,102].union(x)
 [3,4,5,7].intersection(x)
-fn y a => a^2
+fn y a => a**2
 x.apply(y)
 x >> x+1
 """
@@ -201,20 +201,20 @@ input29 = """fn narc int =>
     iter range as i=>
         sum = 0
         iter spl as x=>
-            sum += x^i
+            sum += x**i
         <<
         if sum == int => return True
     <<
     return False
 <<
-153.narc.p
-371.narc.p
-4887.narc.p"""
+153.narc.out
+371.narc.out
+4887.narc.out"""
 
 input30 = """y=0
 fn x a =>
     y+=1
-    "h".p
+    "h".out
     return "s"
 <<
 1.x
@@ -297,7 +297,7 @@ codewars_input8 = """fn order str =>
     <<
     return new.join(" ")
 <<
-p("4of Fo1r pe6ople g3ood th5e the2".order)"""
+out("4of Fo1r pe6ople g3ood th5e the2".order)"""
 
 #https://www.codewars.com/kata/54e6533c92449cc251001667
 codewars_input9 = """fn uni str =>
@@ -309,8 +309,8 @@ codewars_input9 = """fn uni str =>
     <<
     return new
 <<
-"AAAABBBCCDAABBB".uni.p
-[1,2,2,3,3].uni.p
+"AAAABBBCCDAABBB".uni.out
+[1,2,2,3,3].uni.out
 """
 
 #https://www.codewars.com/kata/57eb8fcdf670e99d9b000272/
@@ -336,7 +336,7 @@ codewars_input11 = """fn countzeroes arr =>
     rep zeroes => arr += 0
     return arr
 <<
-[9, 0, 0, 9, 1, 2, 0, 1, 0, 1, 0, 3, 0, 1, 9, 0, 0, 0, 0, 9].countzeroes.p"""
+[9, 0, 0, 9, 1, 2, 0, 1, 0, 1, 0, 3, 0, 1, 9, 0, 0, 0, 0, 9].countzeroes.out"""
 
 #https://www.codewars.com/kata/52774a314c2333f0a7000688
 codewars_input12 = """fn val str =>
@@ -453,7 +453,7 @@ codewars_input17 = """fn wordcount text =>
     arr = split(lower(text >> " " if x not in ALPHABET))
     return arr.mostcommon >> x[0]
 <<
-"DDD e e e e ddd DdD: ddd ddd aa aA Aa, bb cc cC e e e".wordcount.p
+"DDD e e e e ddd DdD: ddd ddd aa aA Aa, bb cc cC e e e".wordcount.out
 """
 
 #https://www.codewars.com/kata/5f1891d30970800010626843
@@ -476,9 +476,9 @@ codewars_input18 = """fn multpossibilities n k =>
     <<
     return results.l
 <<
-multpossibilities(24,2).p
-multpossibilities(100,1).p
-multpossibilities(20,3).p
+multpossibilities(24,2).out
+multpossibilities(100,1).out
+multpossibilities(20,3).out
 """
 
 #https://www.codewars.com/kata/520446778469526ec0000001
@@ -492,12 +492,12 @@ fn same_structure_as original other =>
     <<
     return True
 <<
-same_structure_as([ 1, 1, 1 ], [ 2, 2, 2 ]).p
-same_structure_as([ 1, [ 1, 1 ] ], [ 2, [ 2, 2 ] ] ).p
-same_structure_as([ 1, [ 1, 1 ] ], [ [ 2, 2 ], 2 ] ).p
-same_structure_as([ 1, [ 1, 1 ] ], [ [ 2 ], 2 ] ).p
-same_structure_as([ [ [ ], [ ] ] ], [ [ [ ], [ ] ] ] ).p
-same_structure_as([ [ [ ], [ ] ] ], [ [ 1, 1 ] ] ).p"""
+same_structure_as([ 1, 1, 1 ], [ 2, 2, 2 ]).out
+same_structure_as([ 1, [ 1, 1 ] ], [ 2, [ 2, 2 ] ] ).out
+same_structure_as([ 1, [ 1, 1 ] ], [ [ 2, 2 ], 2 ] ).out
+same_structure_as([ 1, [ 1, 1 ] ], [ [ 2 ], 2 ] ).out
+same_structure_as([ [ [ ], [ ] ] ], [ [ [ ], [ ] ] ] ).out
+same_structure_as([ [ [ ], [ ] ] ], [ [ 1, 1 ] ] ).out"""
 
 #https://www.codewars.com/kata/5264d2b162488dc400000001
 codewars_input20 = """fn rev_5 str =>
@@ -510,8 +510,8 @@ codewars_input20 = """fn rev_5 str =>
 
 #https://www.codewars.com/kata/541c8630095125aba6000c00
 codewars_input21 = """fn sum_of_digits num => sum(num.s.arr >> x.n)
-16.sum_of_digits.p
-493193.sum_of_digits.p
+16.sum_of_digits.out
+493193.sum_of_digits.out
 fn root_sum num => 
     let res num.sum_of_digits
     return res if res.s.l == 1 else res.root_sum
@@ -568,8 +568,8 @@ codewars_input25 = """fn unique_number array =>
         if array.count(_x) == 1 => return _x
     <<
 <<
-[ 1, 1, 1, 2, 1, 1 ].unique_number.p
-[ 0, 0, 0.55, 0, 0 ].unique_number.p
+[ 1, 1, 1, 2, 1, 1 ].unique_number.out
+[ 0, 0, 0.55, 0, 0 ].unique_number.out
 """
 
 #https://www.codewars.com/kata/52bb6539a4cf1b12d90005b7
@@ -623,7 +623,7 @@ fn field_validator f =>
 [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
 [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]].field_validator.p
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]].field_validator.out
 [[1, 0, 0, 0, 0, 1, 1, 0, 0, 0],
 [1, 0, 1, 0, 0, 0, 0, 0, 1, 0],
 [1, 0, 1, 0, 1, 1, 1, 0, 1, 0],
@@ -633,7 +633,7 @@ fn field_validator f =>
 [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
 [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]].field_validator.p
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]].field_validator.out
 [[0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
@@ -643,7 +643,7 @@ fn field_validator f =>
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-[1, 1, 1, 1, 0, 0, 0, 0, 0, 0]].field_validator.p
+[1, 1, 1, 1, 0, 0, 0, 0, 0, 0]].field_validator.out
 """
 
 #https://www.codewars.com/kata/534e01fbbb17187c7e0000c6

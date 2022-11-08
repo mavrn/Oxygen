@@ -1,6 +1,32 @@
 free operators: $ § << =>> ==> <= =>)
 #redo exceptions + add trycatch
 #update comments
+#quick iter =)>
+
+#https://iolanguage.org/tutorial.html for ideas
+#isinstance = "is"
+#add xor
+#add unless == if not
+#befehle ohne "gomme sagt" werden nicht ausgeführt
+#binding variables
+#keywords in func delarations
+#indented strings
+#with / of for func calls
+#let user redefine keywords, operators
+#f(x) <- n  == return n
+#fix period call "pos1"
+#make arglist a node, maybe whitespace calls instead of period calls
+
+def f(int n):
+    f(n = 1)        <- n
+    f(8 > n > 2)    <- (n - 2) + 1
+    f(n > 8)        <- n - 2  
+    f(n < 0)        <- 1
+
+
+
+
+
 
 testcases to add
 #getfield
