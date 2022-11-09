@@ -38,8 +38,8 @@ class Parser:
                 raise SyntaxError(f"Expected end of statement, got token type {Datatypes.type_dict.get(self.current_token_type)}")
         return self.ast_list
 
-    def statement_block(self, func_block=False):
-        if self.current_token_type != Datatypes.ARROW:
+    def statement_block(self, func_block=False, block_starter=Datatypes.ARROW, block_ender=Datatypes.BLOCK_END):
+        if self.current_token_type != block_starter:
             raise SyntaxError("Expected '=>'")
         self.next_token()
         if self.current_token_type != Datatypes.LINEBREAK:
@@ -59,11 +59,14 @@ class Parser:
         result = self.expression()
         while self.current_token_type in Datatypes.STATEMENT_TOKENS:
             token_type = self.current_token_type
-            self.next_token()
+            if token_type != Datatypes.ITERATE_ARROW:
+                self.next_token()
             if token_type == Datatypes.SOLVE:
                 result = Datatypes.SolveNode(result, self.expression())
             elif token_type == Datatypes.SOLVE_ASSIGN:
                 result = Datatypes.SolveAssignNode(result, self.expression())
+            elif token_type == Datatypes.ITERATE_ARROW:
+                result = Datatypes.IterateNode(iterable=result, items=[], statements=self.statement_block(block_starter=Datatypes.ITERATE_ARROW))
             else:
                 if_expr = result
                 result = Datatypes.IfNode()
@@ -347,7 +350,7 @@ class Parser:
     def gen_dict(self):
         contents = []
         while self.current_token is not None and self.current_token_type != Datatypes.RCURLY:
-            key = self.expression()
+            key = self.exponential()
             if self.current_token_type != Datatypes.BIND:
                 raise SyntaxError("Expected bind keyword between key and value.")
             self.next_token()

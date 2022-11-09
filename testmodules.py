@@ -2,9 +2,9 @@ import unittest
 
 from interface import Interface
 
-input1 = "1 == (0.5 + 2 / 2**2)"
+input1 = "1 equals (0.5 + 2 / 2**2)"
 
-input2 = """fn get_c a b => sqrt(a**2+b**2)
+input2 = """fn get_c a b => (a**2+b**2) sqrt
 get_c(3,4)
 """
 
@@ -79,15 +79,9 @@ True x
 """
 
 input13 = """fn x a =>
-    if a > 10 =>
-        return "Greater than 10"
-    <<
-    or a >= 0 =>
-        return "Positive number"
-    <<
-    else =>
-        return "Negative number"
-    <<
+    if a > 10 => -> "Greater than 10"
+    or a >= 0 => -> "Positive number"
+    else => -> "Negative number"
 <<
 -1 x
 2 x
@@ -126,15 +120,9 @@ y = 2*x
 """
 
 input19 = """fn fib n =>
-    if n == 1 =>
-        return 0
-    <<
-    or n == 2 =>
-        return 1
-    <<
-    else =>
-        return fib(n-1) + fib(n-2)
-    <<
+    if n == 1 => -> 0
+    or n == 2 => -> 1
+    else => -> fib(n-1) + fib(n-2)
 <<
 for i=1, i<=15, i++ =>
     out(i, i fib)
@@ -302,9 +290,9 @@ codewars_input8 = """fn order str =>
 #https://www.codewars.com/kata/54e6533c92449cc251001667
 codewars_input9 = """fn uni str =>
     new = [str[0]]
-    iter str =>
-            if _x != new[-1] and _i >0 =>
-                    new+=_x
+    str -->
+            if iterelem != new[-1] and itercounter >0 =>
+                    new+=iterelem
             <<
     <<
     return new
@@ -318,11 +306,11 @@ codewars_input10 = """fn score st => (st.capitalize.nummap >> x.n).sum
 fn highest str => 
     h = ""
     hs = 0
-    iter str.split() =>
-        sc = _x.score
+    str split -->
+        sc = iterelem.score
         if sc > hs =>
             hs = sc
-            h = _x
+            h = iterelem
         <<
     <<
     return h
@@ -564,8 +552,8 @@ codewars_input24 = """fn camel_case str =>
 
 #https://www.codewars.com/kata/585d7d5adb20cf33cb000235
 codewars_input25 = """fn unique_number array =>
-    iter array =>
-        if array.count(_x) == 1 => return _x
+    array -->
+        if array.count(iterelem) == 1 => -> iterelem
     <<
 <<
 [ 1, 1, 1, 2, 1, 1 ].unique_number.out
@@ -720,7 +708,7 @@ codewars_input27 = """fn spiralize size =>
 
 #https://www.codewars.com/kata/5279f6fe5ab7f447890006a7
 codewars_input28 = """fn pick_peaks array =>
-    result = {"pos" => [], "peaks" => []}
+    result = {"pos" > [], "peaks" > []}
     pos = 0
     iter 1:(array.l-1) as i =>
         if array[i] != array[pos] => pos = i
@@ -1193,7 +1181,7 @@ class TestUtils(unittest.TestCase):
 
     def test_iter(self):
         self.assertEqual(self.interface.run(
-            'iter 1:6:3 => _x',
+            'iter 1:6:3 => iterelem',
             return_out=True, ),
             ['1', '4'])
 

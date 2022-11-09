@@ -841,9 +841,10 @@ DEL = 54
 LET = 55
 COLON = 56
 WHILE = 57
-BIND = ARROW
+BIND = GREATER_THAN
 FLOORDIV_SIGN = 59
 UNLESS = 60
+ITERATE_ARROW = 61
 
 AddNode = namedtuple("AddNode", ["a", "b"])
 SubNode = namedtuple("SubNode", ["a", "b"])
@@ -879,7 +880,7 @@ OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNo
                       MULT_ASSIGN: MultNode, DIV_ASSIGN: DivNode, MODULUS_ASSIGN: ModulusNode,
                       ARRAYAPPLY_ASSIGN: ArrayApplyNode, FLOORDIV_SIGN: FloorDivNode}
 
-STATEMENT_TOKENS = (IF, SOLVE_ASSIGN, SOLVE)
+STATEMENT_TOKENS = (IF, SOLVE_ASSIGN, SOLVE, ITERATE_ARROW)
 
 EXPRESSION_TOKENS = (PLUS_SIGN, MINUS_SIGN, AND, OR)
 
@@ -905,7 +906,7 @@ OPERATOR_DICT = {"+": PLUS_SIGN, "-": MINUS_SIGN, "*": MULT_SIGN, "/": DIV_SIGN,
                  "{": LCURLY, "}": RCURLY, "?=": SOLVE_ASSIGN, "?": SOLVE,
                  "[": LBRACKET, "]": RBRACKET, ">>": ARRAYAPPLY,
                  ">>>": ARRAYAPPLY_ASSIGN, ":": COLON, "//": FLOORDIV_SIGN,
-                 ".": PERIOD_CALL}
+                 ".": PERIOD_CALL, "->": RETURN, "-->": ITERATE_ARROW}
 KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
                 "False": FALSE, "not": NOT, "or": OR, "and": AND,
                 "rep": REP, "as": AS, "for": FOR, "return": RETURN,
@@ -932,4 +933,4 @@ type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN",
              LCURLY: "LCURLY", RCURLY: "RCURLY", SOLVE_ASSIGN: "SOLVE_ASSIGN", SOLVE: "SOLVE", LINEBREAK: "LINEBREAK",
              BREAK: "BREAK", CONTINUE: "CONTINUE", LBRACKET: "LBRACKET", RBRACKET: "RBRACKET", ARRAYAPPLY: "ARRAYAPPLY",
              IN: "IN", ITERATE: "ITERATE", DEL: "DEL", ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN", LET: "LET",
-             COLON: "COLON", WHILE: "WHILE", FLOORDIV_SIGN: "FLOORDIV_SIGN", UNLESS: "UNLESS"}
+             COLON: "COLON", WHILE: "WHILE", FLOORDIV_SIGN: "FLOORDIV_SIGN", UNLESS: "UNLESS", ITERATE_ARROW: "ITERATE_ARROW"}

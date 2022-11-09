@@ -58,12 +58,12 @@ class Interface:
             self.open_blocks = 0
         else:
             for token in tokens:
-                if token.type in (Datatypes.ARROW, Datatypes.LCURLY):
+                if token.type in (Datatypes.ARROW, Datatypes.ITERATE_ARROW):
                     if token.type == Datatypes.ARROW and tokens[-1].type != Datatypes.ARROW:
                         continue
                     else:
                         self.open_blocks += 1
-                elif token.type in (Datatypes.BLOCK_END, Datatypes.RCURLY):
+                elif token.type == Datatypes.BLOCK_END:
                     self.open_blocks -= 1
                 elif token.type == Datatypes.IF:
                     self.active_if = True

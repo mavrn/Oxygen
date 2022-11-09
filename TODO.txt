@@ -1,7 +1,8 @@
-free operators: $ § << =>> ==> <= =>)
+free operators: $ § << =>> ==> <= =>) -> -->
 #redo exceptions + add trycatch
 #update comments
-#quick iter 
+#bugtest change, macro
+
 
 #https://iolanguage.org/tutorial.html for ideas
 #isinstance = "is"
@@ -23,7 +24,6 @@ def f(int n):
 
 
 
-
 testcases to add
 #getfield
 #dicts
@@ -34,7 +34,7 @@ array.filter
 #unless
 #macro
 #whitespace calls
-
+#quick iter, return arrow
 
 fn one => 
     x=0

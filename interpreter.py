@@ -157,8 +157,7 @@ class Interpreter:
                 self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function, "__arrfunc")
                 funcargs = {} if self.scope == "global" else self.fields[self.scope]
                 for i, elem in enumerate(arr):
-                    res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, Datatypes.Number(i), arr]), funcargs)
-                                                    
+                    res = self.function_call_handler(Datatypes.FuncCallNode("__arrfunc", [elem, Datatypes.Number(i), arr]), funcargs)         
                     if isinstance(res, list):
                         if len(res) == 0:
                             continue
@@ -249,10 +248,10 @@ class Interpreter:
                     index_id = node.items[0]
                 elif len(node.items) == 1:
                     id = node.items[0]
-                    index_id = "_i"
+                    index_id = "itercounter"
                 else:
-                    id = "_x"
-                    index_id = "_i"
+                    id = "iterelem"
+                    index_id = "itercounter"
                 iterable = self.evaluate(node.iterable)
                 self.scope = self.scope + " > IterLoop"
                 self.fields[self.scope] = {}
