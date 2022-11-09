@@ -21,7 +21,8 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "removeduplicates": [1], "range": [1, 2, 3], "delete_at": range(2, 100), "pop": [1, 2],
                          "getfields": [0, 1], "quit": [0], "remove_all": range(2, 100), "remove": range(2, 100),
                          "keys": [1], "values": [1], "flatten": [1], "getscope": [0], "clone": [1], "filter": [2],
-                         "divmod": [2], "change": [2], "macro": [2]}
+                         "divmod": [2], "change": [2], "macro": [2], "first": [1], "last": [1], "middle": [1],
+                         "at": [2], "insert": [3]}
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
 INTERNAL_KEYWORDS = ["out", "apply", "filter", "plot", "getfields", "getscope"]
@@ -443,7 +444,7 @@ class Interpreter:
                             self.fields["global"].get(node.right_side.identifier), Datatypes.Function)):
             return self.function_call_handler(Datatypes.FuncCallNode(node.right_side.identifier, [node.left_side]))
         else:
-            raise Exception("pos1")
+            raise TypeError(f"Cannot call type {type(node.right_side).__name__} on type {type(node.left_side).__name__}.")
 
     def plot(self, function, lower_rng=-5, upper_rng=5, increment=0.001):
         if increment < 0.0001:

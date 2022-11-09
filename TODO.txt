@@ -5,14 +5,13 @@ free operators: $ § << =>> ==> <= =>)
 
 #https://iolanguage.org/tutorial.html for ideas
 #isinstance = "is"
-#add xor
 #binding variables
 #keywords in func delarations
 #indented strings
-#with / of for func calls
 #f(x) <- n  == return n
-#fix period call "pos1"
-#make arglist a node, maybe whitespace calls instead of period calls
+#implement consistent builtin names . camelcase, written out
+#findseq
+#reintroduce numid = num*id through lexer
 
 def f(int n):
     f(n = 1)        <- n
@@ -34,6 +33,7 @@ array.filter
 #change
 #unless
 #macro
+#whitespace calls
 
 
 fn one => 

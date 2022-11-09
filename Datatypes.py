@@ -220,6 +220,22 @@ class String:
             else:
                 new += char
         return new
+    
+    def first(self):
+        return self[Number(0)]
+    
+    def last(self):
+        return self[Number(-1)]
+    
+    def middle(self):
+        return self[Number(len(self)//2)]
+    
+    def at(self, *args):
+        return self[Number(args[0])]
+
+    def insert(self, *args):
+        arr = Array(list(self.str))
+        return arr.insert(*args).join()
 
     def delete(self):
         del self.str_arr[-1][self.n[-1] - 1]
@@ -477,6 +493,22 @@ class Array:
     def append(self, *args):
         for arg in args:
             self.contents.append(arg)
+        return self
+
+    def first(self):
+        return self[Number(0)]
+    
+    def last(self):
+        return self[Number(-1)]
+    
+    def middle(self):
+        return self[Number(len(self)//2)]
+    
+    def at(self, *args):
+        return self[Number(args[0])]
+    
+    def insert(self, *args):
+        self.contents.insert(*args)
         return self
 
     def convert_to_builtins(self):

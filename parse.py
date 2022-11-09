@@ -149,8 +149,6 @@ class Parser:
             self.next_token()
         match token_type:
             case Datatypes.NUMBER:
-                if self.current_token_type == Datatypes.IDENTIFIER:
-                    return Datatypes.MultNode(token.value, self.exponential())
                 return token.value
             case Datatypes.STRING:
                 new_tokens = []

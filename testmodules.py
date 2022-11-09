@@ -18,8 +18,8 @@ is_in_range(-2, 2, -4)
 """
 
 input5 = """fn divide_by_two x => x/2 if x%2 == 0 else x
-12.divide_by_two
-13.divide_by_two
+12 divide_by_two
+13 divide_by_two
 """
 
 input6 = """fn fizz_buzz i => rep i as c => "FizzBuzz" if c % 3 == 0 and c % 5 == 0 else "Fizz" if c % 3 == 0 else "Buzz" if c % 5 == 0 else c
@@ -31,18 +31,18 @@ fn P p n x => bin_cof(n,x) * p**x * (1-p)**(n-x)
 P(0.3, 20, 6)
 """
 
-input8 = """x = 10
+input8 = """let x 10
 fn n a =>
 return a == (x /2)<<
-5.n
-10.n
+5 n
+10 n
 """
 
 input9 = """fn x a =>
 out(a+1)
 out(a+2)
 return a-1<<
-0.x
+0 x
 """
 
 input10 = """x=-1
@@ -69,13 +69,13 @@ input11 = """fn fizz_buzz i =>
              <<
      <<
 <<
-10.fizz_buzz
+10 fizz_buzz
 """
 
 input12 = """fn x a =>
     return "Yes" if a else "False"
 <<
-True.x
+True x
 """
 
 input13 = """fn x a =>
@@ -89,14 +89,14 @@ input13 = """fn x a =>
         return "Negative number"
     <<
 <<
--1.x
-2.x
-11.x
+-1 x
+2 x
+11 x
 """
 
 input14 = "6 if False else 5 if False else 4 if False else 3"
 
-input15 = "x=4; x+2; x.sqrt"
+input15 = "x=4; x+2; x sqrt"
 
 input16 = """rep 2 as i =>
     i+1
@@ -122,7 +122,7 @@ else =>
 
 input18 = """
 x = 2
-y = 2x
+y = 2*x
 """
 
 input19 = """fn fib n =>
@@ -137,7 +137,7 @@ input19 = """fn fib n =>
     <<
 <<
 for i=1, i<=15, i++ =>
-    out(i, i.fib)
+    out(i, i fib)
 <<
 """
 
@@ -147,14 +147,14 @@ input20 = """fn x a =>
     <<
     return x(a-1)
 <<
-10.x
+10 x
 """
 
 input21 = """x = [0,1,2,3,4,5,6]
-[1,2,3,4,10,102].union(x)
-[3,4,5,7].intersection(x)
+[1,2,3,4,10,102] union(x)
+[3,4,5,7] intersection(x)
 fn y a => a**2
-x.apply(y)
+x apply(y)
 x >> x+1
 """
 
@@ -163,12 +163,12 @@ return 0 <<
 x()
 """
 
-input23 = """\"hallo\".rev
+input23 = """\"hallo\" rev
 """
 
-input24 = """2x ? 10
-10x - 20/19 ? 100
-2y ?= 4
+input24 = """2*x ? 10
+10*x - 20/19 ? 100
+2*y ?= 4
 """
 
 input25 = """
@@ -192,7 +192,7 @@ input27 = """
 """
 
 input28 = """fn add_spaces str => (str.arr >> x+" ").join
-"hallo".add_spaces
+"hallo" add_spaces
 """
 
 input29 = """fn narc int => 
@@ -207,9 +207,9 @@ input29 = """fn narc int =>
     <<
     return False
 <<
-153.narc.out
-371.narc.out
-4887.narc.out"""
+153 narc out
+371 narc out
+4887 narc out"""
 
 input30 = """y=0
 fn x a =>
@@ -273,7 +273,7 @@ codewars_input6 = """fn x a =>
      a.difference(odd_nums)
      return odd_nums[0] if odd_nums.l == 1 else a[0]
 <<
-[160, 3, 1719, 19, 11, 13, -21].x
+[160, 3, 1719, 19, 11, 13, -21] x
 """
 
 #https://www.codewars.com/kata/546f922b54af40e1e90001da
@@ -281,7 +281,7 @@ codewars_input7 = """fn repl str =>
      str >>> "" if not (x in ALPHABET)
      return str.nummap().join(" ")
 <<
-"The sunset sets at twelve o' clock.".repl
+"The sunset sets at twelve o' clock." repl
 """
 
 #https://www.codewars.com/kata/55c45be3b2079eccff00010f
@@ -297,7 +297,7 @@ codewars_input8 = """fn order str =>
     <<
     return new.join(" ")
 <<
-out("4of Fo1r pe6ople g3ood th5e the2".order)"""
+"4of Fo1r pe6ople g3ood th5e the2" order out"""
 
 #https://www.codewars.com/kata/54e6533c92449cc251001667
 codewars_input9 = """fn uni str =>

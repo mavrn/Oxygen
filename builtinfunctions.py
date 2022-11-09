@@ -6,7 +6,6 @@ import numpy as np
 from lexer import Lexer
 import Datatypes
 
-
 def leet(message):
     char_mapping = {
         'a': '4', 'c': '(', 'd': '|)', 'e': '3',
@@ -20,7 +19,6 @@ def leet(message):
         else:
             leetspeak += char
     return Datatypes.String(leetspeak)
-
 
 def midnight(*args):
     a, b, c = args
@@ -39,50 +37,38 @@ def midnight(*args):
         pass
     return Datatypes.Array(sol)
 
-
 def rick():
     webbrowser.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
-
 
 def openurl(url):
     webbrowser.open(url)
 
-
 def abs(value):
     return Datatypes.Number(math.fabs(value))
-
 
 def input():
     return Datatypes.String(builtins.input())
 
-
 def s(object):
     return Datatypes.String(object)
-
 
 def n(object):
     return Datatypes.Number(object)
 
-
 def l(obj):
     return Datatypes.Number(len(obj))
-
 
 def range(*args):
     return Datatypes.Array(list(np.arange(*args)))
 
-
 def quit():
     exit()
-
 
 def type(obj):
     return Datatypes.String(builtins.type(obj).__name__)
 
-
 def arr(obj):
     return Datatypes.Array(list(obj))
-
 
 def bool(obj):
     return Datatypes.Bool(obj)
