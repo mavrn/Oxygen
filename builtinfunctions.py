@@ -3,7 +3,7 @@ import math
 import webbrowser
 
 import numpy as np
-
+from lexer import Lexer
 import Datatypes
 
 
@@ -89,3 +89,15 @@ def bool(obj):
 
 def divmod(*args):
     return Datatypes.Array(list(builtins.divmod(*args)))
+
+def change(*args):
+    oxy_element = Datatypes.OXYGEN_DICT.get(args[0])
+    if oxy_element is not None:
+        Datatypes.OXYGEN_DICT[args[1]] = oxy_element
+        del Datatypes.OXYGEN_DICT[args[0]]
+    else:
+        raise RuntimeError(f"Did not find any keyword or operator {args[0]}")
+
+def macro(*args):
+    Datatypes.MACROS.append([Lexer(args[0]).gen_tokens(include_macros=False),
+                            Lexer(args[1]).gen_tokens(include_macros=False)])

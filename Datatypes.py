@@ -710,8 +710,8 @@ class Dictionary:
 
 
 class Function:
-    def __init__(self, arguments, body, identifier):
-        self.arguments = arguments
+    def __init__(self, arglist, body, identifier):
+        self.arguments = arglist
         self.body = body
         self.identifier = identifier
 
@@ -721,6 +721,16 @@ class Function:
     def __str__(self):
         return repr(self)
 
+class Arglist:
+    def __init__(self):
+        self.arglist = []
+    
+    def append(self, element):
+        self.arglist.append(element)
+    
+    def __list__(self):
+        return self.arglist
+
 
 class Token:
     def __init__(self, type=None, value=None):
@@ -729,6 +739,9 @@ class Token:
 
     def __repr__(self):
         return f"TOKEN({type_dict.get(self.type)}" + (f", VALUE = {self.value})" if self.value is not None else ")")
+    
+    def __eq__(self, other):
+        return self.type == other.type and self.value == other.value
 
 
 class IfNode:
@@ -809,6 +822,7 @@ COLON = 56
 WHILE = 57
 BIND = ARROW
 FLOORDIV_SIGN = 59
+UNLESS = 60
 
 AddNode = namedtuple("AddNode", ["a", "b"])
 SubNode = namedtuple("SubNode", ["a", "b"])
@@ -855,7 +869,7 @@ TERM_TOKENS = (MULT_SIGN, DIV_SIGN, MODULUS_SIGN, EQUALS,
                 LESS_THAN, GREATER_OR_EQUALS, LESS_OR_EQUALS, 
                 IN, NOT, ARRAYAPPLY, COLON, FLOORDIV_SIGN)
                 
-EXPONENTIAL_TOKENS = (EXP, PERIOD_CALL, DOUBLE_MINUS, DOUBLE_PLUS, LBRACKET)
+EXPONENTIAL_TOKENS = (EXP, PERIOD_CALL, DOUBLE_MINUS, DOUBLE_PLUS, LBRACKET, IDENTIFIER)
 
 OP_ASSIGN_TOKENS = (PLUS_ASSIGN, MINUS_ASSIGN, MULT_ASSIGN, DIV_ASSIGN, MODULUS_ASSIGN, ARRAYAPPLY_ASSIGN)
 
@@ -869,14 +883,20 @@ OPERATOR_DICT = {"+": PLUS_SIGN, "-": MINUS_SIGN, "*": MULT_SIGN, "/": DIV_SIGN,
                  "--": DOUBLE_MINUS, "++": DOUBLE_PLUS, "<<": BLOCK_END,
                  "{": LCURLY, "}": RCURLY, "?=": SOLVE_ASSIGN, "?": SOLVE,
                  "[": LBRACKET, "]": RBRACKET, ">>": ARRAYAPPLY,
-                 ">>>": ARRAYAPPLY_ASSIGN, ":": COLON, "//": FLOORDIV_SIGN}
+                 ">>>": ARRAYAPPLY_ASSIGN, ":": COLON, "//": FLOORDIV_SIGN,
+                 ".": PERIOD_CALL}
 KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
                 "False": FALSE, "not": NOT, "or": OR, "and": AND,
                 "rep": REP, "as": AS, "for": FOR, "return": RETURN,
                 "break": BREAK, "continue": CONTINUE, "in": IN, "iter": ITERATE,
                 "del": DEL, "let": LET, "equals": COMP_EQUALS,
                 "greater": GREATER_THAN, "smaller": LESS_THAN, "while": WHILE,
+                "unless": UNLESS
                 }
+            
+OXYGEN_DICT = OPERATOR_DICT | KEYWORD_DICT
+
+MACROS = [[[Token(UNLESS)], [Token(IF), Token(NOT)]]]
 
 type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN", MULT_SIGN: "MULT_SIGN",
              DIV_SIGN: "DIV_SIGN", MODULUS_SIGN: "MODULUS_SIGN", PLUS_ASSIGN: "PLUS_ASSIGN",
@@ -891,4 +911,4 @@ type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN",
              LCURLY: "LCURLY", RCURLY: "RCURLY", SOLVE_ASSIGN: "SOLVE_ASSIGN", SOLVE: "SOLVE", LINEBREAK: "LINEBREAK",
              BREAK: "BREAK", CONTINUE: "CONTINUE", LBRACKET: "LBRACKET", RBRACKET: "RBRACKET", ARRAYAPPLY: "ARRAYAPPLY",
              IN: "IN", ITERATE: "ITERATE", DEL: "DEL", ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN", LET: "LET",
-             COLON: "COLON", WHILE: "WHILE", FLOORDIV_SIGN: "FLOORDIV_SIGN"}
+             COLON: "COLON", WHILE: "WHILE", FLOORDIV_SIGN: "FLOORDIV_SIGN", UNLESS: "UNLESS"}

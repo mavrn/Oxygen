@@ -1,58 +1,17 @@
-REF = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-SIZE = 9
-SIZE_SQUARE = 3
-
-sudoku = [[5, 3, 0, 0, 7, 0, 0, 0, 0],
-            [6, 0, 0, 1, 9, 5, 0, 0, 0],
-            [0, 9, 8, 0, 0, 0, 0, 6, 0],
-            [8, 0, 0, 0, 6, 0, 0, 0, 3],
-            [4, 0, 0, 8, 0, 3, 0, 0, 1],
-            [7, 0, 0, 0, 2, 0, 0, 0, 6],
-            [0, 6, 0, 0, 0, 0, 2, 8, 0],
-            [0, 0, 0, 4, 1, 9, 0, 0, 5],
-            [0, 0, 0, 0, 8, 0, 0, 7, 9]]
-tsudoku = []
-iter 0:sudoku.l as i, _=>
-    new = []
-    iter sudoku as x =>
-        new += x[i]
-    <<
-    tsudoku += new
+fn fizz_buzz i => 
+     for x=1, x<=i, x++ => 
+             if x%3 == 0 and x%5 == 0 =>
+                     out("FizzBuzz")
+             <<
+             or x%5 == 0 =>
+                     out("Buzz")
+             <<
+             or x%3 == 0 =>
+                     out("Fizz")
+             <<
+             else =>
+                     out(x)
+             <<
+     <<
 <<
-fn is_valid => flatten(sudoku).count(0) == 0
-
-fn set => 
-
-fn set_val i j val =>
-    sudoku[i][j] = val
-    tsudoku[i][j] = val
-<<
-fn get_val i j => sudoku[i][j]
-
-fn get_square i j =>
-    lc = i//3
-    cc = j//3
-    res = [[0]*SIZE_SQUARE]*SIZE_SQUARE
-    rep SIZE_SQUARE as l =>
-        rep SIZE_SQUARE as k =>
-            res[l][k] = sudoku[SIZE_SQUARE*lc+k][SIZE_SQUARE*lc+l]
-        <<
-    <<
-    return res
-<<
-fn get_row i => sudoku[i]
-fn get_column j =>
-    col = []
-    iter sudoku => col+=_x[j]
-    return col
-<<
-fn simply =>
-    if not is_valid() =>
-        changed = True
-        while changed =>
-            changed = False
-            for ll in 0:SIZE =>
-                for lc in 0:SIZE =>
-                    if get_val(ll, lc) == 0 =>
-                        values = REF.difference(get_row(ll), get_col(lc), get_square(ll, lc))
-
+10.fizz_buzz

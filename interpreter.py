@@ -21,12 +21,12 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "removeduplicates": [1], "range": [1, 2, 3], "delete_at": range(2, 100), "pop": [1, 2],
                          "getfields": [0, 1], "quit": [0], "remove_all": range(2, 100), "remove": range(2, 100),
                          "keys": [1], "values": [1], "flatten": [1], "getscope": [0], "clone": [1], "filter": [2],
-                         "divmod": [2]}
+                         "divmod": [2], "change": [2], "macro": [2]}
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
 INTERNAL_KEYWORDS = ["out", "apply", "filter", "plot", "getfields", "getscope"]
 BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["arr", "bool", "type"]
-BUILTIN_KEYWORDS = ["midnight", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit", "divmod"]
+BUILTIN_KEYWORDS = ["midnight", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit", "divmod", "change", "macro"]
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS + INTERNAL_KEYWORDS + BUILTIN_KEYWORDS)]
 
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode", "FloorDivNode"]

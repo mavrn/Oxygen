@@ -1,18 +1,15 @@
 free operators: $ § << =>> ==> <= =>)
 #redo exceptions + add trycatch
 #update comments
-#quick iter =)>
+#quick iter 
 
 #https://iolanguage.org/tutorial.html for ideas
 #isinstance = "is"
 #add xor
-#add unless == if not
-#befehle ohne "gomme sagt" werden nicht ausgeführt
 #binding variables
 #keywords in func delarations
 #indented strings
 #with / of for func calls
-#let user redefine keywords, operators
 #f(x) <- n  == return n
 #fix period call "pos1"
 #make arglist a node, maybe whitespace calls instead of period calls
@@ -34,6 +31,9 @@ testcases to add
 #kwargs
 array.filter
 #hashstrings
+#change
+#unless
+#macro
 
 
 fn one => 
@@ -95,3 +95,80 @@ fn format_duration seconds =>
 33243586.format_duration
 
 ['1 minute and 2 seconds', '1 hour, 1 minute and 2 seconds', ''1 year, 19 days, 18 hours, 19 minutes and 46 seconds]
+
+
+
+
+
+
+
+
+
+
+
+
+
+list = [0,1,2,3,4]
+sum(list)
+list.sum
+list sum
+
+
+
+REF = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+SIZE = 9
+SIZE_SQUARE = 3
+
+sudoku = [[5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9]]
+tsudoku = []
+iter 0:sudoku.l as i, _=>
+    new = []
+    iter sudoku as x =>
+        new += x[i]
+    <<
+    tsudoku += new
+<<
+fn is_valid => flatten(sudoku).count(0) == 0
+
+fn set => 
+
+fn set_val i j val =>
+    sudoku[i][j] = val
+    tsudoku[i][j] = val
+<<
+fn get_val i j => sudoku[i][j]
+
+fn get_square i j =>
+    lc = i//3
+    cc = j//3
+    res = [[0]*SIZE_SQUARE]*SIZE_SQUARE
+    rep SIZE_SQUARE as l =>
+        rep SIZE_SQUARE as k =>
+            res[l][k] = sudoku[SIZE_SQUARE*lc+k][SIZE_SQUARE*lc+l]
+        <<
+    <<
+    return res
+<<
+fn get_row i => sudoku[i]
+fn get_column j =>
+    col = []
+    iter sudoku => col+=_x[j]
+    return col
+<<
+fn simply =>
+    if not is_valid() =>
+        changed = True
+        while changed =>
+            changed = False
+            for ll in 0:SIZE =>
+                for lc in 0:SIZE =>
+                    if get_val(ll, lc) == 0 =>
+                        values = REF.difference(get_row(ll), get_col(lc), get_square(ll, lc))
