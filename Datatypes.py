@@ -721,17 +721,6 @@ class Function:
     def __str__(self):
         return repr(self)
 
-class Arglist:
-    def __init__(self):
-        self.arglist = []
-    
-    def append(self, element):
-        self.arglist.append(element)
-    
-    def __list__(self):
-        return self.arglist
-
-
 class Token:
     def __init__(self, type=None, value=None):
         self.type = type

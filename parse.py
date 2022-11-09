@@ -33,7 +33,7 @@ class Parser:
         while self.current_token is not None:
             self.skip_linebreaks()
             if self.current_token is not None:
-                self.ast_list.append(self.whitespace_call())
+                self.ast_list.append(self.statement())
             if self.current_token_type not in (Datatypes.LINEBREAK, None):
                 raise SyntaxError(f"Expected end of statement, got token type {Datatypes.type_dict.get(self.current_token_type)}")
         return self.ast_list
@@ -43,43 +43,23 @@ class Parser:
             raise SyntaxError("Expected '=>'")
         self.next_token()
         if self.current_token_type != Datatypes.LINEBREAK:
-            return self.whitespace_call() if func_block else [self.whitespace_call()]
+            return self.statement() if func_block else [self.statement()]
         block = []
         while self.current_token_type not in (Datatypes.BLOCK_END, None):
             self.skip_linebreaks()
-            block.append(self.whitespace_call())
+            block.append(self.statement())
             if self.current_token_type is None:
                 raise SyntaxError("Expected expression")
         if self.current_token_type != Datatypes.BLOCK_END:
             raise SyntaxError(f"Expected block ending operator")
         self.next_token()
         return block
-    
-    def whitespace_call(self):
-        result = self.statement_list()
-        if self.current_token_type == Datatypes.IDENTIFIER:
-                right_side = self.factor()
-                result = Datatypes.PeriodCallNode(left_side=result, right_side=right_side)
-        return result
-
-    def statement_list(self):
-        result = self.statement()
-        if self.current_token_type == Datatypes.COMMA:
-            arglist = Datatypes.Arglist()
-            arglist.append(result)
-            while self.current_token_type == Datatypes.COMMA:
-                self.next_token()
-                self.skip_linebreaks()
-                arglist.append(self.statement())
-            result = arglist
-        return result
 
     def statement(self):
         result = self.expression()
         while self.current_token_type in Datatypes.STATEMENT_TOKENS:
             token_type = self.current_token_type
-            if token_type != Datatypes.COMMA:
-                self.next_token()
+            self.next_token()
             if token_type == Datatypes.SOLVE:
                 result = Datatypes.SolveNode(result, self.expression())
             elif token_type == Datatypes.SOLVE_ASSIGN:
@@ -87,11 +67,11 @@ class Parser:
             else:
                 if_expr = result
                 result = Datatypes.IfNode()
-                condition = self.whitespace_call()
+                condition = self.statement()
                 result.add_block(Datatypes.IF, [if_expr], condition)
                 if self.current_token_type == Datatypes.ELSE:
                     self.next_token()
-                    else_expr = self.whitespace_call()
+                    else_expr = self.statement()
                     result.add_block(Datatypes.ELSE, [else_expr])
         return result
 
@@ -118,9 +98,9 @@ class Parser:
                     result = Datatypes.AssignNode(variable=result, value=self.statement())
                 case token_type if token_type in Datatypes.OP_ASSIGN_TOKENS:
                     operator_node = Datatypes.OPERATOR_NODE_DICT[token_type]
-                    result = Datatypes.AssignNode(variable=result, value=operator_node(result, self.whitespace_call()))
+                    result = Datatypes.AssignNode(variable=result, value=operator_node(result, self.statement()))
                 case Datatypes.ARRAYAPPLY:
-                    result = Datatypes.ArrayApplyNode(identifier=result, function=self.whitespace_call())
+                    result = Datatypes.ArrayApplyNode(identifier=result, function=self.statement())
                 case Datatypes.COLON:
                     start = result
                     stop = self.exponential()
@@ -148,6 +128,9 @@ class Parser:
             if token_type == Datatypes.EXP:
                 result = Datatypes.ExpNode(a=result, b=self.factor())
             elif token_type == Datatypes.PERIOD_CALL:
+                right_side = self.factor()
+                result = Datatypes.PeriodCallNode(left_side=result, right_side=right_side)
+            elif token_type == Datatypes.IDENTIFIER:
                 right_side = self.factor()
                 result = Datatypes.PeriodCallNode(left_side=result, right_side=right_side)
             elif token_type == Datatypes.DOUBLE_PLUS:
@@ -183,7 +166,7 @@ class Parser:
                 if self.current_token_type == Datatypes.LINEBREAK:
                     return Datatypes.ReturnNode(statement=None)
                 else:
-                    return Datatypes.ReturnNode(statement=self.whitespace_call())
+                    return Datatypes.ReturnNode(statement=self.statement())
             case Datatypes.BREAK:
                 return Datatypes.AssignNode(Datatypes.VariableNode("__break__"), Datatypes.Bool(True))
             case Datatypes.CONTINUE:
@@ -219,7 +202,7 @@ class Parser:
             case Datatypes.LPAREN:
                 if self.current_token_type == Datatypes.RPAREN:
                     raise SyntaxError("Empty parentheses cannot be evaluated.")
-                result = self.whitespace_call()
+                result = self.statement()
                 if self.current_token is None or self.current_token_type != Datatypes.RPAREN:
                     raise SyntaxError("Expected a closing parenthesis")
                 else:
@@ -270,14 +253,14 @@ class Parser:
                                              body=self.statement_block(func_block=True))
 
     def gen_funccall(self, identifier):
-        self.next_token()
         arguments = []
-        if not self.current_token_type == Datatypes.RPAREN:
-            arguments = self.whitespace_call()
-            if isinstance(arguments, Datatypes.Arglist):
-                arguments = arguments.arglist
-            else:
-                arguments = [arguments]
+        self.next_token()
+        while self.current_token_type not in (None, Datatypes.RPAREN):
+            arguments.append(self.statement())
+            if self.current_token_type == Datatypes.COMMA:
+                self.next_token()
+            elif self.current_token_type != Datatypes.RPAREN:
+                raise SyntaxError("Expected comma or closing parenthesis")
         if self.current_token_type != Datatypes.RPAREN:
             raise SyntaxError("Expected closing parenthesis")
         self.next_token()
@@ -285,7 +268,7 @@ class Parser:
 
     def gen_rep(self):
         count_identifier = "_c"
-        loop_reps = self.whitespace_call()
+        loop_reps = self.statement()
         if self.current_token_type == Datatypes.AS:
             self.next_token()
             if self.current_token_type != Datatypes.IDENTIFIER:
@@ -300,13 +283,18 @@ class Parser:
                                      statements=self.statement_block())
 
     def gen_for(self):
-        for_statements = self.whitespace_call()
-        if isinstance(for_statements, Datatypes.Arglist) and len(for_statements.arglist) == 3:
-            assignment, condition, increment = for_statements.arglist
+        assignment = self.statement()
+        if self.current_token_type == Datatypes.COMMA:
+            self.next_token()
+            condition = self.statement()
+            if self.current_token_type != Datatypes.COMMA:
+                raise SyntaxError("Expected comma after condition")
+            self.next_token()
+            increment = self.statement()
             return Datatypes.ForNode(assignment=assignment, condition=condition, increment=increment,
                                      statements=self.statement_block())
-        elif isinstance(for_statements, Datatypes.ComparisonNode) and for_statements.operator == Datatypes.IN:
-            return Datatypes.IterateNode(iterable=for_statements.b, items=[for_statements.a.identifier],
+        elif type(assignment).__name__ == "ComparisonNode" and assignment.operator == Datatypes.IN:
+            return Datatypes.IterateNode(iterable=assignment.b, items=[assignment.a.identifier],
                                          statements=self.statement_block())
         else:
             raise SyntaxError("Expected comma or \"in\" after statement")
@@ -319,17 +307,17 @@ class Parser:
             items.append(self.factor())
             if self.current_token_type == Datatypes.COMMA:
                 self.next_token()
-                items.append(self.whitespace_call())
+                items.append(self.factor())
         return Datatypes.IterateNode(iterable=iterable, items=[item.identifier for item in items],
                                      statements=self.statement_block())
 
     def gen_while(self):
-        condition = self.whitespace_call()
+        condition = self.statement()
         return Datatypes.ForNode(assignment=None, condition=condition, increment=None, statements=self.statement_block())
 
     def gen_if(self):
         if_node = Datatypes.IfNode()
-        condition = self.whitespace_call()
+        condition = self.statement()
         block = self.statement_block()
         if_node.add_block(Datatypes.IF, block, condition)
         self.next_token()
@@ -337,7 +325,7 @@ class Parser:
         while self.current_token_type in (Datatypes.OR, Datatypes.ELSE):
             keyword = self.current_token_type
             self.next_token()
-            condition = None if keyword == Datatypes.ELSE else self.whitespace_call()
+            condition = None if keyword == Datatypes.ELSE else self.statement()
             block = self.statement_block()
             if_node.add_block(keyword, block, condition)
             self.next_token()
@@ -347,12 +335,13 @@ class Parser:
 
     def gen_arr(self):
         contents = []
-        if not self.current_token_type == Datatypes.RBRACKET:
-            contents = self.whitespace_call()
-            if isinstance(contents, Datatypes.Arglist):
-                contents = contents.arglist
-            else:
-                contents = [contents]
+        while self.current_token is not None and self.current_token_type != Datatypes.RBRACKET:
+            contents.append(self.statement())
+            if self.current_token_type == Datatypes.COMMA:
+                self.next_token()
+            elif self.current_token_type != Datatypes.RBRACKET:
+                raise SyntaxError("Expected comma or closing parenthesis")
+            self.skip_linebreaks()
         if self.current_token_type != Datatypes.RBRACKET:
             raise SyntaxError("Expected closing bracket")
         return Datatypes.ArrayCreateNode(items=contents)
@@ -364,7 +353,7 @@ class Parser:
             if self.current_token_type != Datatypes.BIND:
                 raise SyntaxError("Expected bind keyword between key and value.")
             self.next_token()
-            value = self.expression()
+            value = self.statement()
             contents.append([key, value])
             if self.current_token_type == Datatypes.COMMA:
                 self.next_token()
@@ -379,7 +368,7 @@ class Parser:
         indexes = []
         while self.current_token_type == Datatypes.LBRACKET:
             self.next_token()
-            index = self.whitespace_call()
+            index = self.statement()
             if self.current_token_type != Datatypes.RBRACKET:
                 raise SyntaxError("Expected ]")
             self.next_token()
