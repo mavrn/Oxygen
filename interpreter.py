@@ -1,9 +1,7 @@
 import builtins
 import math
-
 import numpy as np
 from matplotlib import pyplot as plt
-
 import Datatypes
 import builtinfunctions
 import equation_solver
@@ -11,8 +9,8 @@ import equation_solver
 BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos": [1], "atan": [1], "abs": [1],
                          "sqrt": [1], "factorial": [1], "bool": [1], "plot": [3, 4], "out": range(1, 100),
                          "midnight": [3], "rick": [0], "leet": [1], "type": [1], "asArr": [1], "apply": [2],
-                         "append": [2], "union": [2], "intersection": [2], "size": [1], "join": [0, 1], "reverse": [1],
-                         "sum": [1], "slice": [1, 2, 3], "openURL": [1], "min": [1], "max": [1],
+                         "append": range(2,100), "union": range(2,100), "intersection": range(2,100), "size": [1], "join": [0, 1], "reverse": [1],
+                         "sum": [1], "slice": [2, 3, 4], "openURL": [1], "min": [1], "max": [1],
                          "asString": [1], "split": [1, 2], "asNum": [1], "difference": range(2, 100),
                          "count": range(2, 100), "numMap": [1], "lower": [1], "upper": [1], "capitalize": [1],
                          "strip": [1, 2], "replace": [3], "isUpper": [1], "isLower": [1], "isCapitalized": [1],
@@ -22,7 +20,7 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "getFields": [0, 1], "quit": [0], "removeAll": range(2, 100), "remove": range(2, 100),
                          "keys": [1], "values": [1], "flatten": [1], "getScope": [0], "clone": [1], "filter": [2],
                          "divMod": [2], "change": [2], "macro": [2], "first": [1], "last": [1], "middle": [1],
-                         "at": [2], "insert": [3]}
+                         "at": [2], "insert": [3], "get": [2]}
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
 INTERNAL_KEYWORDS = ["out", "apply", "filter", "plot", "getFields", "getScope"]
@@ -86,7 +84,9 @@ class Interpreter:
             out = [stringify(o) for o in out if o is not None]
             if printall:
                 merge(self.output_lines, out)
-        return self.output_lines
+        out = self.output_lines
+        self.output_lines = []
+        return out
 
     def evaluate(self, node):
         match type(node).__name__:
@@ -303,6 +303,7 @@ class Interpreter:
                     new_string += elem
                     if len(tokens) > 0:
                         new_string += str(self.evaluate(tokens.pop(0)))
+                print(new_string)
                 return Datatypes.String(new_string)
             case _:
                 return node
@@ -494,10 +495,10 @@ class Interpreter:
                 args[0].delete()
         return args[0]
 
-    def getfields(self, *args):
+    def getFields(self, *args):
         if len(args) == 1:
             return self.fields[args[0]]
         return self.fields
     
-    def getscope(self):
+    def getScope(self):
         return self.scope

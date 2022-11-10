@@ -1,4 +1,4 @@
-free operators: $ § << =>> ==> <= =>) -> -->
+free operators: $ § << =>> ==> <= =>)
 #redo exceptions + add trycatch
 #update comments
 #bugtest change, macro
@@ -96,24 +96,7 @@ fn format_duration seconds =>
 ['1 minute and 2 seconds', '1 hour, 1 minute and 2 seconds', ''1 year, 19 days, 18 hours, 19 minutes and 46 seconds]
 
 
-
-
-
-
-
-
-
-
-
-
-
-list = [0,1,2,3,4]
-sum(list)
-list.sum
-list sum
-
-
-
+#https://www.codewars.com/kata/5296bc77afba8baa690002d7
 REF = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 SIZE = 9
 SIZE_SQUARE = 3
@@ -128,7 +111,7 @@ sudoku = [[5, 3, 0, 0, 7, 0, 0, 0, 0],
             [0, 0, 0, 4, 1, 9, 0, 0, 5],
             [0, 0, 0, 0, 8, 0, 0, 7, 9]]
 tsudoku = []
-iter 0:sudoku.l as i, _=>
+iter 0:sudoku.size as i, _=>
     new = []
     iter sudoku as x =>
         new += x[i]
@@ -137,37 +120,50 @@ iter 0:sudoku.l as i, _=>
 <<
 fn is_valid => flatten(sudoku).count(0) == 0
 
-fn set => 
-
 fn set_val i j val =>
     sudoku[i][j] = val
-    tsudoku[i][j] = val
+    tsudoku[j][i] = val
 <<
 fn get_val i j => sudoku[i][j]
 
 fn get_square i j =>
     lc = i//3
     cc = j//3
-    res = [[0]*SIZE_SQUARE]*SIZE_SQUARE
+    res=[]
     rep SIZE_SQUARE as l =>
         rep SIZE_SQUARE as k =>
-            res[l][k] = sudoku[SIZE_SQUARE*lc+k][SIZE_SQUARE*lc+l]
+            res += sudoku[SIZE_SQUARE*lc+k][SIZE_SQUARE*cc+l]
         <<
     <<
     return res
 <<
 fn get_row i => sudoku[i]
-fn get_column j =>
+fn get_col j =>
     col = []
-    iter sudoku => col+=_x[j]
+    iter sudoku => col+=iterelem[j]
     return col
 <<
-fn simply =>
+fn simplify =>
     if not is_valid() =>
         changed = True
         while changed =>
             changed = False
-            for ll in 0:SIZE =>
-                for lc in 0:SIZE =>
+            for ll in (0:SIZE) =>
+                for lc in (0:SIZE) =>
                     if get_val(ll, lc) == 0 =>
-                        values = REF.difference(get_row(ll), get_col(lc), get_square(ll, lc))
+                        values = REF clone removeDuplicates difference(get_row(ll) clone removeDuplicates, get_col(lc) clone removeDuplicates, get_square(ll, lc) clone removeDuplicates)
+                        if values size equals 1 =>
+                                set_val(ll, lc, values at(0))
+                                changed = True
+                        <<
+                    <<
+                <<
+            <<
+        <<
+    <<
+<<
+
+simplify()
+sudoku out
+
+['[[5, 3, 4, 6, 7, 8, 9, 1, 2], [6, 7, 2, 1, 9, 5, 3, 4, 8], [1, 9, 8, 3, 4, 2, 5, 6, 7], [8, 5, 9, 7, 6, 1, 4, 2, 3], [4, 2, 6, 8, 5, 3, 7, 9, 1], [7, 1, 3, 9, 2, 4, 8, 5, 6], [9, 6, 1, 5, 3, 7, 2, 8, 4], [2, 8, 7, 4, 1, 9, 6, 3, 5], [3, 4, 5, 2, 8, 6, 1, 7, 9]]']

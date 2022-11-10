@@ -354,7 +354,8 @@ class String:
         return Array(temp)
 
     def removeDuplicates(self):
-        return Array(list(dict.fromkeys(list(self.str))))
+        self.contents = [*set(self.contents)]
+        return self
 
     def reverse(self):
         self.str = self.str[::-1]
@@ -568,26 +569,28 @@ class Array:
         return Array(temp)
 
     def removeDuplicates(self):
-        return Array(list(dict.fromkeys(self.convert_to_builtins())))
-
-    def intersection(self, other):
-        new = []
-        for elem in self:
-            if elem in other:
-                new.append(elem)
-        self.contents = new
+        self.contents = [*set(self.contents)]
         return self
 
-    def union(self, other):
-        for elem in other:
-            if elem not in self:
-                self.contents.append(elem)
+    def intersection(self, *args):
+        for arg in args:
+            for elem in self:
+                if elem not in arg:
+                    self.remove(elem)              
         return self
 
-    def difference(self, other):
-        for elem in other:
-            if elem in self:
-                self.contents.remove(elem)
+    def union(self, *args):
+        for arg in args:
+            for elem in arg:
+                if elem not in self:
+                    self.contents.append(elem)
+        return self
+
+    def difference(self, *args):
+        for arg in args:
+            for elem in arg:
+                if elem in self:
+                    self.contents.remove(elem)
         return self
 
     def mostCommon(self, *args):
@@ -727,12 +730,15 @@ class Dictionary:
 
     def delete(self, *keys):
         for key in keys:
-            del self.contents[convert_to_builtin(key)]
+            del self.contents[key]
 
     def pop(self, key):
         self.n = [n-1 for n in self.n]
         self.max -= 1
-        return self.contents.pop(convert_to_builtin(key))
+        return self.contents.pop(key)
+
+    def get(self, key):
+        return self.contents.get(key)
 
     def keys(self):
         return Array(list(self.contents.keys()))

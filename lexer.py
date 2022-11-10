@@ -102,7 +102,6 @@ class Lexer:
                 while self.current_char not in (None, "#", quotation_mark):
                     token_string += self.current_char
                     self.next_char()
-                    print(self.current_char)
                 if self.current_char in (None, quotation_mark):
                     raise SyntaxError("Expected '#'")
                 tokens.append(Lexer(token_string).gen_tokens())

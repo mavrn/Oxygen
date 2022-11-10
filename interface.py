@@ -100,11 +100,11 @@ class Interface:
         if self.debug:
             print(ast_list)
         try:
-            self.interpreter.get_output(ast_list, printall=self.printall)
+            out = self.interpreter.get_output(ast_list, printall=self.printall)
             if return_out:
-                return self.interpreter.output_lines
+                return out
             else:
-                print_output(self.interpreter.output_lines)
+                print_output(out)
         except Exception as e:
             if not return_out:
                 print_output(self.interpreter.output_lines)

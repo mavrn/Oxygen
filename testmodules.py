@@ -1197,9 +1197,6 @@ class TestUtils(unittest.TestCase):
             return_out=True, ),
             ['[-1, 1, 2]'])
 
-
-
-
 def main():
     unittest.main()
 
