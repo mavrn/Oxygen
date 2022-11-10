@@ -10,24 +10,24 @@ import equation_solver
 
 BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos": [1], "atan": [1], "abs": [1],
                          "sqrt": [1], "factorial": [1], "bool": [1], "plot": [3, 4], "out": range(1, 100),
-                         "midnight": [3], "rick": [0], "leet": [1], "type": [1], "arr": [1], "apply": [2],
-                         "append": [2], "union": [2], "intersection": [2], "l": [1], "join": [0, 1], "rev": [1],
-                         "sum": [1], "slice": [1, 2, 3], "openurl": [1], "min": [1], "max": [1],
-                         "s": [1], "split": [1, 2], "n": [1], "difference": range(2, 100),
-                         "count": range(2, 100), "nummap": [1], "lower": [1], "upper": [1], "capitalize": [1],
-                         "strip": [1, 2], "replace": [3], "isupper": [1], "islower": [1], "iscapitalized": [1],
-                         "input": [0], "sort": [1], "posof": [2], "combinations": [2], "allcombinations": [1],
-                         "permutations": [1], "mostcommon": [1, 2], "multicombinations": [1, 2],
-                         "removeduplicates": [1], "range": [1, 2, 3], "delete_at": range(2, 100), "pop": [1, 2],
-                         "getfields": [0, 1], "quit": [0], "remove_all": range(2, 100), "remove": range(2, 100),
-                         "keys": [1], "values": [1], "flatten": [1], "getscope": [0], "clone": [1], "filter": [2],
-                         "divmod": [2], "change": [2], "macro": [2], "first": [1], "last": [1], "middle": [1],
+                         "midnight": [3], "rick": [0], "leet": [1], "type": [1], "asArr": [1], "apply": [2],
+                         "append": [2], "union": [2], "intersection": [2], "size": [1], "join": [0, 1], "reverse": [1],
+                         "sum": [1], "slice": [1, 2, 3], "openURL": [1], "min": [1], "max": [1],
+                         "asString": [1], "split": [1, 2], "asNum": [1], "difference": range(2, 100),
+                         "count": range(2, 100), "numMap": [1], "lower": [1], "upper": [1], "capitalize": [1],
+                         "strip": [1, 2], "replace": [3], "isUpper": [1], "isLower": [1], "isCapitalized": [1],
+                         "input": [0], "sort": [1], "posOf": [2], "combinations": [2], "allCombinations": [1],
+                         "permutations": [1], "mostCommon": [1, 2], "multiCombinations": [1, 2],
+                         "removeDuplicates": [1], "range": [1, 2, 3], "deleteAt": range(2, 100), "pop": [1, 2],
+                         "getFields": [0, 1], "quit": [0], "removeAll": range(2, 100), "remove": range(2, 100),
+                         "keys": [1], "values": [1], "flatten": [1], "getScope": [0], "clone": [1], "filter": [2],
+                         "divMod": [2], "change": [2], "macro": [2], "first": [1], "last": [1], "middle": [1],
                          "at": [2], "insert": [3]}
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["out", "apply", "filter", "plot", "getfields", "getscope"]
-BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["arr", "bool", "type"]
-BUILTIN_KEYWORDS = ["midnight", "rick", "leet", "range", "input", "l", "s", "n", "openurl", "abs", "quit", "divmod", "change", "macro"]
+INTERNAL_KEYWORDS = ["out", "apply", "filter", "plot", "getFields", "getScope"]
+BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["asArr", "bool", "type"]
+BUILTIN_KEYWORDS = ["midnight", "rick", "leet", "range", "input", "size", "asString", "asNum", "openURL", "abs", "quit", "divMod", "change", "macro"]
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS + INTERNAL_KEYWORDS + BUILTIN_KEYWORDS)]
 
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode", "FloorDivNode"]
@@ -176,7 +176,7 @@ class Interpreter:
             case "BooleanNegationNode":
                 boolean = self.evaluate(node.value)
                 custom_bool = Datatypes.Bool(boolean)
-                custom_bool.rev()
+                custom_bool.reverse()
                 return custom_bool
             case "LogicalOperationNode":
                 if node.operation == Datatypes.AND:

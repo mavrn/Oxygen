@@ -212,7 +212,7 @@ class String:
     def enumerate(self):
         return self.n[-1], next(self)
 
-    def nummap(self):
+    def numMap(self):
         new = Array([])
         for char in self.str:
             if char.capitalize() in ALPHABET_MAP:
@@ -243,7 +243,7 @@ class String:
         self.max -= 1
         return self
 
-    def delete_at(self, *args):
+    def deleteAt(self, *args):
         for arg in convert_to_ints(args):
             self.n = [n - 1 for n in self.n]
             self.max -= 1
@@ -258,7 +258,7 @@ class String:
         self.str = "".join(arr)
         return self
 
-    def remove_all(self, *args):
+    def removeAll(self, *args):
         arr = Array(list(self.str))
         for arg in args:
             while arg in arr:
@@ -273,7 +273,7 @@ class String:
         self.max -= 1
         return self.str.pop(*convert_to_ints(args))
 
-    def posof(self, value):
+    def posOf(self, value):
         return Number(self.str.index(str(value)))
 
     def lower(self):
@@ -297,13 +297,13 @@ class String:
     def replace(self, *args):
         return String(self.str.replace(*[str(arg) for arg in args]))
 
-    def isupper(self):
+    def isUpper(self):
         return Bool(self.str.isupper())
 
-    def islower(self):
+    def isLower(self):
         return Bool(self.str.islower())
 
-    def iscapitalized(self):
+    def isCapitalized(self):
         return Bool(self.str.istitle())
 
     def count(self, *args):
@@ -314,7 +314,7 @@ class String:
             ct += self.str.count(str(arg))
         return Number(ct)
 
-    def mostcommon(self, *args):
+    def mostCommon(self, *args):
         c = Counter(list([str(s) for s in self.str]))
         results = []
         args = convert_to_ints(args)
@@ -332,14 +332,14 @@ class String:
             temp.append(Array([String(elem) for elem in comb]))
         return Array(temp)
 
-    def allcombinations(self):
+    def allCombinations(self):
         temp = []
         for length in range(len(self.str) + 1):
             for subset in combinations(self.str, length):
                 temp.append(Array([String(elem) for elem in subset]))
         return Array(temp)
 
-    def multicombinations(self, *args):
+    def multiCombinations(self, *args):
         temp = []
         if len(args) == 0:
             args = [len(self)]
@@ -353,10 +353,10 @@ class String:
             temp.append(Array([String(elem) for elem in comb]))
         return Array(temp)
 
-    def removeduplicates(self):
+    def removeDuplicates(self):
         return Array(list(dict.fromkeys(list(self.str))))
 
-    def rev(self):
+    def reverse(self):
         self.str = self.str[::-1]
         return self
 
@@ -394,7 +394,7 @@ class Bool:
             return self.__dict__ == other.__dict__
         return False
 
-    def rev(self):
+    def reverse(self):
         self.boolean_value = not self.boolean_value
 
 
@@ -546,14 +546,14 @@ class Array:
             temp.append(Array(list(comb)))
         return Array(temp)
 
-    def allcombinations(self):
+    def allCombinations(self):
         temp = []
         for length in range(len(self.contents) + 1):
             for subset in combinations(self.contents, length):
                 temp.append(Array(list(subset)))
         return Array(list(temp))
 
-    def multicombinations(self, *args):
+    def multiCombinations(self, *args):
         temp = []
         if len(args) == 0:
             args = [len(self)]
@@ -567,7 +567,7 @@ class Array:
             temp.append(Array(list(comb)))
         return Array(temp)
 
-    def removeduplicates(self):
+    def removeDuplicates(self):
         return Array(list(dict.fromkeys(self.convert_to_builtins())))
 
     def intersection(self, other):
@@ -590,7 +590,7 @@ class Array:
                 self.contents.remove(elem)
         return self
 
-    def mostcommon(self, *args):
+    def mostCommon(self, *args):
         c = Counter(self.convert_to_builtins())
         results = []
         args = convert_to_ints(args)
@@ -614,13 +614,13 @@ class Array:
         self.max -= 1
         return self
 
-    def delete_at(self, *args):
+    def deleteAt(self, *args):
         for arg in convert_to_ints(args):
             self.n = [n - 1 for n in self.n]
             self.max -= 1
             del self.contents[arg]
 
-    def remove_all(self, *args):
+    def removeAll(self, *args):
         for arg in args:
             while arg in self.contents:
                 self.n = [n-1 for n in self.n]
@@ -633,7 +633,7 @@ class Array:
         self.max -= 1
         return self.contents.pop(*convert_to_ints(args))
 
-    def posof(self, value):
+    def posOf(self, value):
         return Number(self.contents.index(value))
 
     def remove(self, *args):
@@ -673,7 +673,7 @@ class Array:
     def max(self):
         return max(self.contents)
 
-    def rev(self):
+    def reverse(self):
         self.contents.reverse()
         return self
 
@@ -906,7 +906,7 @@ OPERATOR_DICT = {"+": PLUS_SIGN, "-": MINUS_SIGN, "*": MULT_SIGN, "/": DIV_SIGN,
                  "{": LCURLY, "}": RCURLY, "?=": SOLVE_ASSIGN, "?": SOLVE,
                  "[": LBRACKET, "]": RBRACKET, ">>": ARRAYAPPLY,
                  ">>>": ARRAYAPPLY_ASSIGN, ":": COLON, "//": FLOORDIV_SIGN,
-                 ".": PERIOD_CALL, "->": RETURN, "-->": ITERATE_ARROW}
+                 ".": PERIOD_CALL, "<-": RETURN, "->": ITERATE_ARROW}
 KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
                 "False": FALSE, "not": NOT, "or": OR, "and": AND,
                 "rep": REP, "as": AS, "for": FOR, "return": RETURN,

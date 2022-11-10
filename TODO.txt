@@ -10,9 +10,8 @@ free operators: $ § << =>> ==> <= =>) -> -->
 #keywords in func delarations
 #indented strings
 #f(x) <- n  == return n
-#implement consistent builtin names . camelcase, written out
-#findseq
-#reintroduce numid = num*id through lexer
+#findseq, select, detect
+#slice
 
 def f(int n):
     f(n = 1)        <- n

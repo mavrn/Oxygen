@@ -49,13 +49,13 @@ def abs(value):
 def input():
     return Datatypes.String(builtins.input())
 
-def s(object):
+def asString(object):
     return Datatypes.String(object)
 
-def n(object):
+def asNum(object):
     return Datatypes.Number(object)
 
-def l(obj):
+def size(obj):
     return Datatypes.Number(len(obj))
 
 def range(*args):
@@ -67,13 +67,13 @@ def quit():
 def type(obj):
     return Datatypes.String(builtins.type(obj).__name__)
 
-def arr(obj):
+def asArr(obj):
     return Datatypes.Array(list(obj))
 
 def bool(obj):
     return Datatypes.Bool(obj)
 
-def divmod(*args):
+def divMod(*args):
     return Datatypes.Array(list(builtins.divmod(*args)))
 
 def change(*args):
