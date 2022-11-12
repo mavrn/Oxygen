@@ -11,7 +11,7 @@ def main():
         args = args[1:]
     else:
         runfile = False
-
+    
     interface_args = {"debug": False, "fallthrough": False, "printall": False}
     for arg in args:
         if arg in interface_args:

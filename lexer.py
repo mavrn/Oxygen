@@ -8,17 +8,22 @@ LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
 def find_sub_list(sl,l,mcl):
     results=[]
     sll=len(sl)
+    rescounter = 0
+    diff = mcl-sll
     if sll == 1:
         try:
-            return [[index, index+1] for index in [i for i, x in enumerate(l) if x == sl[0]]]
+            for ind in (i for i, x in enumerate(l) if x == sl[0]):
+                results.append((ind+diff*rescounter,ind+1+diff*rescounter))
+                rescounter+=1
+            return results
         except ValueError:
             return results
     for ind in (i for i,e in enumerate(l) if e==sl[0]):
         if l[ind:ind+sll]==sl:
-            results.append((ind,ind+sll-1))
-            l[ind:ind+sll-1] = [0]*mcl
+            results.append((ind+diff*rescounter,ind+sll-1+diff*rescounter))
+            rescounter += 1
     return results
-
+    
 class Lexer:
     def __init__(self, text):
         self.text = iter(text)
@@ -70,7 +75,15 @@ class Lexer:
 
     def gen_number(self):
         number = ""
+        period_count = 0
         while self.current_char is not None and self.current_char in (NUM_CHARS + "."):
+            if self.current_char == ".":
+                period_count += 1
+            else:
+                period_count = 0
+            if period_count == 2:
+                self.next_char()
+                return [Token(Datatypes.NUMBER, Datatypes.Number(number[:-1])), Token(Datatypes.DOUBLE_PERIOD)]
             number += self.current_char
             self.next_char()
         if number.endswith("."):

@@ -209,9 +209,41 @@ fn x a =>
 y
 """
 
+input31 = """fn func_calc str =>
+    matcher = {"one" > 1, "two" > 2, "three" > 3, "four" > 4, "five" > 5, "six" > 6, "seven" > 7, "eight" > 8, "nine" > 9}
+    operands = str strip: ")" slice(0,-1) split: "(" 
+    operator = operands middle
+    a = matcher[operands first]; b = matcher[operands last]
+    if operator equals "plus" => <- a+b
+    or operator equals "minus" => <- a-b
+    or operator equals "times" => <- a*b
+    else => <- a/b
+<<
+"seven(times(five()))" func_calc out
+"""
+
+input_getscope_getfields = """fn one => 
+    x=0
+    out(getFields(getScope()))
+    out(getScope())
+    return x
+<<
+
+fn plus_two =>
+    out(getScope())
+    rep 1 =>
+        out(getScope())
+    <<
+    return one() + 2
+<<
+
+out(getScope())
+plus_two()"""
+
+
 #https://www.codewars.com/kata/5715eaedb436cf5606000381
 codewars_input1 = """fn sum_of_positive arr =>
-return (arr >> 0 if x<0 else x).sum
+return (arr >> 0 if x<0 else x) sum
 <<
 [0,1,2,3,4,5,-2].sum_of_positive
 """
@@ -220,34 +252,27 @@ return (arr >> 0 if x<0 else x).sum
 codewars_input2 = """fn get_neg num =>
 return -abs(num)
 <<
-1.get_neg
--5.get_neg
-0.get_neg
+1 get_neg
+-5 get_neg
+0 get_neg
 """
 
 #https://www.codewars.com/kata/56bc28ad5bdaeb48760009b0
 codewars_input3 = """fn rem_chars str =>
-res = ""
-for i = 1, i<(str size -1), i++ =>
-res+=str[i]
-<<
-<- res
-<<
+let res ""
+for i = 1, i<(str size -1), i++ => res+=str at(i)
+<- res<<
 "remove these chars" rem_chars
 """
 
 #https://www.codewars.com/kata/54ff3102c1bad923760001f3
 codewars_input4 = """fn vowel_ct str =>
-ct = 0
-for c in str =>
-if c in "aeiou" => 
-ct++
-<<
-<<
+let ct 0
+for c in str => if c in "aeiou" => ct++
 return ct
 <<
-"hallo test".vowel_ct
-"haaaloooo".vowel_ct
+"hallo test" vowel_ct
+"haaaloooo" vowel_ct
 """
 
 #https://www.codewars.com/kata/52fba66badcd10859f00097e
@@ -257,58 +282,52 @@ codewars_input5 = """
 
 #https://www.codewars.com/kata/5526fc09a1bbd946250002dc
 codewars_input6 = """fn x a =>
-     odd_nums = a >> del if x%2==0
-     a difference(odd_nums)
-     <- odd_nums[0] if odd_nums size == 1 else a[0]
+     odd_nums = a >> del if x%2 equals 0
+     a difference: odd_nums
+     return odd_nums at: 0 if odd_nums size equals 1 else a at: 0
 <<
 [160, 3, 1719, 19, 11, 13, -21] x
 """
 
 #https://www.codewars.com/kata/546f922b54af40e1e90001da
 codewars_input7 = """fn repl str =>
-     str >>> del if x not in ALPHABET
-     <- str.numMap().join(" ")
+     str >>> del unless x in ALPHABET
+     <- str numMap join: " "
 <<
 "The sunset sets at twelve o' clock." repl
 """
 
 #https://www.codewars.com/kata/55c45be3b2079eccff00010f
 codewars_input8 = """fn order str =>
-    a = str split
-    new =[""]* a size
+    let a str split
+    let new [""]* a size
     iter a as i, word =>
-        num = 0
-        for char in word =>
-            if char in NUMBERS => num = char asNum
-        <<
+        let num 0
+        for char in word => if char in NUMBERS => num = char asNum
         new[num-1] = word
     <<
-    return new join(" ")
+    return new join: " "
 <<
 "4of Fo1r pe6ople g3ood th5e the2" order out"""
 
 #https://www.codewars.com/kata/54e6533c92449cc251001667
 codewars_input9 = """fn uni str =>
-    new = [str[0]]
-    str ->
-            if iterelem != new[-1] and itercounter >0 =>
-                    new+=iterelem
-            <<
-    <<
-    return new
+    let new [str at(0)]
+    str -> if iterelem != new[-1] and itercounter >0 => new+=iterelem
+    <- new
 <<
-"AAAABBBCCDAABBB".uni.out
-[1,2,2,3,3].uni.out
+"AAAABBBCCDAABBB" uni out
+[1,2,2,3,3] uni out
 """
 
 #https://www.codewars.com/kata/57eb8fcdf670e99d9b000272/
 codewars_input10 = """fn score st => (st.capitalize.numMap >> x asNum).sum
 fn highest str => 
-    h = ""
-    hs = 0
+    let h ""
+    let hs 0
     str split ->
-        sc = iterelem score
-        if sc > hs =>
+        let sc iterelem score
+        if sc greater hs =>
             hs = sc
             h = iterelem
         <<
@@ -319,16 +338,16 @@ fn highest str =>
 
 #https://www.codewars.com/kata/52597aa56021e91c93000cb0
 codewars_input11 = """fn countzeroes arr =>
-    zeroes = arr.count(0)
-    arr >>> del if x == 0
+    zeroes = arr count: 0
+    arr >>> del if x equals 0
     rep zeroes => arr += 0
     return arr
 <<
-[9, 0, 0, 9, 1, 2, 0, 1, 0, 1, 0, 3, 0, 1, 9, 0, 0, 0, 0, 9].countzeroes.out"""
+[9, 0, 0, 9, 1, 2, 0, 1, 0, 1, 0, 3, 0, 1, 9, 0, 0, 0, 0, 9] countzeroes out"""
 
 #https://www.codewars.com/kata/52774a314c2333f0a7000688
 codewars_input12 = """fn val str =>
-    open = 0
+    let open 0
     iter str as i, char =>
         if char == "(" => open +=1
         or char == ")" =>
@@ -348,7 +367,7 @@ codewars_input12 = """fn val str =>
 codewars_input13 = """fn uniquecheck arr =>
     arr sort
     for i=1, i<arr size, i++ =>
-        if i!=arr[i-1] => return False
+        if not i equals arr[i-1] => return False
     <<
     return True
 <<
@@ -358,13 +377,13 @@ fn check sudoku =>
     count = 0
 
     for row in sudoku =>
-        if not row clone uniquecheck => return False
+        unless row clone uniquecheck => return False
     <<
     for i=0, i<9, i++ =>
         for x=0, x<9, x++ =>
             column[x] = sudoku[x][i]
         <<
-        if not column clone uniquecheck => return False
+        unless column clone uniquecheck => return False
     <<
     for i=0, i<9, i+=3 =>
         for x=0, x<9, x+=3 =>
@@ -374,7 +393,7 @@ fn check sudoku =>
                     count++
                 <<
             <<
-            if not grid clone uniquecheck => return False
+            unless grid clone uniquecheck => return False
             grid = [0]*9
             count = 0
         <<
@@ -410,7 +429,7 @@ codewars_input14 = """fn remspace str => str >> del if x == " "
 #https://www.codewars.com/kata/51c8e37cee245da6b40000bd
 codewars_input15 = """
 fn stripcomments str delimiters =>
-    lines = str.split("\n")
+    lines = str split: "\n"
     newlines = []
     iter lines as line =>
         newline = ""
@@ -418,9 +437,9 @@ fn stripcomments str delimiters =>
             if char in delimiters => break
             else => newline += char
         <<
-        newlines += newline.strip
+        newlines += newline strip
     <<
-    return newlines.join("\n")
+    return newlines join: "\n"
 <<
 stripcomments("apples, pears \# and bananas\ngrapes\nbananas !apples", ["\#", "!"])
 stripcomments("a \#b\nc\nd $e f g", ["\#", "$"])"""
@@ -428,8 +447,8 @@ stripcomments("a \#b\nc\nd $e f g", ["\#", "$"])"""
 #https://www.codewars.com/kata/55983863da40caa2c900004e
 codewars_input16 = """
 fn nextbigger num =>
-    allnums = (num.s.permutations >> n(x.join)).sort()
-    return -1 if allnums.posof(num) == (allnums.l-1) else allnums[allnums.posof(num)+1]
+    allnums = (num asString permutations >> x join asNum) sort
+    return -1 if allnums find: num equals (allnums size-1) else allnums[allnums find: num +1]
 <<
 12.nextbigger
 518.nextbigger
@@ -438,25 +457,23 @@ fn nextbigger num =>
 
 #https://www.codewars.com/kata/51e056fe544cf36c410000fb
 codewars_input17 = """fn wordcount text =>
-    arr = split(lower(text >> " " if x not in ALPHABET))
-    return arr mostCommon >> x[0]
+    arr = split(lower(text >> " " unless x in ALPHABET))
+    return arr mostCommon >> x at: 0
 <<
-"DDD e e e e ddd DdD: ddd ddd aa aA Aa, bb cc cC e e e".wordcount.out
+"DDD e e e e ddd DdD: ddd ddd aa aA Aa, bb cc cC e e e" wordcount out
 """
 
 #https://www.codewars.com/kata/5f1891d30970800010626843
 codewars_input18 = """fn multpossibilities n k =>
-    results = []
+    let results []
     arr = [0]*n >> i+1
-    combs = arr.multiCombinations(k)
+    combs = arr multiCombinations: k
     iter combs as comb =>
         res = 1
-        iter comb as num =>
-            res *= num
-        <<
-        if res == n =>
-            iter comb.permutations as perm =>
-                if perm not in results =>
+        iter comb as num => res *= num
+        if res equals n =>
+            iter comb permutations as perm =>
+                unless perm in results =>
                     results += perm
                 <<
             <<
@@ -464,9 +481,9 @@ codewars_input18 = """fn multpossibilities n k =>
     <<
     return results size
 <<
-multpossibilities(24,2).out
-multpossibilities(100,1).out
-multpossibilities(20,3).out
+multpossibilities(24,2) out
+multpossibilities(100,1) out
+multpossibilities(20,3) out
 """
 
 #https://www.codewars.com/kata/520446778469526ec0000001
@@ -489,7 +506,7 @@ same_structure_as([ [ [ ], [ ] ] ], [ [ 1, 1 ] ] ).out"""
 
 #https://www.codewars.com/kata/5264d2b162488dc400000001
 codewars_input20 = """fn rev_5 str =>
-    return (str split >> x reverse if x size >= 5) join(" ")
+    return (str split >> x reverse if x size >= 5) join: " "
 <<
 "Hey fellow warriors".rev_5
 "This is a test".rev_5
@@ -512,8 +529,8 @@ fn root_sum num =>
 codewars_input22 = """fn duplicates str =>
     let dup_sum 0
     iter str as x =>
-        if str count(x) > 1 =>
-            str removeAll(x)
+        if str count: x > 1 =>
+            str removeAll: x
             dup_sum++
         <<
     <<
@@ -542,7 +559,7 @@ codewars_input23 = """fn persistent_bugger num =>
 codewars_input24 = """fn camel_case str => 
     let a str split("_", "-")
     let res a[0]
-    iter a[1:a size] as x =>
+    iter a[1..a size] as x =>
         res += x capitalize<<
     return res
 <<
@@ -710,7 +727,7 @@ codewars_input27 = """fn spiralize size =>
 codewars_input28 = """fn pick_peaks array =>
     result = {"pos" > [], "peaks" > []}
     pos = 0
-    iter 1:(array size -1) as i =>
+    iter 1..(array size -1) as i =>
         if array[i] != array[pos] => pos = i
         if pos and array[pos-1] < array[pos] > array[i+1] =>
             result["pos"] += pos
@@ -728,7 +745,7 @@ codewars_input29 = """fn range_extraction a =>
     let result ""
     let tmp []
     iter a as e =>
-        if not tmp or abs(e-tmp[-1]) == 1 => tmp += e
+        unless tmp or abs(e-tmp[-1]) equals 1 => tmp += e
         else =>
             if tmp size >= 3 =>
                 result += tmp[0] asString + "-" + tmp[-1] asString + ","
@@ -749,11 +766,178 @@ codewars_input29 = """fn range_extraction a =>
             result += t asString + ","
         <<
     <<
-    return result [0:-1]
+    return result [0..-1]
 <<
 
 [-10, -9, -8, -6, -3, -2, -1, 0, 1, 3, 4, 5, 7, 8, 9, 10, 11, 14, 15, 17, 18, 19, 20] range_extraction
 """
+
+#https://www.codewars.com/kata/52742f58faf5485cae000b9a
+codewars_input30 = """fn filledvalues values =>
+    filled = 0
+    iter values as i =>
+        if i => filled++
+    <<
+    return filled
+<<
+
+fn format_duration seconds =>
+    if seconds == 0 => return "now"
+    timeNames = ["year", "day", "hour", "minute", "second"]
+    timeValues = [0]*5
+    timeValues[0] = seconds//31536000
+    seconds-=timeValues[0]* 31536000
+    timeValues[1] = seconds//86400
+    seconds-= timeValues[1]*86400
+    timeValues[2] = seconds//3600
+    seconds-= timeValues[2]*3600
+    timeValues[3] = seconds//60
+    seconds-= timeValues[3]*60
+    timeValues[4] = seconds
+
+    filled = filledvalues(timeValues)
+    res = ""
+    for i=0,i<5,i++ =>
+        if timeValues[i] != 0 =>
+            res += timeValues[i].asString + " " + timeNames[i]
+            if timeValues[i] > 1 => res += "s"
+            filled--
+            if filled > 1 => res += ", "
+            if filled == 1 => res += " and "
+        <<
+    <<
+    return res
+<<
+62.format_duration
+3662.format_duration
+33243586.format_duration"""
+
+#https://www.codewars.com/kata/5296bc77afba8baa690002d7
+codewars_input31="""REF = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+SIZE = 9
+SIZE_SQUARE = 3
+
+sudoku = [[5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9]]
+tsudoku = []
+iter 0..sudoku.size as i, _=>
+    new = []
+    iter sudoku as x =>
+        new += x[i]
+    <<
+    tsudoku += new
+<<
+fn is_valid => flatten(sudoku).count(0) == 0
+
+fn set_val i j val =>
+    sudoku[i][j] = val
+    tsudoku[j][i] = val
+<<
+fn get_val i j => sudoku[i][j]
+
+fn get_square i j =>
+    lc = i//3
+    cc = j//3
+    res=[]
+    rep SIZE_SQUARE as l =>
+        rep SIZE_SQUARE as k =>
+            res += sudoku[SIZE_SQUARE*lc+k][SIZE_SQUARE*cc+l]
+        <<
+    <<
+    return res
+<<
+fn get_row i => sudoku[i]
+fn get_col j =>
+    col = []
+    iter sudoku => col+=iterelem[j]
+    return col
+<<
+fn simplify =>
+    if not is_valid() =>
+        changed = True
+        while changed =>
+            changed = False
+            for ll in (0..SIZE) =>
+                for lc in (0..SIZE) =>
+                    if get_val(ll, lc) == 0 =>
+                        values = REF clone removeDuplicates difference(get_row(ll) clone removeDuplicates, get_col(lc) clone removeDuplicates, get_square(ll, lc) clone removeDuplicates)
+                        if values size equals 1 =>
+                                set_val(ll, lc, values at(0))
+                                changed = True
+                        <<
+                    <<
+                <<
+            <<
+        <<
+    <<
+<<
+
+simplify()
+sudoku out
+"""
+
+#https://www.codewars.com/kata/52bc74d4ac05d0945d00054e
+codewars_input32 = """fn first_non_repeating_character str =>
+    iter str => if str lower count: (iterelem lower) smaller 2 => <-iterelem 
+<<
+"sTreSS" first_non_repeating_character out"""
+
+#https://www.codewars.com/kata/525c65e51bf619685c000059
+codewars_input33 = """fn cakes cake_recipe ingredients =>
+    ratios = []
+    iter cake_recipe keys as ingredient=>
+        if ingredient not in ingredients keys => return 0
+        ratios append(ingredients[ingredient] // cake_recipe[ingredient])
+    <<
+    <- ratios min
+<<
+cakes({"flour" > 500, "sugar" > 200, "eggs" > 1},  {"flour" > 1200, "sugar" > 1200, "eggs" > 5, "milk" > 200})
+cakes({"apples" > 3, "flour" > 300, "sugar" > 150, "milk" > 100, "oil" > 100}, {"sugar" > 500, "flour" > 2000, "milk" > 2000})"""
+
+#https://www.codewars.com/kata/54a91a4883a7de5d7800009c
+codewars_input34 = """fn string_inc str =>
+    if str last not in NUMBERS => <- str+"1"
+    let number ""
+    let word ""
+    iter reverse(0..str size) =>
+        if str[iterelem] in NUMBERS => number insert(0,str[iterelem])
+        else => 
+            let word str[0..(iterelem+1)]
+            break
+        <<
+    <<
+    number_len = number size
+    actual_len = (number asNum +1) asString size
+    zeroes = "0" * (number_len - actual_len)
+    return "#word##zeroes##number asNum +1#"
+<<
+"foo" string_inc out
+"foobar23" string_inc out
+"foo0042" string_inc out
+"foo099" string_inc out"""
+
+#https://www.codewars.com/kata/55c04b4cc56a697bb0000048
+codewars_input35 = """fn scramble str1 str2 =>
+    scramblable = True
+    iter str2 as char =>
+        if str1 count: char < str2 count: char => scramblable = False
+    <<
+    return scramblable 
+<<
+
+scramble('rkqodlw', 'world') out
+scramble('cedewaraaossoqqyt', 'codewars') out
+scramble('katas', 'steak')  out"""
+
+
+
 
 
 output1 = ['True']
@@ -786,6 +970,10 @@ output27 = ['"h ll "', '"111"', '"0123456"']
 output28 = ['"h a l l o "']
 output29 = ['True', 'True', 'False']
 output30 = ['0', 'h', '"s"', '1']
+output31 = ['35']
+
+output_getscope_getfields = ['global', 'global >> plus_two', 'global >> plus_two > ForLoop', "{'x': 0}", 'global >> plus_two >> one']
+
 codewars_output1 = ['15']
 codewars_output2 = ['-1', '-5', '0']
 codewars_output3 = ['"emove these char"']
@@ -815,6 +1003,13 @@ codewars_output26 = ["True", "False", "True"]
 codewars_output27 = ['[[1, 1, 1, 1, 1, 1, 1], [0, 0, 0, 0, 0, 0, 1], [1, 1, 1, 1, 1, 0, 1], [1, 0, 0, 0, 1, 0, 1], [1, 0, 1, 1, 1, 0, 1], [1, 0, 0, 0, 0, 0, 1], [1, 1, 1, 1, 1, 1, 1]]']
 codewars_output28 = ['{"pos" > [3, 7], "peaks" > [6, 3]}','{"pos" > [1], "peaks" > [2]}']
 codewars_output29 = ['"-10--8,-6,-3-1,3-5,7-11,14,15,17-20"']
+codewars_output30 = ['"1 minute and 2 seconds"', '"1 hour, 1 minute and 2 seconds"', '"1 year, 19 days, 18 hours, 19 minutes and 46 seconds"']
+codewars_output31 = ['[[5, 3, 4, 6, 7, 8, 9, 1, 2], [6, 7, 2, 1, 9, 5, 3, 4, 8], [1, 9, 8, 3, 4, 2, 5, 6, 7], [8, 5, 9, 7, 6, 1, 4, 2, 3], [4, 2, 6, 8, 5, 3, 7, 9, 1], [7, 1, 3, 9, 2, 4, 8, 5, 6], [9, 6, 1, 5, 3, 7, 2, 8, 4], [2, 8, 7, 4, 1, 9, 6, 3, 5], [3, 4, 5, 2, 8, 6, 1, 7, 9]]']
+codewars_output32 = ['T']
+codewars_output33 = ['2', '0']
+codewars_output34 = ['foo1', 'foobar24', 'foo0043', 'foo100']
+codewars_output35 = ['True', 'True', 'False']
+
 
 
 class TestUtils(unittest.TestCase):
@@ -911,6 +1106,9 @@ class TestUtils(unittest.TestCase):
     def test30(self):
         self.assertEqual(self.interface.run(input30, return_out=True), output30)
 
+    def test31(self):
+        self.assertEqual(self.interface.run(input31, return_out=True), output31)
+
     def test_codewars1(self):
         self.assertEqual(self.interface.run(codewars_input1, return_out=True), codewars_output1)
 
@@ -957,7 +1155,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(self.interface.run(codewars_input15, return_out=True), codewars_output15)
 
     def test_codewars16(self):
-        self.assertEqual(self.interface.run(codewars_input15, return_out=True), codewars_output15)
+        self.assertEqual(self.interface.run(codewars_input16, return_out=True), codewars_output16)
 
     def test_codewars17(self):
         self.assertEqual(self.interface.run(codewars_input17, return_out=True), codewars_output17)
@@ -997,6 +1195,24 @@ class TestUtils(unittest.TestCase):
 
     def test_codewars29(self):
         self.assertEqual(self.interface.run(codewars_input29, return_out=True), codewars_output29)
+
+    def test_codewars30(self):
+        self.assertEqual(self.interface.run(codewars_input30, return_out=True), codewars_output30)
+
+    def test_codewars31(self):
+        self.assertEqual(self.interface.run(codewars_input31, return_out=True), codewars_output31)
+
+    def test_codewars32(self):
+        self.assertEqual(self.interface.run(codewars_input32, return_out=True), codewars_output32)
+
+    def test_codewars33(self):
+        self.assertEqual(self.interface.run(codewars_input33, return_out=True), codewars_output33)
+
+    def test_codewars34(self):
+        self.assertEqual(self.interface.run(codewars_input34, return_out=True), codewars_output34)
+
+    def test_codewars35(self):
+        self.assertEqual(self.interface.run(codewars_input35, return_out=True), codewars_output35)
 
     def test_math(self):
         self.assertEqual(self.interface.run(
@@ -1078,7 +1294,7 @@ class TestUtils(unittest.TestCase):
 
     def test_slice(self):
         self.assertEqual(self.interface.run(
-            '[0,1,2,3,4].slice(1,3);"hallo"[0:5:2]',
+            '[0,1,2,3,4].slice(1,3);"hallo"[0..5..2]',
             return_out=True, ),
             ['[1, 2]', '"hlo"'])
 
@@ -1150,7 +1366,7 @@ class TestUtils(unittest.TestCase):
 
     def test_posof(self):
         self.assertEqual(self.interface.run(
-            '"hallo".posOf("o")',
+            '"hallo".find("o")',
             return_out=True, ),
             ['4'])
 
@@ -1169,19 +1385,19 @@ class TestUtils(unittest.TestCase):
 
     def test_range(self):
         self.assertEqual(self.interface.run(
-            '1:10:3',
+            '1..10..3',
             return_out=True, ),
             ['[1, 4, 7]'])
 
     def test_slices(self):
         self.assertEqual(self.interface.run(
-            '[0,1,2,3,4,5][1:-1:2]',
+            '[0,1,2,3,4,5][1..-1..2]',
             return_out=True, ),
             ['[1, 3]'])
 
     def test_iter(self):
         self.assertEqual(self.interface.run(
-            'iter 1:6:3 => iterelem',
+            'iter 1..6..3 => iterelem',
             return_out=True, ),
             ['1', '4'])
 
@@ -1196,6 +1412,14 @@ class TestUtils(unittest.TestCase):
             'x = 1 if False;x;[0,1,2] >> -1 if x==0',
             return_out=True, ),
             ['[-1, 1, 2]'])
+
+    def test_getscope_getfields(self):
+        self.assertEqual(self.interface.run(
+            input_getscope_getfields,
+            return_out=True),
+            output_getscope_getfields)
+        
+
 
 def main():
     unittest.main()

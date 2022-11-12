@@ -70,6 +70,9 @@ def type(obj):
 def asArr(obj):
     return Datatypes.Array(list(obj))
 
+def arrOf(*args):
+    return Datatypes.Array([*args])
+    
 def bool(obj):
     return Datatypes.Bool(obj)
 
@@ -87,3 +90,9 @@ def change(*args):
 def macro(*args):
     Datatypes.MACROS.append([Lexer(args[0]).gen_tokens(include_macros=False),
                             Lexer(args[1]).gen_tokens(include_macros=False)])
+
+def repr(obj):
+    return Datatypes.String(builtins.repr(obj))
+
+def fill(*args):
+    return Datatypes.Array(list(np.full((1, args[1]), args[0])[0]))

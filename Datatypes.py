@@ -174,10 +174,22 @@ class String:
     def __radd__(self, other):
         return String(str(self) + str(String(other)))
 
+    def __lt__(self, other):
+        return self.str < other.str
+
+    def __le__(self, other):
+        return self.str <= other.str
+
+    def __gt__(self, other):
+        return self.str > other.str
+
+    def __ge__(self, other):
+        return self.str >= other.str
+
     def __mul__(self, num):
         num = num.get_num()
-        if num < 1:
-            raise TypeError("Cannot divide arrays.")
+        if not isinstance(num,int):
+            raise TypeError("Cannot multiply strings with floats.")
         self.str *= num
         return self
 
@@ -235,7 +247,8 @@ class String:
 
     def insert(self, *args):
         arr = Array(list(self.str))
-        return arr.insert(*args).join()
+        self.str = str(arr.insert(*args).join())
+        return self
 
     def delete(self):
         del self.str_arr[-1][self.n[-1] - 1]
@@ -247,7 +260,7 @@ class String:
         for arg in convert_to_ints(args):
             self.n = [n - 1 for n in self.n]
             self.max -= 1
-            self.str.pop(arg)
+            self.str = self.str[:arg] + self.str[arg + 1:]
 
     def remove(self, *args):
         arr = Array(list(self.str))
@@ -273,7 +286,7 @@ class String:
         self.max -= 1
         return self.str.pop(*convert_to_ints(args))
 
-    def posOf(self, value):
+    def find(self, value):
         return Number(self.str.index(str(value)))
 
     def lower(self):
@@ -369,6 +382,12 @@ class String:
         for i in range(1, len(args)):
             new = new.replace(str(args[i]), master)
         return Array([String(s) for s in new.split(str(master))])
+    
+    def startswith(self, arg):
+        return Bool(self.str.startswith(str(arg)))
+    
+    def endswith(self, arg):
+        return Bool(self.str.endswith(str(arg)))
 
 
 class Bool:
@@ -431,8 +450,8 @@ class Array:
 
     def __mul__(self, num):
         num = int(num)
-        if num < 1:
-            raise TypeError("Cannot divide arrays.")
+        if not isinstance(num,int):
+            raise TypeError("Cannot multiply strings with floats.")
         arrcopy = self.contents.copy()
         for _ in range(num-1):
             for elem in arrcopy:
@@ -510,6 +529,14 @@ class Array:
     
     def insert(self, *args):
         self.contents.insert(*args)
+        return self
+    
+    def extend(self, *args):
+        for arg in args:
+            if not hasattr(arg, '__iter__'):
+                raise TypeError(f"{type(arg).__name__} object is not iterable.")
+            for elem in arg:
+                self += elem
         return self
 
     def convert_to_builtins(self):
@@ -636,7 +663,7 @@ class Array:
         self.max -= 1
         return self.contents.pop(*convert_to_ints(args))
 
-    def posOf(self, value):
+    def find(self, value):
         return Number(self.contents.index(value))
 
     def remove(self, *args):
@@ -669,6 +696,9 @@ class Array:
     def sort(self):
         self.contents.sort()
         return self
+    
+    def sorted(self):
+        return Array(sorted(self.contents))
 
     def min(self):
         return min(self.contents)
@@ -679,6 +709,17 @@ class Array:
     def reverse(self):
         self.contents.reverse()
         return self
+
+    def all(self):
+        return all([bool(x) for x in self])
+    
+    def some(self):
+        return any([bool(x) for x in self])
+    
+    def none(self):
+        return not any([bool(x) for x in self])
+    
+
 
 
 class Dictionary:
@@ -709,7 +750,7 @@ class Dictionary:
         return self
 
     def __repr__(self):
-        return self.__str__()
+        return str(self)
 
     def __eq__(self, other):
         if not isinstance(other, Dictionary):
@@ -748,7 +789,7 @@ class Dictionary:
 
 
 class Function:
-    def __init__(self, arglist, body, identifier):
+    def __init__(self, arglist, body, identifier="Anonymous"):
         self.arguments = arglist
         self.body = body
         self.identifier = identifier
@@ -851,6 +892,8 @@ BIND = GREATER_THAN
 FLOORDIV_SIGN = 59
 UNLESS = 60
 ITERATE_ARROW = 61
+DOUBLE_PERIOD = 62
+ANONYMOUS_FUNCTION_KEYWORD = 63
 
 AddNode = namedtuple("AddNode", ["a", "b"])
 SubNode = namedtuple("SubNode", ["a", "b"])
@@ -861,8 +904,7 @@ ModulusNode = namedtuple("ModulusNode", ["a", "b"])
 ExpNode = namedtuple("ExpNode", ["a", "b"])
 AssignNode = namedtuple("AssignNode", ["variable", "value"])
 VariableNode = namedtuple("VariableNode", ["identifier"])
-FuncDeclareNode = namedtuple("FuncDeclareNode", ["identifier", "arguments", "body"])
-FuncCallNode = namedtuple("FuncCallNode", ["identifier", "arguments"])
+FuncCallNode = namedtuple("FuncCallNode", ["variable", "arguments"])
 ComparisonNode = namedtuple("ComparisonNode", ["a", "b", "operator"])
 BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])
 LogicalOperationNode = namedtuple("LogicalOperationNode", ["a", "b", "operation"])
@@ -886,18 +928,17 @@ OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNo
                       MULT_ASSIGN: MultNode, DIV_ASSIGN: DivNode, MODULUS_ASSIGN: ModulusNode,
                       ARRAYAPPLY_ASSIGN: ArrayApplyNode, FLOORDIV_SIGN: FloorDivNode}
 
-STATEMENT_TOKENS = (IF, SOLVE_ASSIGN, SOLVE, ITERATE_ARROW)
+STATEMENT_TOKENS = (IF, SOLVE_ASSIGN, SOLVE, ITERATE_ARROW, COMP_EQUALS, COMP_NOT_EQUALS, GREATER_THAN,
+                    LESS_THAN, GREATER_OR_EQUALS, LESS_OR_EQUALS, IN)
 
-EXPRESSION_TOKENS = (PLUS_SIGN, MINUS_SIGN, AND, OR)
+EXPRESSION_TOKENS = (PLUS_SIGN, MINUS_SIGN)
 
 TERM_TOKENS = (MULT_SIGN, DIV_SIGN, MODULUS_SIGN, EQUALS,
                 PLUS_ASSIGN, MINUS_ASSIGN, MULT_ASSIGN,
                 DIV_ASSIGN, MODULUS_ASSIGN, ARRAYAPPLY_ASSIGN,
-                COMP_EQUALS, COMP_NOT_EQUALS, GREATER_THAN,
-                LESS_THAN, GREATER_OR_EQUALS, LESS_OR_EQUALS, 
-                IN, NOT, ARRAYAPPLY, COLON, FLOORDIV_SIGN)
+                ARRAYAPPLY, DOUBLE_PERIOD, FLOORDIV_SIGN)
                 
-EXPONENTIAL_TOKENS = (EXP, PERIOD_CALL, DOUBLE_MINUS, DOUBLE_PLUS, LBRACKET, IDENTIFIER)
+EXPONENTIAL_TOKENS = (EXP, PERIOD_CALL, DOUBLE_MINUS, DOUBLE_PLUS, LBRACKET, IDENTIFIER, COLON)
 
 OP_ASSIGN_TOKENS = (PLUS_ASSIGN, MINUS_ASSIGN, MULT_ASSIGN, DIV_ASSIGN, MODULUS_ASSIGN, ARRAYAPPLY_ASSIGN)
 
@@ -912,14 +953,15 @@ OPERATOR_DICT = {"+": PLUS_SIGN, "-": MINUS_SIGN, "*": MULT_SIGN, "/": DIV_SIGN,
                  "{": LCURLY, "}": RCURLY, "?=": SOLVE_ASSIGN, "?": SOLVE,
                  "[": LBRACKET, "]": RBRACKET, ">>": ARRAYAPPLY,
                  ">>>": ARRAYAPPLY_ASSIGN, ":": COLON, "//": FLOORDIV_SIGN,
-                 ".": PERIOD_CALL, "<-": RETURN, "->": ITERATE_ARROW}
+                 ".": PERIOD_CALL, "<-": RETURN, "->": ITERATE_ARROW,
+                 "..": DOUBLE_PERIOD}
 KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
                 "False": FALSE, "not": NOT, "or": OR, "and": AND,
                 "rep": REP, "as": AS, "for": FOR, "return": RETURN,
                 "break": BREAK, "continue": CONTINUE, "in": IN, "iter": ITERATE,
                 "del": DEL, "let": LET, "equals": COMP_EQUALS,
                 "greater": GREATER_THAN, "smaller": LESS_THAN, "while": WHILE,
-                "unless": UNLESS
+                "unless": UNLESS, "afn": ANONYMOUS_FUNCTION_KEYWORD
                 }
             
 OXYGEN_DICT = OPERATOR_DICT | KEYWORD_DICT
@@ -939,4 +981,5 @@ type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN",
              LCURLY: "LCURLY", RCURLY: "RCURLY", SOLVE_ASSIGN: "SOLVE_ASSIGN", SOLVE: "SOLVE", LINEBREAK: "LINEBREAK",
              BREAK: "BREAK", CONTINUE: "CONTINUE", LBRACKET: "LBRACKET", RBRACKET: "RBRACKET", ARRAYAPPLY: "ARRAYAPPLY",
              IN: "IN", ITERATE: "ITERATE", DEL: "DEL", ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN", LET: "LET",
-             COLON: "COLON", WHILE: "WHILE", FLOORDIV_SIGN: "FLOORDIV_SIGN", UNLESS: "UNLESS", ITERATE_ARROW: "ITERATE_ARROW"}
+             COLON: "COLON", WHILE: "WHILE", FLOORDIV_SIGN: "FLOORDIV_SIGN", UNLESS: "UNLESS", ITERATE_ARROW: "ITERATE_ARROW",
+             DOUBLE_PERIOD: "DOUBLE_PERIOD", ANONYMOUS_FUNCTION_KEYWORD: "ANONYMOUS_FUNCTION_KEYWORD",}
