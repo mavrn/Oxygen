@@ -972,7 +972,7 @@ output29 = ['True', 'True', 'False']
 output30 = ['0', 'h', '"s"', '1']
 output31 = ['35']
 
-output_getscope_getfields = ['global', 'global >> plus_two', 'global >> plus_two > ForLoop', "{'x': 0}", 'global >> plus_two >> one']
+output_getscope_getfields = ['global', 'global >> plus_two', 'global >> plus_two > ForLoop', '{"x" > 0}', 'global >> plus_two >> one', '2']
 
 codewars_output1 = ['15']
 codewars_output2 = ['-1', '-5', '0']
@@ -1200,6 +1200,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(self.interface.run(codewars_input30, return_out=True), codewars_output30)
 
     def test_codewars31(self):
+        self.interface.printall = False
         self.assertEqual(self.interface.run(codewars_input31, return_out=True), codewars_output31)
 
     def test_codewars32(self):

@@ -9,7 +9,7 @@ import equation_solver
 BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos": [1], "atan": [1], "abs": [1],
                          "sqrt": [1], "factorial": [1], "bool": [1], "plot": [3, 4], "out": range(1, 100),
                          "midnight": [3], "rick": [0], "leet": [1], "type": [1], "asArr": [1], "apply": [2],
-                         "append": range(2,100), "union": range(2,100), "intersection": range(2,100), "size": [1], "join": [0, 1], "reverse": [1],
+                         "append": range(2,100), "union": range(2,100), "intersection": range(2,100), "size": [1], "join": [0, 1], 
                          "sum": [1], "slice": [2, 3, 4], "openURL": [1], "min": [1], "max": [1],
                          "asString": [1], "split": [1, 2], "asNum": [1], "difference": range(2, 100),
                          "count": range(2, 100), "numMap": [1], "lower": [1], "upper": [1], "capitalize": [1],
@@ -23,7 +23,7 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "at": [2], "insert": [3], "get": [2], "sorted": [1], "all": [1], "some": [1], "none": [1],
                          "startswith": [2], "endswith": [2], "format": range(2, 100), "extend": [2], "repr": [1],
                          "findseq": [2], "detect": [2], "foreach": [2], "arrOf" : range(0,100), "fill": [2], 
-                         "every": [2]
+                         "every": [2], "reverse": [1]
                          }
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
@@ -100,7 +100,9 @@ class Interpreter:
                     return Datatypes.String(f"Warning: Built-in function {node.identifier} has been overridden.")
                 return Datatypes.Function(node.arguments, node.body, node.identifier)
             case "FuncCallNode":
-                return self.function_call_handler(node)
+                if node.variable.identifier in BUILTIN_EXPECTED_ARGS:
+                    return self.builtin_handler(node)
+                return self.function_call_handler(self.evaluate(node.variable), node)
             case "PeriodCallNode":
                 return self.period_call_handler(node)
             case name if name in OPERATIONAL_NODES:
@@ -158,10 +160,8 @@ class Interpreter:
                 if not hasattr(arr, "__iter__"):
                     raise TypeError(f"Element of type {type(arr).__name__} is not iterable.")
                 arr = arr.clone()
-                self.fields["global"]["__arrfunc"] = Datatypes.Function(["x", "i", "self"], node.function, "__arrfunc")
-                funcargs = {} if self.scope == "global" else self.fields[self.scope]
                 for i, elem in enumerate(arr):
-                    res = self.function_call_handler(Datatypes.FuncCallNode(Datatypes.VariableNode("__arrfunc"), [elem, Datatypes.Number(i), arr]), funcargs)         
+                    res = self.evaluate(Datatypes.FuncCallNode(Datatypes.Function(["x", "i", "self"], node.function), [elem, Datatypes.Number(i), arr]))         
                     if isinstance(res, list):
                         if len(res) == 0:
                             continue
@@ -221,7 +221,7 @@ class Interpreter:
                 elif global_value is not None:
                     result = global_value
                 elif node.identifier in BUILTIN_EXPECTED_ARGS:
-                    return node
+                    result = Datatypes.String(f"Built-in function {node.identifier}")
                 else:
                     raise NameError(f"Name \"{node.identifier}\" is not defined.")
                 return result
@@ -318,17 +318,15 @@ class Interpreter:
         self.scope = "global"
         self.output_lines = []
 
-    def function_call_handler(self, node, optional_funcargs=dict()):
-        func = self.evaluate(node.variable)
-        if isinstance(func, Datatypes.VariableNode) and func.identifier in BUILTIN_EXPECTED_ARGS:
-            return self.builtin_handler(node)
+    def function_call_handler(self, func, node, optional_funcargs=dict()):
+        delimiter = " > " if func.identifier == "Anonymous" else " >> "
         if not isinstance(func, Datatypes.Function):
             raise TypeError(f"{builtins.type(node).__name__} object is not callable")
         arguments = node.arguments
         if len(arguments) != len(func.arguments):
             raise TypeError(
                 f"Expected {len(func.arguments)} arguments for function {func.identifier}, got {len(arguments)}.")
-        new_function_scope = self.scope + " >> " + func.identifier
+        new_function_scope = self.scope + delimiter + func.identifier
         self.fields[new_function_scope] = {}
         reached_kwargs = False
         for i, argument in enumerate(arguments):
@@ -357,7 +355,7 @@ class Interpreter:
         else:
             returned_result = self.evaluate(func.body)
         self.fields.pop(self.scope)
-        self.scope = " >> ".join(self.scope.split(" >> ")[:-1])
+        self.scope = delimiter.join(self.scope.split(delimiter)[:-1])
         return returned_result
 
     def builtin_handler(self, node):
@@ -439,12 +437,12 @@ class Interpreter:
 
     def period_call_handler(self, node):
         if isinstance(node.right_side, Datatypes.FuncCallNode):
-            return self.function_call_handler(
+            return self.evaluate(
                 Datatypes.FuncCallNode(node.right_side.variable, [node.left_side, *node.right_side.arguments]))
         elif isinstance(node.right_side, Datatypes.VariableNode) and (
                         node.right_side.identifier in BUILTIN_EXPECTED_ARGS or isinstance(
                             self.fields["global"].get(node.right_side.identifier), Datatypes.Function)):
-            return self.function_call_handler(Datatypes.FuncCallNode(node.right_side, [node.left_side]))
+            return self.evaluate(Datatypes.FuncCallNode(node.right_side, [node.left_side]))
         else:
             raise TypeError(f"Cannot call type {type(node.right_side).__name__} on type {type(node.left_side).__name__}.")
 
@@ -454,7 +452,7 @@ class Interpreter:
         args = np.arange(lower_rng, upper_rng, increment)
         try:
             func_args = np.array(
-                [self.function_call_handler(Datatypes.FuncCallNode(function, [arg])) for arg in args])
+                [self.evaluate(Datatypes.FuncCallNode(function, [arg])) for arg in args])
         except TypeError:
             raise TypeError("Only functions with exactly one argument can be plotted.")
         plt.rcParams["figure.autolayout"] = True
@@ -481,7 +479,7 @@ class Interpreter:
 
     def apply(self, *args):
         for i, elem in enumerate(args[0]):
-            res = self.function_call_handler(Datatypes.FuncCallNode(args[1], [elem]))
+            res = self.evaluate(Datatypes.FuncCallNode(args[1], [elem]))
             if isinstance(res, list):
                 args[0][Datatypes.Number(i)] = res[0]
             else:
@@ -491,7 +489,7 @@ class Interpreter:
     def select(self, *args):
         new = args[0].clone()
         for elem in new:
-            res = self.function_call_handler(Datatypes.FuncCallNode(args[1], [elem]))
+            res = self.evaluate(Datatypes.FuncCallNode(args[1], [elem]))
             if isinstance(res, list):
                 res = res[0]
             if not Datatypes.Bool(res):
@@ -500,7 +498,7 @@ class Interpreter:
     
     def detect(self, *args):
         for i, elem in enumerate(args[0]):
-            res = self.function_call_handler(Datatypes.FuncCallNode(args[1], [elem]))
+            res = self.evaluate(Datatypes.FuncCallNode(args[1], [elem]))
             if isinstance(res, list):
                 res = res[0]
             if Datatypes.Bool(res):
@@ -513,16 +511,20 @@ class Interpreter:
     def foreach(self, *args):
         out = []
         for elem in args[0]:
-            lines = standardize(self.function_call_handler(Datatypes.FuncCallNode(args[1], [elem])))
+            lines = standardize(self.evaluate(Datatypes.FuncCallNode(args[1], [elem])))
             merge(out, lines)
         return out
 
     def getFields(self, *args):
-        if len(args) == 1:
-            return Datatypes.Dictionary(self.fields[args[0]])
         dict = Datatypes.Dictionary({})
+        if len(args) == 1:
+            for k, v in self.fields[args[0]].items():
+                dict[Datatypes.String(k)] = v
+            return dict
         for k, v in self.fields.items():
-            dict[k] = Datatypes.Dictionary(v)
+            dict[Datatypes.String(k)] = Datatypes.Dictionary({})
+            for i,j in v.items(): 
+                dict[Datatypes.String(k)][Datatypes.String(i)] = j
         return dict
     
     def getScope(self):

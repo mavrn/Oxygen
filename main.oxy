@@ -1,0 +1,33 @@
+sym = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
+num = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+
+fn toRoman number =>
+    result = ""
+    pointer = 0
+    while number =>
+        div = number // num[pointer]
+        number %= num[pointer]
+        while div =>
+            result += sym[pointer]
+            div -= 1
+        <<
+        pointer += 1
+    <<
+    return result
+<<
+
+fn fromRoman roman_numeral =>
+    result = 1
+    roman_numeral ->
+        first_num = num[sym.find(iterelem)]
+        if itercounter +1 != roman_numeral size => second_num = num[sym.find(roman_numeral[itercounter + 1])]
+        else => second_num = -1
+        if first_num >= second_num => result += first_num
+        else => result -= first_num
+    <<
+    return result
+<<
+
+
+toRoman(1000) out
+fromRoman("M") out

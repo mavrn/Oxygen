@@ -2,8 +2,42 @@ free operators: $ § =>> ==>
 #redo exceptions + add trycatch
 #update comments
 #bugtest change, macro
-#rename 
+#rename tests
 
+bug
+sym = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
+num = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+
+fn toRoman number =>
+    result = ""
+    pointer = 0
+    while number =>
+        div = number // num[pointer]
+        number %= num[pointer]
+        while div =>
+            result += sym[pointer]
+            div -= 1
+        <<
+        pointer += 1
+    <<
+    return result
+<<
+
+fn fromRoman roman_numeral =>
+    result = 1
+    roman_numeral ->
+        first_num = num[sym.find(iterelem)]
+        second_num = num[sym.find(roman_numeral[itercounter + 1])] if itercounter +1 != roman_numeral size else -2
+        second_num out
+        if first_num >= second_num => result += first_num
+        else => result -= first_num
+    <<
+    return result
+<<
+
+
+toRoman(1000)
+fromRoman("M")
 
 #https://iolanguage.org/tutorial.html for ideas
 #isinstance = "is"
@@ -34,3 +68,13 @@ array.filter
 #arr of
 #foreach function
 #select, detect
+
+#https://www.codewars.com/kata/514a024011ea4fb54200004b/python
+
+fn domainName url => url replace("http://", "") replace("https://", "") replace("www.", "") split: "." [0]
+"http://github.com/carbonfive/raygun"  domainName 
+"http://www.zombie-bites.com" domainName 
+"https://www.cnet.com" domainName 
+"hyphen-url.com" domainName 
+
+['"github"', '"zombie-bites"', '"cnet"', '"hyphen-url"']
