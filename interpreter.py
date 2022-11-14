@@ -23,7 +23,7 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "at": [2], "insert": [3], "get": [2], "sorted": [1], "all": [1], "some": [1], "none": [1],
                          "startswith": [2], "endswith": [2], "format": range(2, 100), "extend": [2], "repr": [1],
                          "findseq": [2], "detect": [2], "foreach": [2], "arrOf" : range(0,100), "fill": [2], 
-                         "every": [2], "reverse": [1]
+                         "every": [2], "reverse": [1], "hasKey": [2], "hasValue": [2]
                          }
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
@@ -139,6 +139,7 @@ class Interpreter:
             case "SolveNode":
                 _, expression = equation_solver.solve(node.left_side, node.right_side)
                 return self.evaluate(expression)
+            #TODO: Remove Node
             case "SolveAssignNode":
                 variable, expression = equation_solver.solve(node.left_side, node.right_side)
                 result = self.evaluate(expression)
@@ -202,7 +203,9 @@ class Interpreter:
                     merge(out, line)
                     if "__return__" in self.fields[self.scope] or "__continue__" in self.fields[self.scope] \
                             or "__break__" in self.fields[self.scope]:
-                        return out
+                        break
+                if len(out) == 1:
+                    return out[0]
                 return out
             case "VariableNode":
                 global_value = self.fields["global"].get(node.identifier)

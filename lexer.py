@@ -86,9 +86,6 @@ class Lexer:
                 return [Token(Datatypes.NUMBER, Datatypes.Number(number[:-1])), Token(Datatypes.DOUBLE_PERIOD)]
             number += self.current_char
             self.next_char()
-        if number.endswith("."):
-            number = number[:-1]
-            return [Token(Datatypes.NUMBER, Datatypes.Number(number)), Token(Datatypes.PERIOD_CALL)]
         if self.current_char is not None and self.current_char in LETTERS:
             return [Token(Datatypes.NUMBER, Datatypes.Number(number)), Token(Datatypes.MULT_SIGN), self.gen_identifier()]
         return [Token(Datatypes.NUMBER, Datatypes.Number(number))]

@@ -262,6 +262,9 @@ class String:
             self.max -= 1
             self.str = self.str[:arg] + self.str[arg + 1:]
 
+    def hasValue(self, value):
+        return value in self
+
     def remove(self, *args):
         arr = Array(list(self.str))
         for arg in args:
@@ -649,6 +652,9 @@ class Array:
             self.n = [n - 1 for n in self.n]
             self.max -= 1
             del self.contents[arg]
+    
+    def hasValue(self, value):
+        return value in self
 
     def removeAll(self, *args):
         for arg in args:
@@ -778,6 +784,12 @@ class Dictionary:
         self.max -= 1
         return self.contents.pop(key)
 
+    def hasKey(self, key):
+        return key in self.contents.keys()
+    
+    def hasValue(self, val):
+        return val in self.contents.values()
+        
     def get(self, key):
         return self.contents.get(key)
 
@@ -795,7 +807,7 @@ class Function:
         self.identifier = identifier
 
     def __repr__(self):
-        return f"Function {self.identifier}"
+        return f"Function {self.identifier} {self.body}"
     
     def __str__(self):
         return repr(self)
@@ -848,7 +860,6 @@ EQUALS = 14
 EXP = 15
 ARROW = 16
 FUNCTION_KEYWORD = 17
-PERIOD_CALL = 18
 COMMA = 19
 COMP_EQUALS = 20
 COMP_NOT_EQUALS = 21
@@ -938,7 +949,7 @@ TERM_TOKENS = (MULT_SIGN, DIV_SIGN, MODULUS_SIGN, EQUALS,
                 DIV_ASSIGN, MODULUS_ASSIGN, ARRAYAPPLY_ASSIGN,
                 ARRAYAPPLY, DOUBLE_PERIOD, FLOORDIV_SIGN)
                 
-EXPONENTIAL_TOKENS = (EXP, PERIOD_CALL, DOUBLE_MINUS, DOUBLE_PLUS, LBRACKET, IDENTIFIER, COLON)
+EXPONENTIAL_TOKENS = (EXP, DOUBLE_MINUS, DOUBLE_PLUS, LBRACKET, IDENTIFIER, COLON)
 
 OP_ASSIGN_TOKENS = (PLUS_ASSIGN, MINUS_ASSIGN, MULT_ASSIGN, DIV_ASSIGN, MODULUS_ASSIGN, ARRAYAPPLY_ASSIGN)
 
@@ -953,8 +964,7 @@ OPERATOR_DICT = {"+": PLUS_SIGN, "-": MINUS_SIGN, "*": MULT_SIGN, "/": DIV_SIGN,
                  "{": LCURLY, "}": RCURLY, "?=": SOLVE_ASSIGN, "?": SOLVE,
                  "[": LBRACKET, "]": RBRACKET, ">>": ARRAYAPPLY,
                  ">>>": ARRAYAPPLY_ASSIGN, ":": COLON, "//": FLOORDIV_SIGN,
-                 ".": PERIOD_CALL, "<-": RETURN, "->": ITERATE_ARROW,
-                 "..": DOUBLE_PERIOD}
+                 "<-": RETURN, "->": ITERATE_ARROW, "..": DOUBLE_PERIOD}
 KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
                 "False": FALSE, "not": NOT, "or": OR, "and": AND,
                 "rep": REP, "as": AS, "for": FOR, "return": RETURN,
@@ -973,7 +983,7 @@ type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN",
              MINUS_ASSIGN: "MINUS_ASSIGN", MULT_ASSIGN: "MULT_ASSIGN", DIV_ASSIGN: "DIV_ASSIGN",
              MODULUS_ASSIGN: "MODULUS_ASSIGN", LPAREN: "LPAREN", RPAREN: "RPAREN", IDENTIFIER: "IDENTIFIER",
              EQUALS: "EQUALS", EXP: "EXPONENTIAL_SIGN", ARROW: "ARROW", FUNCTION_KEYWORD: "FUNCTION_KEYWORD",
-             PERIOD_CALL: "PERIOD_FUNC_CALL", COMMA: "COMMA", COMP_EQUALS: "COMP_EQUALS",
+             COMMA: "COMMA", COMP_EQUALS: "COMP_EQUALS",
              COMP_NOT_EQUALS: "COMP_NOT_EQUALS", GREATER_THAN: "GREATER_THAN", LESS_THAN: "LESS_THAN",
              GREATER_OR_EQUALS: "GREATER_OR_EQUALS", LESS_OR_EQUALS: "LESS_OR_EQUALS", TRUE: "TRUE", FALSE: "FALSE",
              NOT: "NOT", AND: "AND", OR: "OR", IF: "IF", ELSE: "ELSE", REP: "REP", FOR: "FOR", STRING: "STRING", AS: "AS",

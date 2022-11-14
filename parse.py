@@ -139,9 +139,6 @@ class Parser:
                 self.next_token()
             if token_type == Datatypes.EXP:
                 result = Datatypes.ExpNode(a=result, b=self.factor())
-            elif token_type == Datatypes.PERIOD_CALL:
-                right_side = self.factor()
-                result = Datatypes.PeriodCallNode(left_side=result, right_side=right_side)
             elif token_type == Datatypes.IDENTIFIER:
                 result = Datatypes.PeriodCallNode(left_side=result, right_side=self.factor())
             elif token_type == Datatypes.COLON:

@@ -23,10 +23,10 @@ input5 = """fn divide_by_two x => x/2 if x%2 == 0 else x
 """
 
 input6 = """fn fizz_buzz i => rep i as c => "FizzBuzz" if c % 3 == 0 and c % 5 == 0 else "Fizz" if c % 3 == 0 else "Buzz" if c % 5 == 0 else c
-10.fizz_buzz
+10 fizz_buzz
 """
 
-input7 = """fn bin_cof n k => n.factorial / (k.factorial * (n-k).factorial)
+input7 = """fn bin_cof n k => n factorial / (k factorial * (n-k) factorial)
 fn P p n x => bin_cof(n,x) * p**x * (1-p)**(n-x)
 P(0.3, 20, 6)
 """
@@ -179,7 +179,7 @@ input27 = """
 "abcdefg" >> i
 """
 
-input28 = """fn add_spaces str => (str asArr >> x+" ").join
+input28 = """fn add_spaces str => (str asArr >> x+" ") join
 "hallo" add_spaces
 """
 
@@ -245,7 +245,7 @@ plus_two()"""
 codewars_input1 = """fn sum_of_positive arr =>
 return (arr >> 0 if x<0 else x) sum
 <<
-[0,1,2,3,4,5,-2].sum_of_positive
+[0,1,2,3,4,5,-2] sum_of_positive
 """
 
 #https://www.codewars.com/kata/56dec885c54a926dcd001095
@@ -321,7 +321,7 @@ codewars_input9 = """fn uni str =>
 """
 
 #https://www.codewars.com/kata/57eb8fcdf670e99d9b000272/
-codewars_input10 = """fn score st => (st.capitalize.numMap >> x asNum).sum
+codewars_input10 = """fn score st => (st capitalize numMap >> x asNum) sum
 fn highest str => 
     let h ""
     let hs 0
@@ -357,10 +357,10 @@ codewars_input12 = """fn val str =>
     <<
     return open == 0
 <<
-"(())((()())())".val
-"(".val
-")(()))".val
-")))(((".val
+"(())((()())())" val
+"(" val
+")(()))" val
+")))(((" val
 """
 
 #https://www.codewars.com/kata/529bf0e9bdf7657179000008
@@ -408,7 +408,7 @@ fn check sudoku =>
 [7, 1, 3, 9, 2, 4, 8, 5, 6],
 [9, 6, 1, 5, 3, 7, 2, 8, 4],
 [2, 8, 7, 4, 1, 9, 6, 3, 5],
-[3, 4, 5, 2, 8, 6, 1, 7, 9]].check
+[3, 4, 5, 2, 8, 6, 1, 7, 9]] check
 [[5, 3, 4, 6, 7, 8, 9, 1, 2],
 [6, 7, 2, 1, 9, 0, 3, 4, 8],
 [1, 0, 0, 3, 4, 2, 5, 6, 0],
@@ -417,13 +417,13 @@ fn check sudoku =>
 [7, 1, 3, 9, 2, 4, 8, 5, 6],
 [9, 0, 1, 5, 3, 7, 2, 1, 4],
 [2, 8, 7, 4, 1, 9, 6, 3, 5],
-[3, 0, 0, 4, 8, 1, 1, 7, 9]].check
+[3, 0, 0, 4, 8, 1, 1, 7, 9]] check
 """
 
 #https://www.codewars.com/kata/57eae20f5500ad98e50002c5
 codewars_input14 = """fn remspace str => str >> del if x == " "
-"8 j 8   mBliB8g  imjB8B8  jl  B".remspace
-"8 8 Bi fk8h B 8 BB8B B B  B888 c hl8 BhB fd".remspace
+"8 j 8   mBliB8g  imjB8B8  jl  B" remspace
+"8 8 Bi fk8h B 8 BB8B B B  B888 c hl8 BhB fd" remspace
 """
 
 #https://www.codewars.com/kata/51c8e37cee245da6b40000bd
@@ -450,10 +450,10 @@ fn nextbigger num =>
     allnums = (num asString permutations >> x join asNum) sort
     return -1 if allnums find: num equals (allnums size-1) else allnums[allnums find: num +1]
 <<
-12.nextbigger
-518.nextbigger
-2017.nextbigger
-9.nextbigger"""
+12 nextbigger
+518 nextbigger
+2017 nextbigger
+9 nextbigger"""
 
 #https://www.codewars.com/kata/51e056fe544cf36c410000fb
 codewars_input17 = """fn wordcount text =>
@@ -497,32 +497,32 @@ fn same_structure_as original other =>
     <<
     return True
 <<
-same_structure_as([ 1, 1, 1 ], [ 2, 2, 2 ]).out
-same_structure_as([ 1, [ 1, 1 ] ], [ 2, [ 2, 2 ] ] ).out
-same_structure_as([ 1, [ 1, 1 ] ], [ [ 2, 2 ], 2 ] ).out
-same_structure_as([ 1, [ 1, 1 ] ], [ [ 2 ], 2 ] ).out
-same_structure_as([ [ [ ], [ ] ] ], [ [ [ ], [ ] ] ] ).out
-same_structure_as([ [ [ ], [ ] ] ], [ [ 1, 1 ] ] ).out"""
+same_structure_as([ 1, 1, 1 ], [ 2, 2, 2 ]) out
+same_structure_as([ 1, [ 1, 1 ] ], [ 2, [ 2, 2 ] ] ) out
+same_structure_as([ 1, [ 1, 1 ] ], [ [ 2, 2 ], 2 ] ) out
+same_structure_as([ 1, [ 1, 1 ] ], [ [ 2 ], 2 ] ) out
+same_structure_as([ [ [ ], [ ] ] ], [ [ [ ], [ ] ] ] ) out
+same_structure_as([ [ [ ], [ ] ] ], [ [ 1, 1 ] ] ) out"""
 
 #https://www.codewars.com/kata/5264d2b162488dc400000001
 codewars_input20 = """fn rev_5 str =>
     return (str split >> x reverse if x size >= 5) join: " "
 <<
-"Hey fellow warriors".rev_5
-"This is a test".rev_5
-"This is another test".rev_5
+"Hey fellow warriors" rev_5
+"This is a test" rev_5
+"This is another test" rev_5
 """
 
 #https://www.codewars.com/kata/541c8630095125aba6000c00
 codewars_input21 = """fn sum_of_digits num => sum(num asString asArr >> x asNum)
-16.sum_of_digits.out
-493193.sum_of_digits.out
+16 sum_of_digits out
+493193 sum_of_digits out
 fn root_sum num => 
-    let res num.sum_of_digits
-    return res if res asString size == 1 else res.root_sum
+    let res num sum_of_digits
+    return res if res asString size == 1 else res root_sum
 <<
-493193.root_sum
-132189.root_sum
+493193 root_sum
+132189 root_sum
 """
 
 #https://www.codewars.com/kata/54bf1c2cd5b56cc47f0007a1
@@ -536,8 +536,8 @@ codewars_input22 = """fn duplicates str =>
     <<
     return dup_sum
 <<
-"Indivisibilities".duplicates
-"abcde".duplicates
+"Indivisibilities" duplicates
+"abcde" duplicates
 """
 
 #https://www.codewars.com/kata/55bf01e5a717a0d57e0000ec
@@ -551,8 +551,8 @@ codewars_input23 = """fn persistent_bugger num =>
     <<
     return ct
 <<
-39.persistent_bugger
-999.persistent_bugger
+39 persistent_bugger
+999 persistent_bugger
 """
 
 #https://www.codewars.com/kata/517abf86da9663f1d2000003
@@ -563,8 +563,8 @@ codewars_input24 = """fn camel_case str =>
         res += x capitalize<<
     return res
 <<
-"the-stealth-warrior".camel_case
-"The_Stealth_Warrior".camel_case
+"the-stealth-warrior" camel_case
+"The_Stealth_Warrior" camel_case
 """
 
 #https://www.codewars.com/kata/585d7d5adb20cf33cb000235
@@ -573,8 +573,8 @@ codewars_input25 = """fn unique_number array =>
         if array count(iterelem) == 1 => <- iterelem
     <<
 <<
-[ 1, 1, 1, 2, 1, 1 ].unique_number.out
-[ 0, 0, 0.55, 0, 0 ].unique_number.out
+[ 1, 1, 1, 2, 1, 1 ] unique_number out
+[ 0, 0, 0.55, 0, 0 ] unique_number out
 """
 
 #https://www.codewars.com/kata/52bb6539a4cf1b12d90005b7
@@ -583,8 +583,8 @@ codewars_input26 = """fn xy array x y =>
 <<
 
 fn field_validator f =>
-    for y=0,y<f.size,y++ =>
-        for x=0,x<f[y].size,x++ =>
+    for y=0,y<f size,y++ =>
+        for x=0,x<f[y] size,x++ =>
             if (xy(f, x, y) == 1) =>
                 v = xy(f, x, y-1) != 0 or xy(f, x, y+1) != 0
                 h = xy(f, x-1, y) != 0 or xy(f, x+1, y) != 0
@@ -596,8 +596,8 @@ fn field_validator f =>
         <<
     <<
     ship_counts = [0, 4, 3, 2, 1]
-    for y=0, y<f.size, y++ =>
-        for x=0, x<f[y].size, x++ =>
+    for y=0, y<f size, y++ =>
+        for x=0, x<f[y] size, x++ =>
             if (xy(f, x, y) == 1) =>
                 len = 1
                 while (xy(f, ++x, y) == 1) => len++
@@ -606,8 +606,8 @@ fn field_validator f =>
             <<
         <<
     <<
-    for x=0, x<f[0].size, x++ =>
-        for y=0, y<f.size, y++ =>
+    for x=0, x<f[0] size, x++ =>
+        for y=0, y<f size, y++ =>
             if (xy(f, x, y) == -1) =>
                 len = 1
                 while (xy(f, x, ++y) == -1) => len++
@@ -628,7 +628,7 @@ fn field_validator f =>
 [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
 [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]].field_validator.out
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]] field_validator out
 [[1, 0, 0, 0, 0, 1, 1, 0, 0, 0],
 [1, 0, 1, 0, 0, 0, 0, 0, 1, 0],
 [1, 0, 1, 0, 1, 1, 1, 0, 1, 0],
@@ -638,7 +638,7 @@ fn field_validator f =>
 [0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
 [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]].field_validator.out
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]] field_validator out
 [[0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
 [0, 0, 0, 1, 0, 0, 1, 0, 0, 0],
@@ -648,7 +648,7 @@ fn field_validator f =>
 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 [0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
 [0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
-[1, 1, 1, 1, 0, 0, 0, 0, 0, 0]].field_validator.out
+[1, 1, 1, 1, 0, 0, 0, 0, 0, 0]] field_validator out
 """
 
 #https://www.codewars.com/kata/534e01fbbb17187c7e0000c6
@@ -720,7 +720,7 @@ codewars_input27 = """fn spiralize size =>
     <<
     return spiral
 <<
-7.spiralize
+7 spiralize
 """
 
 #https://www.codewars.com/kata/5279f6fe5ab7f447890006a7
@@ -736,8 +736,8 @@ codewars_input28 = """fn pick_peaks array =>
     <<
     <- result
 <<
-[3, 2, 3, 6, 4, 1, 2, 3, 2, 1, 2, 3].pick_peaks
-[1, 2, 2, 2, 1].pick_peaks
+[3, 2, 3, 6, 4, 1, 2, 3, 2, 1, 2, 3] pick_peaks
+[1, 2, 2, 2, 1] pick_peaks
 """
 
 #https://www.codewars.com/kata/51ba717bb08c1cd60f00002f
@@ -799,7 +799,7 @@ fn format_duration seconds =>
     res = ""
     for i=0,i<5,i++ =>
         if timeValues[i] != 0 =>
-            res += timeValues[i].asString + " " + timeNames[i]
+            res += timeValues[i] asString + " " + timeNames[i]
             if timeValues[i] > 1 => res += "s"
             filled--
             if filled > 1 => res += ", "
@@ -808,9 +808,9 @@ fn format_duration seconds =>
     <<
     return res
 <<
-62.format_duration
-3662.format_duration
-33243586.format_duration"""
+62 format_duration
+3662 format_duration
+33243586 format_duration"""
 
 #https://www.codewars.com/kata/5296bc77afba8baa690002d7
 codewars_input31="""REF = [1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -827,14 +827,14 @@ sudoku = [[5, 3, 0, 0, 7, 0, 0, 0, 0],
             [0, 0, 0, 4, 1, 9, 0, 0, 5],
             [0, 0, 0, 0, 8, 0, 0, 7, 9]]
 tsudoku = []
-iter 0..sudoku.size as i, _=>
+iter 0..sudoku size as i, _=>
     new = []
     iter sudoku as x =>
         new += x[i]
     <<
     tsudoku += new
 <<
-fn is_valid => flatten(sudoku).count(0) == 0
+fn is_valid => flatten(sudoku) count(0) == 0
 
 fn set_val i j val =>
     sudoku[i][j] = val
@@ -1217,7 +1217,7 @@ class TestUtils(unittest.TestCase):
 
     def test_math(self):
         self.assertEqual(self.interface.run(
-            "100.sqrt.factorial",
+            "100 sqrt factorial",
             return_out=True, ),
             ["3628800"])
 
@@ -1235,7 +1235,7 @@ class TestUtils(unittest.TestCase):
 
     def test_leet(self):
         self.assertEqual(self.interface.run(
-            "'Hallo'.leet",
+            "'Hallo' leet",
             return_out=True, ),
             ['"|-|4ll0"'])
 
@@ -1253,67 +1253,67 @@ class TestUtils(unittest.TestCase):
 
     def test_apply(self):
         self.assertEqual(self.interface.run(
-            'fn x a => a+10;[0,1,2].apply(x)',
+            'fn x a => a+10;[0,1,2] apply: x',
             return_out=True, ),
             ['[10, 11, 12]'])
 
     def test_append(self):
         self.assertEqual(self.interface.run(
-            'x = [0].append(1);x+2;x+=3;x',
+            'x = [0] append: 1;x+2;x+=3;x',
             return_out=True, ),
             ['[0, 1]', '[0, 1, 2]', '[0, 1, 3]', '[0, 1, 3]'])
 
     def test_union(self):
         self.assertEqual(self.interface.run(
-            '[0,1,2].union([2,3,4])',
+            '[0,1,2] union([2,3,4])',
             return_out=True, ),
             ['[0, 1, 2, 3, 4]'])
 
     def test_intersection(self):
         self.assertEqual(self.interface.run(
-            '[0,1,2].intersection([1,2,3])',
+            '[0,1,2] intersection([1,2,3])',
             return_out=True, ),
             ['[1, 2]'])
 
     def test_join(self):
         self.assertEqual(self.interface.run(
-            '["h", "a"].join(" ");["h", "o"].join',
+            '["h", "a"] join(" ");["h", "o"] join',
             return_out=True, ),
             ['"h a"', '"ho"'])
 
     def test_rev(self):
         self.assertEqual(self.interface.run(
-            '"xa".reverse;[0,1].reverse',
+            '"xa" reverse;[0,1] reverse',
             return_out=True, ),
             ['"ax"', '[1, 0]'])
 
     def test_sum(self):
         self.assertEqual(self.interface.run(
-            '[0,1,2,3].sum',
+            '[0,1,2,3] sum',
             return_out=True, ),
             ['6'])
 
     def test_slice(self):
         self.assertEqual(self.interface.run(
-            '[0,1,2,3,4].slice(1,3);"hallo"[0..5..2]',
+            '[0,1,2,3,4] slice(1,3);"hallo"[0..5..2]',
             return_out=True, ),
             ['[1, 2]', '"hlo"'])
 
     def test_minmax(self):
         self.assertEqual(self.interface.run(
-            '[0,2,3,4,5,100,2,101,-3].min;[0,2,3,4,5,100,2,101,-3].max',
+            '[0,2,3,4,5,100,2,101,-3] min;[0,2,3,4,5,100,2,101,-3] max',
             return_out=True, ),
             ['-3', '101'])
 
     def test_conv(self):
         self.assertEqual(self.interface.run(
-            '10.asString;type(10.asString);"10".asNum',
+            '10 asString;type(10 asString);"10" asNum',
             return_out=True, ),
             ['"10"', '"String"', '10'])
 
     def test_split(self):
         self.assertEqual(self.interface.run(
-            '"h a".split',
+            '"h a" split',
             return_out=True, ),
             ['["h", "a"]'])
 
@@ -1325,62 +1325,62 @@ class TestUtils(unittest.TestCase):
 
     def test_count(self):
         self.assertEqual(self.interface.run(
-            '[0,0,1,2].count(0);"hallo".count("l", "h")',
+            '[0,0,1,2] count(0);"hallo" count("l", "h")',
             return_out=True, ),
             ['2', '3'])
 
     def test_nummap(self):
         self.assertEqual(self.interface.run(
-            '"hallo".numMap',
+            '"hallo" numMap',
             return_out=True, ),
             ['[8, 1, 12, 12, 15]'])
 
     def test_upper_lower_capitalize(self):
         self.assertEqual(self.interface.run(
-            '"hAlLo".lower;"halLo".upper;"hALLO".capitalize',
+            '"hAlLo" lower;"halLo" upper;"hALLO" capitalize',
             return_out=True, ),
             ['"hallo"', '"HALLO"', '"Hallo"'])
 
     def test_strip(self):
         self.assertEqual(self.interface.run(
-            '"h f    ".strip;"jk".strip("k")',
+            '"h f    " strip;"jk" strip("k")',
             return_out=True, ),
             ['"h f"', '"j"'])
 
     def test_replace(self):
         self.assertEqual(self.interface.run(
-            '[0,1].replace(0,2)',
+            '[0,1] replace(0,2)',
             return_out=True, ),
             ['[2, 1]'])
 
     def test_isupper_islower_iscapitalized(self):
         self.assertEqual(self.interface.run(
-            '"hallo".isLower;"Hallo".isUpper;"Hallo".isCapitalized',
+            '"hallo" isLower;"Hallo" isUpper;"Hallo" isCapitalized',
             return_out=True, ),
             ['True', 'False', 'True'])
 
     def test_sort(self):
         self.assertEqual(self.interface.run(
-            '[1,0,-1].sort',
+            '[1,0,-1] sort',
             return_out=True, ),
             ['[-1, 0, 1]'])
 
     def test_posof(self):
         self.assertEqual(self.interface.run(
-            '"hallo".find("o")',
+            '"hallo" find("o")',
             return_out=True, ),
             ['4'])
 
     def test_combinations_allcombinations_multicombinations_permutations_mostcommon(self):
         self.assertEqual(self.interface.run(
-            'x="ha";"hal".combinations(2);x.allCombinations;x.multiCombinations;x.permutations;x.mostCommon(1)',
+            'x="ha";"hal" combinations(2);x allCombinations;x multiCombinations;x permutations;x mostCommon(1)',
             return_out=True, ),
             ['"ha"', '[["h", "a"], ["h", "l"], ["a", "l"]]', '[[], ["h"], ["a"], ["h", "a"]]',
              '[["h", "h"], ["h", "a"], ["a", "a"]]', '[["h", "a"], ["a", "h"]]', '[["h", 1]]'])
 
     def test_removeduplicates(self):
         self.assertEqual(self.interface.run(
-            '[0,0,1].removeDuplicates',
+            '[0,0,1] removeDuplicates',
             return_out=True, ),
             ['[0, 1]'])
 

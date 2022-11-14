@@ -4,42 +4,6 @@ free operators: $ § =>> ==>
 #bugtest change, macro
 #rename tests
 
-bug
-sym = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
-num = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
-
-fn toRoman number =>
-    result = ""
-    pointer = 0
-    while number =>
-        div = number // num[pointer]
-        number %= num[pointer]
-        while div =>
-            result += sym[pointer]
-            div -= 1
-        <<
-        pointer += 1
-    <<
-    return result
-<<
-
-fn fromRoman roman_numeral =>
-    result = 1
-    roman_numeral ->
-        first_num = num[sym.find(iterelem)]
-        second_num = num[sym.find(roman_numeral[itercounter + 1])] if itercounter +1 != roman_numeral size else -2
-        second_num out
-        if first_num >= second_num => result += first_num
-        else => result -= first_num
-    <<
-    return result
-<<
-
-
-toRoman(1000)
-fromRoman("M")
-
-#https://iolanguage.org/tutorial.html for ideas
 #isinstance = "is"
 #binding variables
 #findseq
@@ -78,3 +42,40 @@ fn domainName url => url replace("http://", "") replace("https://", "") replace(
 "hyphen-url.com" domainName 
 
 ['"github"', '"zombie-bites"', '"cnet"', '"hyphen-url"']
+
+
+#https://www.codewars.com/kata/51b66044bce5799a7f000003
+
+sym = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
+num = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+
+fn toRoman number =>
+    let result ""
+    let pointer 0
+    while number =>
+        div = number // num at: pointer
+        number %= num at: pointer
+        while div =>
+            result += sym at: pointer
+            div -= 1
+        <<
+        pointer += 1
+    <<
+    return result
+<<
+
+fn fromRoman roman_numeral =>
+    let result 0
+    roman_numeral ->
+        let first_num num at(sym find: iterelem)
+        let second_num num at(sym find(roman_numeral at(itercounter + 1))) if itercounter +1 != roman_numeral size else -1
+        if first_num >= second_num => result += first_num
+        else => result -= first_num
+    <<
+    return result
+<<
+
+toRoman(2541) out
+fromRoman("MCCCXI") out 
+
+["MMDXLI", "1311"]
