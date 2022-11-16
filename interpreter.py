@@ -224,7 +224,7 @@ class Interpreter:
                 elif global_value is not None:
                     result = global_value
                 elif node.identifier in BUILTIN_EXPECTED_ARGS:
-                    result = Datatypes.String(f"Built-in function {node.identifier}")
+                    result = Datatypes.VariableNode(node.identifier)
                 else:
                     raise NameError(f"Name \"{node.identifier}\" is not defined.")
                 return result

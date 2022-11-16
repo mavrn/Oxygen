@@ -3,10 +3,6 @@ from interpreter import Interpreter
 from lexer import Lexer
 from parse import Parser
 
-
-# TODO: add custom and more precise exceptions (i.e. store token positions)
-
-
 class Interface:
     def __init__(self, debug=False, quit_after_exceptions=False, printall=False):
         self.inp_msg = ">> "
@@ -49,8 +45,7 @@ class Interface:
     def get_out(self, user_input):
         lexer = Lexer(user_input)
         tokens = lexer.gen_tokens()
-        for token in tokens:
-            self.tokens_list.append(token)
+        self.tokens_list.extend(tokens)
         self.tokens_list.append(Datatypes.Token(Datatypes.LINEBREAK))
         if len(tokens) == 0:
             self.inp_msg = ">> "

@@ -724,8 +724,6 @@ class Array:
     
     def none(self):
         return not any([bool(x) for x in self])
-    
-
 
 
 class Dictionary:

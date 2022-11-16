@@ -10,8 +10,7 @@ free operators: $ § =>> ==>
 #at assignment or atPut
 #list comps ?
 #spread/unpack
-#hasKey
-#hasValue
+
 
 testcases to add
 #getfield
@@ -32,6 +31,8 @@ array.filter
 #arr of
 #foreach function
 #select, detect
+#hasKey
+#hasValue
 
 #https://www.codewars.com/kata/514a024011ea4fb54200004b/python
 

@@ -183,9 +183,9 @@ class Parser:
                 else:
                     return Datatypes.ReturnNode(statement=self.compound_statement())
             case Datatypes.BREAK:
-                return Datatypes.AssignNode(Datatypes.VariableNode("__break__"), Datatypes.Bool(True))
+                return Datatypes.AssignNode(Datatypes.VariableNode("__break__"), None)
             case Datatypes.CONTINUE:
-                return Datatypes.AssignNode(Datatypes.VariableNode("__return__"), Datatypes.Bool(True))
+                return Datatypes.AssignNode(Datatypes.VariableNode("__return__"), None)
             case Datatypes.REP:
                 return self.gen_rep()
             case Datatypes.FOR:
@@ -296,19 +296,16 @@ class Parser:
         return Datatypes.FuncCallNode(variable=Datatypes.VariableNode(identifier), arguments=arguments)
 
     def gen_rep(self):
-        count_identifier = "_c"
+        items = []
         loop_reps = self.compound_statement()
         if self.current_token_type == Datatypes.AS:
             self.next_token()
             if self.current_token_type != Datatypes.IDENTIFIER:
                 raise SyntaxError("Expected identifier after 'as' keyword")
-            count_identifier = self.current_token.value
+            items.append(self.current_token.value)
             self.next_token()
-        assignment = Datatypes.AssignNode(Datatypes.VariableNode(count_identifier), Datatypes.Number(0))
-        increment = Datatypes.AssignNode(Datatypes.VariableNode(count_identifier),
-                                         Datatypes.AddNode(Datatypes.VariableNode(count_identifier), Datatypes.Number(1)))
-        condition = Datatypes.ComparisonNode(Datatypes.VariableNode(count_identifier), loop_reps, Datatypes.LESS_THAN)
-        return Datatypes.ForNode(assignment=assignment, condition=condition, increment=increment,
+        return Datatypes.IterateNode(iterable = Datatypes.RangeNode(start=0, stop=loop_reps, step=1),
+                                    items = items,
                                      statements=self.statement_block())
 
     def gen_for(self):

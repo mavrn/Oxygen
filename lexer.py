@@ -48,6 +48,7 @@ class Lexer:
             elif current_char in [" ", "\t"] or self.ignore:
                 self.next_char()
             elif current_char == "~":
+                tokens.append(Token(Datatypes.LINEBREAK))
                 self.next_char()
                 self.ignore = True
             elif current_char in OXYGEN_DICT:
