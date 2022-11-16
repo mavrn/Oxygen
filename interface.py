@@ -54,7 +54,7 @@ class Interface:
         else:
             for token in tokens:
                 if token.type in (Datatypes.ARROW, Datatypes.ITERATE_ARROW):
-                    if token.type == Datatypes.ARROW and tokens[-1].type != Datatypes.ARROW:
+                    if token.type in (Datatypes.ARROW, Datatypes.ITERATE_ARROW) and tokens[-1].type not in (Datatypes.ARROW, Datatypes.ITERATE_ARROW):
                         continue
                     else:
                         self.open_blocks += 1

@@ -12,7 +12,7 @@ def main():
     else:
         runfile = False
     
-    interface_args = {"debug": False, "fallthrough": False, "printall": False, "autoid" : False}
+    interface_args = {"debug": False, "fallthrough": False, "printall": False, "autoid" : True}
     for arg in args:
         if arg in interface_args:
             interface_args[arg] = True

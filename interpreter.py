@@ -142,7 +142,6 @@ class Interpreter:
             case "SolveNode":
                 _, expression = equation_solver.solve(node.left_side, node.right_side)
                 return self.evaluate(expression)
-            #TODO: Remove Node
             case "SolveAssignNode":
                 variable, expression = equation_solver.solve(node.left_side, node.right_side)
                 result = self.evaluate(expression)
@@ -163,9 +162,21 @@ class Interpreter:
                 arr = self.evaluate(node.identifier)
                 if not hasattr(arr, "__iter__"):
                     raise TypeError(f"Element of type {type(arr).__name__} is not iterable.")
+                if self.autoid and isinstance(node.identifier, Datatypes.VariableNode):
+                        singular_id = singularize(node.identifier.identifier)
+                        if singular_id == node.identifier.identifier:
+                            ids = ["x"]
+                        else:
+                            ids = ["x", singular_id]
+                else:
+                    ids = ["x"]
                 arr = arr.clone()
+                args = ids + ["i", "self"]
                 for i, elem in enumerate(arr):
-                    res = self.evaluate(Datatypes.FuncCallNode(Datatypes.Function(["x", "i", "self"], node.function), [elem, Datatypes.Number(i), arr]))         
+                    if len(args) == 3:
+                        res = self.evaluate(Datatypes.FuncCallNode(Datatypes.Function(args, node.function), [elem, Datatypes.Number(i), arr]))
+                    else:
+                        res = self.evaluate(Datatypes.FuncCallNode(Datatypes.Function(args, node.function), [elem, elem, Datatypes.Number(i), arr]))
                     if isinstance(res, list):
                         if len(res) == 0:
                             continue
@@ -255,24 +266,28 @@ class Interpreter:
                 return out
             case "IterateNode":
                 out = []
-                
                 if len(node.items) == 2:
-                    id = node.items[1]
+                    ids = [node.items[1]]
                     index_id = node.items[0]
                 elif len(node.items) == 1:
-                    id = node.items[0]
+                    ids = [node.items[0]]
                     index_id = "itercounter"
                 else:
                     if self.autoid and isinstance(node.iterable, Datatypes.VariableNode):
-                        id = singularize(node.iterable.identifier)
+                        singular_id = singularize(node.iterable.identifier)
+                        if singular_id == node.iterable.identifier:
+                            ids = ["iterelem"]
+                        else:
+                            ids = ["iterelem", singular_id]
                     else:
-                        id = "iterelem"
+                        ids = ["iterelem"]
                     index_id = "itercounter"
                 iterable = self.evaluate(node.iterable)
                 self.scope = self.scope + " > IterLoop"
                 self.fields[self.scope] = {}
                 for i, element in enumerate(iterable):
-                    self.evaluate(Datatypes.AssignNode(Datatypes.VariableNode(id), element))
+                    for id in ids:
+                        self.evaluate(Datatypes.AssignNode(Datatypes.VariableNode(id), element))
                     self.evaluate(Datatypes.AssignNode(Datatypes.VariableNode(index_id), Datatypes.Number(i)))
                     for statement in node.statements:
                         lines = standardize(self.evaluate(statement))

@@ -144,7 +144,7 @@ _plural_prepositions = set((
 ))
 
  
-def singularize(word, custom={}):
+def singularize(word, custom={"string": "char"}):
     """Returns the singular of a given word."""
     if word in custom:
         return custom[word]
@@ -178,3 +178,8 @@ def singularize(word, custom={}):
                     inflection = inflection.replace('\\' + str(k + 1), '')
             return suffix.sub(inflection, word)
     return word
+
+if __name__ == "__main__":
+    while True:
+        str = input()
+        print(singularize(str))

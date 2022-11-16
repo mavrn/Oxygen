@@ -10,6 +10,9 @@ free operators: $ § =>> ==>
 #at assignment or atPut
 #list comps ?
 #spread/unpack
+#remove "variablenode" output
+#multiple args after :
+#extend natural language
 
 
 testcases to add
@@ -33,6 +36,7 @@ array.filter
 #select, detect
 #hasKey
 #hasValue
+#natural language auto id
 
 #https://www.codewars.com/kata/514a024011ea4fb54200004b/python
 

@@ -34,6 +34,8 @@ class Number:
                 self.num = 0
         elif isinstance(value, String):
             self.num = float(value.str)
+        elif isinstance(value, Number):
+            self.num = value.num
         else:
             raise ValueError(f"Couldn't convert type {type(value).__name__} to number.")
     

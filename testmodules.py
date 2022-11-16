@@ -299,9 +299,9 @@ codewars_input7 = """fn repl str =>
 
 #https://www.codewars.com/kata/55c45be3b2079eccff00010f
 codewars_input8 = """fn order str =>
-    let a str split
-    let new [""]* a size
-    iterate a as i, word =>
+    let words str split
+    let new [""] * words size
+    words ->
         let num 0
         for char in word => if char in NUMBERS => num = char asNum
         new[num-1] = word
@@ -431,7 +431,7 @@ codewars_input15 = """
 fn stripcomments str delimiters =>
     lines = str split: "\n"
     newlines = []
-    iterate lines as line =>
+    lines ->
         newline = ""
         iterate line as char =>
             if char in delimiters => break
@@ -457,7 +457,7 @@ fn nextbigger num =>
 
 #https://www.codewars.com/kata/51e056fe544cf36c410000fb
 codewars_input17 = """fn wordcount text =>
-    arr = split(lower(text >> " " unless x in ALPHABET))
+    arr = split(lower(text >> " " unless x in ALPHABET)) 
     return arr mostCommon >> x at: 0
 <<
 "DDD e e e e ddd DdD: ddd ddd aa aA Aa, bb cc cC e e e" wordcount out
@@ -468,7 +468,7 @@ codewars_input18 = """fn multpossibilities n k =>
     let results []
     arr = [0]*n >> i+1
     combs = arr multiCombinations: k
-    iterate combs as comb =>
+    combs ->
         res = 1
         iterate comb as num => res *= num
         if res equals n =>
@@ -526,11 +526,11 @@ fn root_sum num =>
 """
 
 #https://www.codewars.com/kata/54bf1c2cd5b56cc47f0007a1
-codewars_input22 = """fn duplicates str =>
+codewars_input22 = """fn duplicates string =>
     let dup_sum 0
-    iterate str as x =>
-        if str count: x > 1 =>
-            str removeAll: x
+    string ->
+        if string count: char > 1 =>
+            string removeAll: char
             dup_sum++
         <<
     <<
@@ -616,7 +616,7 @@ fn field_validator f =>
             <<
         <<
     <<
-    iterate ship_counts as count => if count != 0 => return False
+    ship_counts -> if ship_count != 0 => return False
     return True
 <<
 [[1, 0, 0, 0, 0, 1, 1, 0, 0, 0],
@@ -775,8 +775,8 @@ codewars_input29 = """fn range_extraction a =>
 #https://www.codewars.com/kata/52742f58faf5485cae000b9a
 codewars_input30 = """fn filledvalues values =>
     filled = 0
-    iterate values as i =>
-        if i => filled++
+    values ->
+        if value => filled++
     <<
     return filled
 <<
@@ -884,8 +884,8 @@ sudoku out
 """
 
 #https://www.codewars.com/kata/52bc74d4ac05d0945d00054e
-codewars_input32 = """fn first_non_repeating_character str =>
-    iterate str => if str lower count: (iterelem lower) smaller 2 => <-iterelem 
+codewars_input32 = """fn first_non_repeating_character string =>
+    string -> if string lower count: (char lower) smaller 2 => <-char 
 <<
 "sTreSS" first_non_repeating_character out"""
 
@@ -1014,7 +1014,7 @@ codewars_output35 = ['True', 'True', 'False']
 
 class TestUtils(unittest.TestCase):
     def setUp(self):
-        self.interface = Interface(debug=False, quit_after_exceptions=True, printall=True)
+        self.interface = Interface(debug=False, quit_after_exceptions=True, printall=True, autoid=True)
 
     def test1(self):
         self.assertEqual(self.interface.run(input1, return_out=True), output1)
