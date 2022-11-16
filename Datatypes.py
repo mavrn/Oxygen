@@ -965,9 +965,9 @@ OPERATOR_DICT = {"+": PLUS_SIGN, "-": MINUS_SIGN, "*": MULT_SIGN, "/": DIV_SIGN,
                  "<-": RETURN, "->": ITERATE_ARROW, "..": DOUBLE_PERIOD}
 KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
                 "False": FALSE, "not": NOT, "or": OR, "and": AND,
-                "rep": REP, "as": AS, "for": FOR, "return": RETURN,
-                "break": BREAK, "continue": CONTINUE, "in": IN, "iter": ITERATE,
-                "del": DEL, "let": LET, "equals": COMP_EQUALS,
+                "repeat": REP, "as": AS, "for": FOR, "return": RETURN,
+                "break": BREAK, "continue": CONTINUE, "in": IN, "iterate": ITERATE,
+                "delete": DEL, "let": LET, "equals": COMP_EQUALS,
                 "greater": GREATER_THAN, "smaller": LESS_THAN, "while": WHILE,
                 "unless": UNLESS, "afn": ANONYMOUS_FUNCTION_KEYWORD
                 }

@@ -4,9 +4,9 @@ from lexer import Lexer
 from parse import Parser
 
 class Interface:
-    def __init__(self, debug=False, quit_after_exceptions=False, printall=False):
+    def __init__(self, debug=False, quit_after_exceptions=False, printall=False, autoid=False):
         self.inp_msg = ">> "
-        self.interpreter = Interpreter()
+        self.interpreter = Interpreter(autoid)
         self.debug = debug
         self.quit_after_exceptions = quit_after_exceptions
         self.printall = printall

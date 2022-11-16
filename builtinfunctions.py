@@ -95,4 +95,4 @@ def repr(obj):
     return Datatypes.String(builtins.repr(obj))
 
 def fill(*args):
-    return Datatypes.Array(list(np.full((1, args[1]), args[0])[0]))
+    return Datatypes.Array([Datatypes.Number(int(num)) for num in np.full((1, args[1]), args[0])[0]])

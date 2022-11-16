@@ -22,7 +22,7 @@ input5 = """fn divide_by_two x => x/2 if x%2 == 0 else x
 13 divide_by_two
 """
 
-input6 = """fn fizz_buzz i => rep i as c => "FizzBuzz" if c % 3 == 0 and c % 5 == 0 else "Fizz" if c % 3 == 0 else "Buzz" if c % 5 == 0 else c
+input6 = """fn fizz_buzz i => repeat i as c => "FizzBuzz" if c % 3 == 0 and c % 5 == 0 else "Fizz" if c % 3 == 0 else "Buzz" if c % 5 == 0 else c
 10 fizz_buzz
 """
 
@@ -92,7 +92,7 @@ input14 = "6 if False else 5 if False else 4 if False else 3"
 
 input15 = "x=4; x+2; x sqrt"
 
-input16 = """rep 2 as i =>
+input16 = """repeat 2 as i =>
     i+1
     i/2
 <<
@@ -186,9 +186,9 @@ input28 = """fn add_spaces str => (str asArr >> x+" ") join
 input29 = """fn narc int => 
     spl = int asString asArr >> x asNum
     range = ([0]*10) >> i+1
-    iter range as i=>
+    iterate range as i=>
         sum = 0
-        iter spl as x=>
+        iterate spl as x=>
             sum += x**i
         <<
         if sum == int => return True
@@ -231,7 +231,7 @@ input_getscope_getfields = """fn one =>
 
 fn plus_two =>
     out(getScope())
-    rep 1 =>
+    repeat 1 =>
         out(getScope())
     <<
     return one() + 2
@@ -282,7 +282,7 @@ codewars_input5 = """
 
 #https://www.codewars.com/kata/5526fc09a1bbd946250002dc
 codewars_input6 = """fn x a =>
-     odd_nums = a >> del if x%2 equals 0
+     odd_nums = a >> delete if x%2 equals 0
      a difference: odd_nums
      return odd_nums at: 0 if odd_nums size equals 1 else a at: 0
 <<
@@ -291,7 +291,7 @@ codewars_input6 = """fn x a =>
 
 #https://www.codewars.com/kata/546f922b54af40e1e90001da
 codewars_input7 = """fn repl str =>
-     str >>> del unless x in ALPHABET
+     str >>> delete unless x in ALPHABET
      <- str numMap join: " "
 <<
 "The sunset sets at twelve o' clock." repl
@@ -301,7 +301,7 @@ codewars_input7 = """fn repl str =>
 codewars_input8 = """fn order str =>
     let a str split
     let new [""]* a size
-    iter a as i, word =>
+    iterate a as i, word =>
         let num 0
         for char in word => if char in NUMBERS => num = char asNum
         new[num-1] = word
@@ -339,8 +339,8 @@ fn highest str =>
 #https://www.codewars.com/kata/52597aa56021e91c93000cb0
 codewars_input11 = """fn countzeroes arr =>
     zeroes = arr count: 0
-    arr >>> del if x equals 0
-    rep zeroes => arr += 0
+    arr >>> delete if x equals 0
+    repeat zeroes => arr += 0
     return arr
 <<
 [9, 0, 0, 9, 1, 2, 0, 1, 0, 1, 0, 3, 0, 1, 9, 0, 0, 0, 0, 9] countzeroes out"""
@@ -348,7 +348,7 @@ codewars_input11 = """fn countzeroes arr =>
 #https://www.codewars.com/kata/52774a314c2333f0a7000688
 codewars_input12 = """fn val str =>
     let open 0
-    iter str as i, char =>
+    iterate str as i, char =>
         if char == "(" => open +=1
         or char == ")" =>
             if open <= 0 => return False
@@ -421,7 +421,7 @@ fn check sudoku =>
 """
 
 #https://www.codewars.com/kata/57eae20f5500ad98e50002c5
-codewars_input14 = """fn remspace str => str >> del if x == " "
+codewars_input14 = """fn remspace str => str >> delete if x == " "
 "8 j 8   mBliB8g  imjB8B8  jl  B" remspace
 "8 8 Bi fk8h B 8 BB8B B B  B888 c hl8 BhB fd" remspace
 """
@@ -431,9 +431,9 @@ codewars_input15 = """
 fn stripcomments str delimiters =>
     lines = str split: "\n"
     newlines = []
-    iter lines as line =>
+    iterate lines as line =>
         newline = ""
-        iter line as char =>
+        iterate line as char =>
             if char in delimiters => break
             else => newline += char
         <<
@@ -468,11 +468,11 @@ codewars_input18 = """fn multpossibilities n k =>
     let results []
     arr = [0]*n >> i+1
     combs = arr multiCombinations: k
-    iter combs as comb =>
+    iterate combs as comb =>
         res = 1
-        iter comb as num => res *= num
+        iterate comb as num => res *= num
         if res equals n =>
-            iter comb permutations as perm =>
+            iterate comb permutations as perm =>
                 unless perm in results =>
                     results += perm
                 <<
@@ -491,7 +491,7 @@ codewars_input19 = """
 fn same_structure_as original other =>
     if original type != other type != "Array" or original size != other size=>
         return False<<
-    rep original size as i =>
+    repeat original size as i =>
         if type(original[i]) == "Array" and not same_structure_as(original[i], other[i])=>
             return False<<
     <<
@@ -528,7 +528,7 @@ fn root_sum num =>
 #https://www.codewars.com/kata/54bf1c2cd5b56cc47f0007a1
 codewars_input22 = """fn duplicates str =>
     let dup_sum 0
-    iter str as x =>
+    iterate str as x =>
         if str count: x > 1 =>
             str removeAll: x
             dup_sum++
@@ -545,7 +545,7 @@ codewars_input23 = """fn persistent_bugger num =>
     let ct 0
     while num asString size > 1 =>
         new = 1
-        iter num asString asArr as x => new *= x asNum
+        iterate num asString asArr as x => new *= x asNum
         num = new
         ct++
     <<
@@ -559,7 +559,7 @@ codewars_input23 = """fn persistent_bugger num =>
 codewars_input24 = """fn camel_case str => 
     let a str split("_", "-")
     let res a[0]
-    iter a[1..a size] as x =>
+    iterate a[1..a size] as x =>
         res += x capitalize<<
     return res
 <<
@@ -616,7 +616,7 @@ fn field_validator f =>
             <<
         <<
     <<
-    iter ship_counts as count => if count != 0 => return False
+    iterate ship_counts as count => if count != 0 => return False
     return True
 <<
 [[1, 0, 0, 0, 0, 1, 1, 0, 0, 0],
@@ -727,7 +727,7 @@ codewars_input27 = """fn spiralize size =>
 codewars_input28 = """fn pick_peaks array =>
     result = {"pos" > [], "peaks" > []}
     pos = 0
-    iter 1..(array size -1) as i =>
+    iterate 1..(array size -1) as i =>
         if array[i] != array[pos] => pos = i
         if pos and array[pos-1] < array[pos] > array[i+1] =>
             result["pos"] += pos
@@ -744,14 +744,14 @@ codewars_input28 = """fn pick_peaks array =>
 codewars_input29 = """fn range_extraction a =>
     let result ""
     let tmp []
-    iter a as e =>
+    iterate a as e =>
         unless tmp or abs(e-tmp[-1]) equals 1 => tmp += e
         else =>
             if tmp size >= 3 =>
                 result += tmp[0] asString + "-" + tmp[-1] asString + ","
             <<
             else =>
-                iter tmp as t =>
+                iterate tmp as t =>
                     result += t asString + ","
                 <<
             <<
@@ -762,7 +762,7 @@ codewars_input29 = """fn range_extraction a =>
         result += tmp[0] asString + "-" + tmp[-1] asString + ","
     <<
     else =>
-        iter tmp as t =>
+        iterate tmp as t =>
             result += t asString + ","
         <<
     <<
@@ -775,7 +775,7 @@ codewars_input29 = """fn range_extraction a =>
 #https://www.codewars.com/kata/52742f58faf5485cae000b9a
 codewars_input30 = """fn filledvalues values =>
     filled = 0
-    iter values as i =>
+    iterate values as i =>
         if i => filled++
     <<
     return filled
@@ -827,9 +827,9 @@ sudoku = [[5, 3, 0, 0, 7, 0, 0, 0, 0],
             [0, 0, 0, 4, 1, 9, 0, 0, 5],
             [0, 0, 0, 0, 8, 0, 0, 7, 9]]
 tsudoku = []
-iter 0..sudoku size as i, _=>
+iterate 0..sudoku size as i, _=>
     new = []
-    iter sudoku as x =>
+    iterate sudoku as x =>
         new += x[i]
     <<
     tsudoku += new
@@ -846,8 +846,8 @@ fn get_square i j =>
     lc = i//3
     cc = j//3
     res=[]
-    rep SIZE_SQUARE as l =>
-        rep SIZE_SQUARE as k =>
+    repeat SIZE_SQUARE as l =>
+        repeat SIZE_SQUARE as k =>
             res += sudoku[SIZE_SQUARE*lc+k][SIZE_SQUARE*cc+l]
         <<
     <<
@@ -856,7 +856,7 @@ fn get_square i j =>
 fn get_row i => sudoku[i]
 fn get_col j =>
     col = []
-    iter sudoku => col+=iterelem[j]
+    iterate sudoku => col+=iterelem[j]
     return col
 <<
 fn simplify =>
@@ -885,14 +885,14 @@ sudoku out
 
 #https://www.codewars.com/kata/52bc74d4ac05d0945d00054e
 codewars_input32 = """fn first_non_repeating_character str =>
-    iter str => if str lower count: (iterelem lower) smaller 2 => <-iterelem 
+    iterate str => if str lower count: (iterelem lower) smaller 2 => <-iterelem 
 <<
 "sTreSS" first_non_repeating_character out"""
 
 #https://www.codewars.com/kata/525c65e51bf619685c000059
 codewars_input33 = """fn cakes cake_recipe ingredients =>
     ratios = []
-    iter cake_recipe keys as ingredient=>
+    iterate cake_recipe keys as ingredient=>
         if ingredient not in ingredients keys => return 0
         ratios append(ingredients[ingredient] // cake_recipe[ingredient])
     <<
@@ -906,7 +906,7 @@ codewars_input34 = """fn string_inc str =>
     if str last not in NUMBERS => <- str+"1"
     let number ""
     let word ""
-    iter reverse(0..str size) =>
+    iterate reverse(0..str size) =>
         if str[iterelem] in NUMBERS => number insert(0,str[iterelem])
         else => 
             let word str[0..(iterelem+1)]
@@ -926,7 +926,7 @@ codewars_input34 = """fn string_inc str =>
 #https://www.codewars.com/kata/55c04b4cc56a697bb0000048
 codewars_input35 = """fn scramble str1 str2 =>
     scramblable = True
-    iter str2 as char =>
+    iterate str2 as char =>
         if str1 count: char < str2 count: char => scramblable = False
     <<
     return scramblable 
@@ -972,7 +972,7 @@ output29 = ['True', 'True', 'False']
 output30 = ['0', 'h', '"s"', '1']
 output31 = ['35']
 
-output_getscope_getfields = ['global', 'global >> plus_two', 'global >> plus_two > ForLoop', '{"x" > 0}', 'global >> plus_two >> one', '2']
+output_getscope_getfields = ['global', 'global >> plus_two', 'global >> plus_two > IterLoop', '{"x" > 0}', 'global >> plus_two >> one', '2']
 
 codewars_output1 = ['15']
 codewars_output2 = ['-1', '-5', '0']
@@ -1398,7 +1398,7 @@ class TestUtils(unittest.TestCase):
 
     def test_iter(self):
         self.assertEqual(self.interface.run(
-            'iter 1..6..3 => iterelem',
+            'iterate 1..6..3 => iterelem',
             return_out=True, ),
             ['1', '4'])
 

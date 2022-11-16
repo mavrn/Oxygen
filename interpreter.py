@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 import Datatypes
 import builtinfunctions
 import equation_solver
+from singularize import singularize
 
 BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos": [1], "atan": [1], "abs": [1],
                          "sqrt": [1], "factorial": [1], "bool": [1], "plot": [3, 4], "out": range(1, 100),
@@ -75,11 +76,13 @@ def convert_to_builtins(argument_list):
 
 
 class Interpreter:
-    def __init__(self):
+    def __init__(self, autoid=False):
         self.fields = {"global": BUILT_IN_FIELDS.copy()}
         self.backup_fields = {}
         self.scope = "global"
         self.output_lines = []
+        self.autoid = autoid
+        #self.lemmatizer = WordNetLemmatizer()
 
     def get_output(self, ast_list, printall=True):
         self.output_lines = []
@@ -252,6 +255,7 @@ class Interpreter:
                 return out
             case "IterateNode":
                 out = []
+                
                 if len(node.items) == 2:
                     id = node.items[1]
                     index_id = node.items[0]
@@ -259,7 +263,10 @@ class Interpreter:
                     id = node.items[0]
                     index_id = "itercounter"
                 else:
-                    id = "iterelem"
+                    if self.autoid and isinstance(node.iterable, Datatypes.VariableNode):
+                        id = singularize(node.iterable.identifier)
+                    else:
+                        id = "iterelem"
                     index_id = "itercounter"
                 iterable = self.evaluate(node.iterable)
                 self.scope = self.scope + " > IterLoop"
@@ -283,11 +290,11 @@ class Interpreter:
                 self.scope = " > ".join(self.scope.split(" > ")[:-1])
                 return out
             case "RangeNode":
-                return Datatypes.Array(list(np.arange(
+                return Datatypes.Array([Datatypes.Number(num) for num in np.arange(
                     self.evaluate(node.start),
                     self.evaluate(node.stop),
                     self.evaluate(node.step)
-                )))
+                )])
             case "ReturnNode":
                 if self.scope == "global":
                     raise SyntaxError("Return statement outside function")
