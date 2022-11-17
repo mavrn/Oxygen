@@ -211,7 +211,7 @@ y
 
 input31 = """fn func_calc str =>
     matcher = {"one" > 1, "two" > 2, "three" > 3, "four" > 4, "five" > 5, "six" > 6, "seven" > 7, "eight" > 8, "nine" > 9}
-    operands = str strip: ")" slice(0,-1) split: "(" 
+    operands = str strip: ")" slice: 0,-1 split: "(" 
     operator = operands middle
     a = matcher[operands first]; b = matcher[operands last]
     if operator equals "plus" => <- a+b
@@ -260,7 +260,7 @@ return -abs(num)
 #https://www.codewars.com/kata/56bc28ad5bdaeb48760009b0
 codewars_input3 = """fn rem_chars str =>
 let res ""
-for i = 1, i<(str size -1), i++ => res+=str at(i)
+for i = 1, i<(str size -1), i++ => res+=str at: i
 <- res<<
 "remove these chars" rem_chars
 """
@@ -312,7 +312,7 @@ codewars_input8 = """fn order str =>
 
 #https://www.codewars.com/kata/54e6533c92449cc251001667
 codewars_input9 = """fn uni str =>
-    let new [str at(0)]
+    let new [str at: 0]
     str -> if iterelem != new[-1] and itercounter >0 => new+=iterelem
     <- new
 <<
@@ -570,7 +570,7 @@ codewars_input24 = """fn camel_case str =>
 #https://www.codewars.com/kata/585d7d5adb20cf33cb000235
 codewars_input25 = """fn unique_number array =>
     array ->
-        if array count(iterelem) == 1 => <- iterelem
+        if array count: iterelem == 1 => <- iterelem
     <<
 <<
 [ 1, 1, 1, 2, 1, 1 ] unique_number out
@@ -795,7 +795,7 @@ fn format_duration seconds =>
     seconds-= timeValues[3]*60
     timeValues[4] = seconds
 
-    filled = filledvalues(timeValues)
+    filled = filledvalues: timeValues
     res = ""
     for i=0,i<5,i++ =>
         if timeValues[i] != 0 =>
@@ -834,7 +834,7 @@ iterate 0..sudoku size as i, _=>
     <<
     tsudoku += new
 <<
-fn is_valid => flatten(sudoku) count(0) == 0
+fn is_valid => sudoku flatten count:0 == 0
 
 fn set_val i j val =>
     sudoku[i][j] = val
@@ -898,8 +898,8 @@ codewars_input33 = """fn cakes cake_recipe ingredients =>
     <<
     <- ratios min
 <<
-cakes({"flour" > 500, "sugar" > 200, "eggs" > 1},  {"flour" > 1200, "sugar" > 1200, "eggs" > 5, "milk" > 200})
-cakes({"apples" > 3, "flour" > 300, "sugar" > 150, "milk" > 100, "oil" > 100}, {"sugar" > 500, "flour" > 2000, "milk" > 2000})"""
+cakes: {"flour" > 500, "sugar" > 200, "eggs" > 1},  {"flour" > 1200, "sugar" > 1200, "eggs" > 5, "milk" > 200}
+cakes: {"apples" > 3, "flour" > 300, "sugar" > 150, "milk" > 100, "oil" > 100}, {"sugar" > 500, "flour" > 2000, "milk" > 2000}"""
 
 #https://www.codewars.com/kata/54a91a4883a7de5d7800009c
 codewars_input34 = """fn string_inc str =>

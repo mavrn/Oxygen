@@ -183,6 +183,8 @@ class Parser:
                 return self.declare_function()
             case Datatypes.ANONYMOUS_FUNCTION_KEYWORD:
                 return self.declare_anonymous_function()
+            case Datatypes.CLASS_KEYWORD:
+                return Datatypes.ClassDeclareNode(identifier=self.factor(), body=self.statement_block())
             case Datatypes.RETURN:
                 if self.current_token_type == Datatypes.LINEBREAK:
                     return Datatypes.ReturnNode(statement=None)
@@ -376,7 +378,7 @@ class Parser:
             self.skip_linebreaks()
         if self.current_token_type != Datatypes.RBRACKET:
             raise SyntaxError("Expected closing bracket")
-        return Datatypes.ArrayCreateNode(items=contents)
+        return Datatypes.ArrayDeclareNode(items=contents)
 
     def gen_dict(self):
         contents = []
@@ -394,7 +396,7 @@ class Parser:
             self.skip_linebreaks()
         if self.current_token_type != Datatypes.RCURLY:
             raise SyntaxError("Expected closing parenthesis")
-        return Datatypes.DictCreateNode(items=contents)
+        return Datatypes.DictDeclareNode(items=contents)
 
     def gen_bracketcall(self, identifier):
         indexes = []

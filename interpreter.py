@@ -64,9 +64,7 @@ def process_nums(argument_list):
 
 
 def stringify(elem):
-    if isinstance(elem, Datatypes.Number):
-        elem = elem.get_num()
-    if not isinstance(elem, (type(None), Datatypes.Function)):
+    if type(elem) in Datatypes.DATATYPES:
         return repr(elem)
 
 
@@ -313,16 +311,27 @@ class Interpreter:
                 if self.scope == "global":
                     raise SyntaxError("Return statement outside function")
                 self.fields[self.scope]["__return__"] = self.evaluate(node.statement)
-            case "ArrayCreateNode":
+            case "ArrayDeclareNode":
                 new_arr = Datatypes.Array(node.items.copy())
                 for i, elem in enumerate(new_arr):
                     new_arr[Datatypes.Number(i)] = self.evaluate(elem)
                 return new_arr
-            case "DictCreateNode":
+            case "DictDeclareNode":
                 new_dict = Datatypes.Dictionary({})
                 for item in node.items:
                     new_dict[self.evaluate(item[0])] = self.evaluate(item[1])
                 return new_dict
+            case "ClassDeclareNode":
+                constructor=None
+                for i, statement in enumerate(node.body):
+                    if isinstance(statement, Datatypes.AssignNode) and isinstance(statement.value, Datatypes.Function) and \
+                        statement.value.identifier == "setup":
+                        constructor = statement.value
+                        node.body.pop(i)
+                        break
+                new_class =  Datatypes.Class(identifier=node.identifier, body=node.body,constructor=constructor)
+                self.fields["global"][node.identifier.identifier] =new_class
+                print(new_class)
             case "StringBuilderNode":
                 tokens = node.tokens.copy()
                 if len(tokens) == 0:
@@ -462,7 +471,7 @@ class Interpreter:
     def plot(self, function, lower_rng=-5, upper_rng=5, increment=0.001):
         if increment < 0.0001:
             raise ValueError("Plotting increment can not be less than 0.0001")
-        args = np.arange(lower_rng, upper_rng, increment)
+        args = [Datatypes.Number(num) for num in np.arange(lower_rng, upper_rng, increment)]
         try:
             func_args = np.array(
                 [self.evaluate(Datatypes.FuncCallNode(function, [arg])) for arg in args])

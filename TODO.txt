@@ -10,7 +10,20 @@ free operators: $ § =>> ==>
 #at assignment or atPut
 #list comps ?
 #spread/unpack
-#remove "variablenode" output
+
+------
+objects
+class identifier =>
+    setup(args) => 
+        #id = arg
+    <<
+    func(args) =>
+    <<
+<<
+x = identifier(args)   #funccallnode
+x func(args)
+func(x, args)
+
 
 
 testcases to add

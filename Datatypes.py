@@ -709,23 +709,23 @@ class Array:
         return Array(sorted(self.contents))
 
     def min(self):
-        return min(self.contents)
+        return Number(min(self.contents))
 
     def max(self):
-        return max(self.contents)
+        return Number(max(self.contents))
 
     def reverse(self):
         self.contents.reverse()
         return self
 
     def all(self):
-        return all([bool(x) for x in self])
+        return Bool(all([bool(x) for x in self]))
     
     def some(self):
-        return any([bool(x) for x in self])
+        return Bool(any([bool(x) for x in self]))
     
     def none(self):
-        return not any([bool(x) for x in self])
+        return Bool(not any([bool(x) for x in self]))
 
 
 class Dictionary:
@@ -764,10 +764,10 @@ class Dictionary:
         return Bool(self.contents == other.contents)
 
     def __getitem__(self, key):
-        return self.contents[convert_to_builtin(key)]
+        return self.contents[key]
 
     def __contains__(self, elem):
-        return convert_to_builtin(elem) in self.contents
+        return elem in self.contents
 
     def __setitem__(self, key, val):
         self.contents[key] = val
@@ -798,6 +798,20 @@ class Dictionary:
 
     def values(self):
         return Array(list(self.contents.values()))
+
+class Class:
+    def __init__(self, identifier, body, constructor=None, ):
+        self.identifier = identifier
+        self.constructor = constructor
+        self.body = body
+    
+    def __repr__(self):
+        return f"Class {self.identifier}; constr. {self.constructor}; body {self.body}"
+    
+class Instance:
+    def __init__(self, instanceof: Class, identifier: String):
+        self.identifier = identifier
+        self.instanceof = instanceof
 
 
 class Function:
@@ -905,6 +919,8 @@ UNLESS = 60
 ITERATE_ARROW = 61
 DOUBLE_PERIOD = 62
 ANONYMOUS_FUNCTION_KEYWORD = 63
+CLASS_KEYWORD = 64
+
 
 AddNode = namedtuple("AddNode", ["a", "b"])
 SubNode = namedtuple("SubNode", ["a", "b"])
@@ -928,10 +944,13 @@ BracketCallNode = namedtuple("BracketCallNode", ["identifier", "index"])
 ArrayApplyNode = namedtuple("ArrayApplyNode", ["identifier", "function"])
 IterateNode = namedtuple("IterateNode", ["iterable", "items", "statements"])
 RangeNode = namedtuple("RangeNode", ["start", "stop", "step"])
-ArrayCreateNode = namedtuple("ArrayCreateNode", ["items"])
-DictCreateNode = namedtuple("DictCreateNode", ["items"])
+ArrayDeclareNode = namedtuple("ArrayDeclareNode", ["items"])
+DictDeclareNode = namedtuple("DictDeclareNode", ["items"])
 PostIncrementNode = namedtuple("PostIncrementNode", ["factor", "value"])
 StringBuilderNode = namedtuple("StringBuilderNode", ["string", "tokens"])
+ClassDeclareNode = namedtuple("ClassDeclareNode", ["identifier", "body"])
+
+DATATYPES = [Array, Number, String, Dictionary, Bool]
 
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
                       MODULUS_SIGN: ModulusNode, EQUALS: AssignNode, PLUS_ASSIGN: AddNode, MINUS_ASSIGN: SubNode,
@@ -970,7 +989,7 @@ KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
                 "break": BREAK, "continue": CONTINUE, "in": IN, "iterate": ITERATE,
                 "delete": DEL, "let": LET, "equals": COMP_EQUALS,
                 "greater": GREATER_THAN, "smaller": LESS_THAN, "while": WHILE,
-                "unless": UNLESS, "afn": ANONYMOUS_FUNCTION_KEYWORD
+                "unless": UNLESS, "afn": ANONYMOUS_FUNCTION_KEYWORD, "class": CLASS_KEYWORD
                 }
             
 OXYGEN_DICT = OPERATOR_DICT | KEYWORD_DICT
