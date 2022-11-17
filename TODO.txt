@@ -11,8 +11,6 @@ free operators: $ § =>> ==>
 #list comps ?
 #spread/unpack
 #remove "variablenode" output
-#multiple args after :
-#extend natural language
 
 
 testcases to add

@@ -5,7 +5,6 @@ from matplotlib import pyplot as plt
 import Datatypes
 import builtinfunctions
 import equation_solver
-from singularize import singularize
 
 BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos": [1], "atan": [1], "abs": [1],
                          "sqrt": [1], "factorial": [1], "bool": [1], "plot": [3, 4], "out": range(1, 100),
@@ -103,11 +102,12 @@ class Interpreter:
                     return Datatypes.String(f"Warning: Built-in function {node.identifier} has been overridden.")
                 return Datatypes.Function(node.arguments, node.body, node.identifier)
             case "FuncCallNode":
+                if isinstance(node.variable, Datatypes.FuncCallNode):
+                    return self.evaluate(
+                        Datatypes.FuncCallNode(node.variable.variable, [*node.arguments, *node.variable.arguments]))
                 if node.variable.identifier in BUILTIN_EXPECTED_ARGS:
                     return self.builtin_handler(node)
                 return self.function_call_handler(self.evaluate(node.variable), node)
-            case "PeriodCallNode":
-                return self.period_call_handler(node)
             case name if name in OPERATIONAL_NODES:
                 return self.operation_handler(node)
             case "AssignNode":
@@ -159,18 +159,17 @@ class Interpreter:
                 self.evaluate(Datatypes.AssignNode(node.factor, Datatypes.AddNode(node.factor, node.value)))
                 return pre_assignment_value
             case "ArrayApplyNode":
-                arr = self.evaluate(node.identifier)
+                arr = self.evaluate(node.identifier).clone()
                 if not hasattr(arr, "__iter__"):
                     raise TypeError(f"Element of type {type(arr).__name__} is not iterable.")
-                if self.autoid and isinstance(node.identifier, Datatypes.VariableNode):
-                        singular_id = singularize(node.identifier.identifier)
-                        if singular_id == node.identifier.identifier:
-                            ids = ["x"]
-                        else:
-                            ids = ["x", singular_id]
+                if self.autoid:
+                    singular = builtinfunctions.singularize(node.identifier, arr)
+                    if singular:
+                        ids = ["x", singular]
+                    else:
+                        ids = ["x"]
                 else:
                     ids = ["x"]
-                arr = arr.clone()
                 args = ids + ["i", "self"]
                 for i, elem in enumerate(arr):
                     if len(args) == 3:
@@ -266,6 +265,7 @@ class Interpreter:
                 return out
             case "IterateNode":
                 out = []
+                iterable = self.evaluate(node.iterable)
                 if len(node.items) == 2:
                     ids = [node.items[1]]
                     index_id = node.items[0]
@@ -273,16 +273,15 @@ class Interpreter:
                     ids = [node.items[0]]
                     index_id = "itercounter"
                 else:
-                    if self.autoid and isinstance(node.iterable, Datatypes.VariableNode):
-                        singular_id = singularize(node.iterable.identifier)
-                        if singular_id == node.iterable.identifier:
-                            ids = ["iterelem"]
+                    if self.autoid:
+                        singular = builtinfunctions.singularize(node.iterable, iterable)
+                        if singular:
+                            ids = ["iterelem", singular]
                         else:
-                            ids = ["iterelem", singular_id]
+                            ids = ["iterelem"]
                     else:
                         ids = ["iterelem"]
                     index_id = "itercounter"
-                iterable = self.evaluate(node.iterable)
                 self.scope = self.scope + " > IterLoop"
                 self.fields[self.scope] = {}
                 for i, element in enumerate(iterable):
@@ -460,17 +459,6 @@ class Interpreter:
                 raise Exception("An unknown error occurred")
         return result
 
-    def period_call_handler(self, node):
-        if isinstance(node.right_side, Datatypes.FuncCallNode):
-            return self.evaluate(
-                Datatypes.FuncCallNode(node.right_side.variable, [node.left_side, *node.right_side.arguments]))
-        elif isinstance(node.right_side, Datatypes.VariableNode) and (
-                        node.right_side.identifier in BUILTIN_EXPECTED_ARGS or isinstance(
-                            self.fields["global"].get(node.right_side.identifier), Datatypes.Function)):
-            return self.evaluate(Datatypes.FuncCallNode(node.right_side, [node.left_side]))
-        else:
-            raise TypeError(f"Cannot call type {type(node.right_side).__name__} on type {type(node.left_side).__name__}.")
-
     def plot(self, function, lower_rng=-5, upper_rng=5, increment=0.001):
         if increment < 0.0001:
             raise ValueError("Plotting increment can not be less than 0.0001")
@@ -554,4 +542,3 @@ class Interpreter:
     
     def getScope(self):
         return Datatypes.String(self.scope)
-

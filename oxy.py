@@ -12,14 +12,14 @@ def main():
     else:
         runfile = False
     
-    interface_args = {"debug": False, "fallthrough": False, "printall": False, "autoid" : True}
+    interface_args = {"debug": False, "fallthrough": False, "printall": False, "disableautoid": False}
     for arg in args:
         if arg in interface_args:
             interface_args[arg] = True
     interface = Interface(debug=interface_args["debug"],
                           quit_after_exceptions=interface_args["fallthrough"],
                           printall=interface_args["printall"],
-                          autoid = interface_args["autoid"])
+                          autoid = not interface_args["disableautoid"])
     if runfile:
         interface.run_from_file(filepath)
     else:

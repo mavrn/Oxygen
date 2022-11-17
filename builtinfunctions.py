@@ -1,6 +1,7 @@
 import builtins
 import math
 import webbrowser
+from langutils import get_singular
 
 import numpy as np
 from lexer import Lexer
@@ -96,3 +97,27 @@ def repr(obj):
 
 def fill(*args):
     return Datatypes.Array([Datatypes.Number(int(num)) for num in np.full((1, args[1]), args[0])[0]])
+
+def singularize(node, eval_node):
+    if isinstance(node, Datatypes.VariableNode):
+        singular_id = get_singular(node.identifier)
+        if singular_id == node.identifier:
+            return singularize("_", eval_node)
+        else:
+            return singular_id
+    elif isinstance(node, Datatypes.FuncCallNode):
+        match node.variable.identifier:
+            case "keys":
+                return "key"
+            case "values":
+                return "value"
+            case "combinations" | "allCombinations" | "multiCombinations":
+                return "combination"
+            case "permutations":
+                return "permutation"
+            case "split":
+                if len(node.arguments) == 1:
+                    return "word"
+        return singularize(node.arguments[0], eval_node)
+    elif isinstance(eval_node, Datatypes.String):
+        return "char"

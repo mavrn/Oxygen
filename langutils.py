@@ -144,7 +144,7 @@ _plural_prepositions = set((
 ))
 
  
-def singularize(word, custom={"string": "char"}):
+def get_singular(word, custom={"string": "char"}):
     """Returns the singular of a given word."""
     if word in custom:
         return custom[word]
@@ -152,10 +152,10 @@ def singularize(word, custom={"string": "char"}):
     if "-" in word:
         w = word.split("-")
         if len(w) > 1 and w[1] in _plural_prepositions:
-            return singularize(w[0], custom) + "-" + "-".join(w[1:])
+            return get_singular(w[0], custom) + "-" + "-".join(w[1:])
     # dogs' => dog's
     if word.endswith("'"):
-        return singularize(word[:-1], custom) + "'s"
+        return get_singular(word[:-1], custom) + "'s"
     w = word.lower()
     for x in _singular_uninflected:
         if x.endswith(w):
@@ -182,4 +182,4 @@ def singularize(word, custom={"string": "char"}):
 if __name__ == "__main__":
     while True:
         str = input()
-        print(singularize(str))
+        print(get_singular(str))

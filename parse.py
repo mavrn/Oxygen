@@ -140,12 +140,18 @@ class Parser:
             if token_type == Datatypes.EXP:
                 result = Datatypes.ExpNode(a=result, b=self.factor())
             elif token_type == Datatypes.IDENTIFIER:
-                result = Datatypes.PeriodCallNode(left_side=result, right_side=self.factor())
+                result = Datatypes.FuncCallNode(variable=self.factor(), arguments=[result])
             elif token_type == Datatypes.COLON:
                 if isinstance(result, Datatypes.VariableNode):
                     result = Datatypes.FuncCallNode(variable=result, arguments=[self.factor()])
-                elif isinstance(result, Datatypes.PeriodCallNode):
-                    result = Datatypes.PeriodCallNode(left_side=result.left_side, right_side=Datatypes.FuncCallNode(variable=Datatypes.VariableNode(result.right_side.identifier), arguments=[self.factor()]))
+                    while self.current_token_type == Datatypes.COMMA:
+                        self.next_token()
+                        result.arguments.append(self.factor())
+                elif isinstance(result, Datatypes.FuncCallNode):
+                    result.arguments.append(self.factor())
+                    while self.current_token_type == Datatypes.COMMA:
+                        self.next_token()
+                        result.arguments.append(self.factor())
                 else:
                     raise SyntaxError("No colon allowed here.")
             elif token_type == Datatypes.DOUBLE_PLUS:

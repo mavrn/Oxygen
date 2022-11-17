@@ -174,12 +174,12 @@ x[1][1][0]
 """
 
 input27 = """
-"hallo" >> " " if x in "aeiou" else x
+"hallo" >> " " if char in "aeiou" else char
 "lol" >> 1
 "abcdefg" >> i
 """
 
-input28 = """fn add_spaces str => (str asArr >> x+" ") join
+input28 = """fn add_spaces string => (string asArr >> char+" ") join
 "hallo" add_spaces
 """
 
@@ -277,21 +277,21 @@ return ct
 
 #https://www.codewars.com/kata/52fba66badcd10859f00097e
 codewars_input5 = """
-"Remove all vowels" >> "" if x in "aeiou" else x
+"Remove all vowels" >> "" if char in "aeiou" else char
 """
 
 #https://www.codewars.com/kata/5526fc09a1bbd946250002dc
-codewars_input6 = """fn x a =>
-     odd_nums = a >> delete if x%2 equals 0
-     a difference: odd_nums
-     return odd_nums at: 0 if odd_nums size equals 1 else a at: 0
+codewars_input6 = """fn x nums =>
+     odd_nums = nums >> delete if num%2 equals 0
+     nums difference: odd_nums
+     return odd_nums at: 0 if odd_nums size equals 1 else nums at: 0
 <<
 [160, 3, 1719, 19, 11, 13, -21] x
 """
 
 #https://www.codewars.com/kata/546f922b54af40e1e90001da
 codewars_input7 = """fn repl str =>
-     str >>> delete unless x in ALPHABET
+     str >>> delete unless char in ALPHABET
      <- str numMap join: " "
 <<
 "The sunset sets at twelve o' clock." repl
@@ -321,15 +321,15 @@ codewars_input9 = """fn uni str =>
 """
 
 #https://www.codewars.com/kata/57eb8fcdf670e99d9b000272/
-codewars_input10 = """fn score st => (st capitalize numMap >> x asNum) sum
+codewars_input10 = """fn score string => (string capitalize numMap >> char asNum) sum
 fn highest str => 
     let h ""
     let hs 0
     str split ->
-        let sc iterelem score
+        let sc word score
         if sc greater hs =>
             hs = sc
-            h = iterelem
+            h = word
         <<
     <<
     return h
@@ -337,11 +337,11 @@ fn highest str =>
 'what time are we climbing up the volcano' highest"""
 
 #https://www.codewars.com/kata/52597aa56021e91c93000cb0
-codewars_input11 = """fn countzeroes arr =>
-    zeroes = arr count: 0
-    arr >>> delete if x equals 0
-    repeat zeroes => arr += 0
-    return arr
+codewars_input11 = """fn countzeroes nums =>
+    zeroes = nums count: 0
+    nums >>> delete if num equals 0
+    repeat zeroes => nums += 0
+    return nums
 <<
 [9, 0, 0, 9, 1, 2, 0, 1, 0, 1, 0, 3, 0, 1, 9, 0, 0, 0, 0, 9] countzeroes out"""
 
@@ -421,7 +421,7 @@ fn check sudoku =>
 """
 
 #https://www.codewars.com/kata/57eae20f5500ad98e50002c5
-codewars_input14 = """fn remspace str => str >> delete if x == " "
+codewars_input14 = """fn remspace str => str >> delete if char == " "
 "8 j 8   mBliB8g  imjB8B8  jl  B" remspace
 "8 8 Bi fk8h B 8 BB8B B B  B888 c hl8 BhB fd" remspace
 """
@@ -447,7 +447,7 @@ stripcomments("a \#b\nc\nd $e f g", ["\#", "$"])"""
 #https://www.codewars.com/kata/55983863da40caa2c900004e
 codewars_input16 = """
 fn nextbigger num =>
-    allnums = (num asString permutations >> x join asNum) sort
+    allnums = (num asString permutations >> permutation join asNum) sort
     return -1 if allnums find: num equals (allnums size-1) else allnums[allnums find: num +1]
 <<
 12 nextbigger
@@ -457,7 +457,7 @@ fn nextbigger num =>
 
 #https://www.codewars.com/kata/51e056fe544cf36c410000fb
 codewars_input17 = """fn wordcount text =>
-    arr = split(lower(text >> " " unless x in ALPHABET)) 
+    arr = split(lower(text >> " " unless char in ALPHABET)) 
     return arr mostCommon >> x at: 0
 <<
 "DDD e e e e ddd DdD: ddd ddd aa aA Aa, bb cc cC e e e" wordcount out
@@ -506,7 +506,7 @@ same_structure_as([ [ [ ], [ ] ] ], [ [ 1, 1 ] ] ) out"""
 
 #https://www.codewars.com/kata/5264d2b162488dc400000001
 codewars_input20 = """fn rev_5 str =>
-    return (str split >> x reverse if x size >= 5) join: " "
+    return (str split >> word reverse if word size >= 5) join: " "
 <<
 "Hey fellow warriors" rev_5
 "This is a test" rev_5
