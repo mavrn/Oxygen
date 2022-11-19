@@ -8,7 +8,7 @@ input2 = """fn get_c a b => (a**2+b**2) sqrt
 get_c(3,4)
 """
 
-input3 = """fn negate boolean_value => !boolean_value
+input3 = """fn negate boolean_value => not boolean_value
 negate(1==1)
 """
 

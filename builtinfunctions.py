@@ -106,6 +106,11 @@ def singularize(node, eval_node):
         else:
             return singular_id
     elif isinstance(node, Datatypes.FuncCallNode):
+        if not isinstance(node.variable, Datatypes.VariableNode):
+            return
+        if len(node.arguments) > 0 and isinstance(node.arguments[0], Datatypes.VariableNode) and\
+            node.arguments[0].identifier == "own":
+            return singularize(node.variable, eval_node)
         match node.variable.identifier:
             case "keys":
                 return "key"

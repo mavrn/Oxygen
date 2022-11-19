@@ -800,25 +800,24 @@ class Dictionary:
         return Array(list(self.contents.values()))
 
 class Class:
-    def __init__(self, identifier, body, constructor=None, ):
+    def __init__(self, identifier, constructor=None):
         self.identifier = identifier
         self.constructor = constructor
-        self.body = body
     
     def __repr__(self):
-        return f"Class {self.identifier}; constr. {self.constructor}; body {self.body}"
+        return str(self.__dict__)
     
 class Instance:
-    def __init__(self, instanceof: Class, identifier: String):
-        self.identifier = identifier
+    def __init__(self, instanceof: Class):
         self.instanceof = instanceof
 
 
 class Function:
-    def __init__(self, arglist, body, identifier="Anonymous"):
+    def __init__(self, arglist, body, identifier="Anonymous", is_static=False):
         self.arguments = arglist
         self.body = body
         self.identifier = identifier
+        self.is_static = is_static
 
     def __repr__(self):
         return f"Function {self.identifier} {self.body}"
@@ -920,6 +919,7 @@ ITERATE_ARROW = 61
 DOUBLE_PERIOD = 62
 ANONYMOUS_FUNCTION_KEYWORD = 63
 CLASS_KEYWORD = 64
+STATIC_FUNCTION_KEYWORD = 65
 
 
 AddNode = namedtuple("AddNode", ["a", "b"])
@@ -931,6 +931,7 @@ ModulusNode = namedtuple("ModulusNode", ["a", "b"])
 ExpNode = namedtuple("ExpNode", ["a", "b"])
 AssignNode = namedtuple("AssignNode", ["variable", "value"])
 VariableNode = namedtuple("VariableNode", ["identifier"])
+InstanceVariableNode = namedtuple("InstanceVariableNode", ["identifier"])
 FuncCallNode = namedtuple("FuncCallNode", ["variable", "arguments"])
 ComparisonNode = namedtuple("ComparisonNode", ["a", "b", "operator"])
 BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])
@@ -949,6 +950,7 @@ DictDeclareNode = namedtuple("DictDeclareNode", ["items"])
 PostIncrementNode = namedtuple("PostIncrementNode", ["factor", "value"])
 StringBuilderNode = namedtuple("StringBuilderNode", ["string", "tokens"])
 ClassDeclareNode = namedtuple("ClassDeclareNode", ["identifier", "body"])
+
 
 DATATYPES = [Array, Number, String, Dictionary, Bool]
 
@@ -975,7 +977,7 @@ OPERATOR_DICT = {"+": PLUS_SIGN, "-": MINUS_SIGN, "*": MULT_SIGN, "/": DIV_SIGN,
                  "%": MODULUS_SIGN, "+=": PLUS_ASSIGN, "-=": MINUS_ASSIGN,
                  "*=": MULT_ASSIGN, "/=": DIV_ASSIGN, "%=": MODULUS_ASSIGN,
                  "(": LPAREN, ")": RPAREN, "**": EXP, ",": COMMA,
-                 "&": AND, "|": OR, "==": COMP_EQUALS, "!=": COMP_NOT_EQUALS,
+                 "==": COMP_EQUALS, "!=": COMP_NOT_EQUALS,
                  "<": LESS_THAN, ">": GREATER_THAN, "<=": LESS_OR_EQUALS,
                  ">=": GREATER_OR_EQUALS, "=>": ARROW, "=": EQUALS, "!": NOT,
                  "--": DOUBLE_MINUS, "++": DOUBLE_PLUS, "<<": BLOCK_END,
@@ -989,7 +991,8 @@ KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
                 "break": BREAK, "continue": CONTINUE, "in": IN, "iterate": ITERATE,
                 "delete": DEL, "let": LET, "equals": COMP_EQUALS,
                 "greater": GREATER_THAN, "smaller": LESS_THAN, "while": WHILE,
-                "unless": UNLESS, "afn": ANONYMOUS_FUNCTION_KEYWORD, "class": CLASS_KEYWORD
+                "unless": UNLESS, "afn": ANONYMOUS_FUNCTION_KEYWORD, "class": CLASS_KEYWORD,
+                "sfn": STATIC_FUNCTION_KEYWORD
                 }
             
 OXYGEN_DICT = OPERATOR_DICT | KEYWORD_DICT
@@ -1010,4 +1013,4 @@ type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN",
              BREAK: "BREAK", CONTINUE: "CONTINUE", LBRACKET: "LBRACKET", RBRACKET: "RBRACKET", ARRAYAPPLY: "ARRAYAPPLY",
              IN: "IN", ITERATE: "ITERATE", DEL: "DEL", ARRAYAPPLY_ASSIGN: "ARRAYAPPLY_ASSIGN", LET: "LET",
              COLON: "COLON", WHILE: "WHILE", FLOORDIV_SIGN: "FLOORDIV_SIGN", UNLESS: "UNLESS", ITERATE_ARROW: "ITERATE_ARROW",
-             DOUBLE_PERIOD: "DOUBLE_PERIOD", ANONYMOUS_FUNCTION_KEYWORD: "ANONYMOUS_FUNCTION_KEYWORD",}
+             DOUBLE_PERIOD: "DOUBLE_PERIOD", ANONYMOUS_FUNCTION_KEYWORD: "ANONYMOUS_FUNCTION_KEYWORD", STATIC_FUNCTION_KEYWORD: "STATIC_FUNCTION_KEYWORD"}

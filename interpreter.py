@@ -23,11 +23,11 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "at": [2], "insert": [3], "get": [2], "sorted": [1], "all": [1], "some": [1], "none": [1],
                          "startswith": [2], "endswith": [2], "format": range(2, 100), "extend": [2], "repr": [1],
                          "findseq": [2], "detect": [2], "foreach": [2], "arrOf" : range(0,100), "fill": [2], 
-                         "every": [2], "reverse": [1], "hasKey": [2], "hasValue": [2]
+                         "every": [2], "reverse": [1], "hasKey": [2], "hasValue": [2], "new": range(1,100)
                          }
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["out", "apply", "select", "plot", "getFields", "getScope", "detect", "foreach", "every"]
+INTERNAL_KEYWORDS = ["out", "apply", "select", "plot", "getFields", "getScope", "detect", "foreach", "every", "new"]
 BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["asArr", "bool", "type", "quit", "rick", "input", "size", "asString", "repr", "arrOf"]
 BUILTIN_KEYWORDS = ["midnight", "leet", "range", "asNum", "openURL", "abs", "divMod", "change", "macro", "fill"]
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS + INTERNAL_KEYWORDS + BUILTIN_KEYWORDS)]
@@ -75,6 +75,7 @@ def convert_to_builtins(argument_list):
 class Interpreter:
     def __init__(self, autoid=False):
         self.fields = {"global": BUILT_IN_FIELDS.copy()}
+        self.classes = []
         self.backup_fields = {}
         self.scope = "global"
         self.output_lines = []
@@ -94,15 +95,20 @@ class Interpreter:
 
     def evaluate(self, node):
         match type(node).__name__:
-            case "FuncDeclareNode":
-                self.evaluate(Datatypes.AssignNode(Datatypes.VariableNode(node.identifier), Datatypes.Function(node.arguments, node.body, node.identifier))) 
-                if node.identifier in BUILTIN_EXPECTED_ARGS:
-                    return Datatypes.String(f"Warning: Built-in function {node.identifier} has been overridden.")
-                return Datatypes.Function(node.arguments, node.body, node.identifier)
             case "FuncCallNode":
                 if isinstance(node.variable, Datatypes.FuncCallNode):
                     return self.evaluate(
                         Datatypes.FuncCallNode(node.variable.variable, [*node.arguments, *node.variable.arguments]))
+                if len(node.arguments) >= 1 and isinstance(node.arguments[0], Datatypes.VariableNode) and \
+                    type(self.fields[self.scope].get(node.arguments[0].identifier)) == Datatypes.Class and \
+                    node.variable.identifier != "new":
+                    return self.class_call_handler(node)
+                if len(node.arguments) >= 1 and isinstance(node.arguments[0], Datatypes.VariableNode) and \
+                    node.arguments[0].identifier == "own":
+                    return self.evaluate(Datatypes.InstanceVariableNode(identifier=node.variable.identifier))
+                if len(node.arguments) >= 1 and isinstance(node.arguments[0], Datatypes.VariableNode) and \
+                    type(self.fields[self.scope].get(node.arguments[0].identifier)) == Datatypes.Instance:
+                    return self.instance_call_handler(node)
                 if node.variable.identifier in BUILTIN_EXPECTED_ARGS:
                     return self.builtin_handler(node)
                 return self.function_call_handler(self.evaluate(node.variable), node)
@@ -110,7 +116,17 @@ class Interpreter:
                 return self.operation_handler(node)
             case "AssignNode":
                 assignment_value = self.evaluate(node.value)
-                if isinstance(node.variable, Datatypes.BracketCallNode):
+                if isinstance(node.variable, Datatypes.FuncCallNode) and len(node.variable.arguments) == 1 and\
+                    isinstance(node.variable.arguments[0], Datatypes.VariableNode) and\
+                    type(self.fields[self.scope].get(node.variable.arguments[0].identifier)) == Datatypes.Instance:
+                    current_instance = self.fields[self.scope].get(node.variable.arguments[0].identifier)
+                    setattr(current_instance, node.variable.variable.identifier, assignment_value)
+                elif self.scope.startswith("##"):
+                    current_class = self.fields["global"].get(self.classes[-1])
+                    if isinstance(assignment_value, Datatypes.Function) and not assignment_value.is_static:
+                        assignment_value.arguments.insert(0, "own")
+                    setattr(current_class, node.variable.identifier, assignment_value)
+                elif isinstance(node.variable, Datatypes.BracketCallNode):
                     last_index = node.variable.index.pop()
                     arr = self.evaluate(node.variable)
                     arr[self.evaluate(last_index)] = assignment_value
@@ -239,6 +255,8 @@ class Interpreter:
                 else:
                     raise NameError(f"Name \"{node.identifier}\" is not defined.")
                 return result
+            case "InstanceVariableNode":
+                return self.evaluate(getattr(self.evaluate(Datatypes.VariableNode("own")),node.identifier))
             case "ForNode":
                 out = []
                 self.scope = self.scope + " > ForLoop"
@@ -323,15 +341,20 @@ class Interpreter:
                 return new_dict
             case "ClassDeclareNode":
                 constructor=None
+                self.scope = "##"+node.identifier.identifier
+                self.classes.append(node.identifier.identifier)
                 for i, statement in enumerate(node.body):
                     if isinstance(statement, Datatypes.AssignNode) and isinstance(statement.value, Datatypes.Function) and \
                         statement.value.identifier == "setup":
+                        statement.value.arguments.insert(0, "own")
                         constructor = statement.value
                         node.body.pop(i)
                         break
-                new_class =  Datatypes.Class(identifier=node.identifier, body=node.body,constructor=constructor)
-                self.fields["global"][node.identifier.identifier] =new_class
-                print(new_class)
+                new_class =  Datatypes.Class(identifier=node.identifier.identifier ,constructor=constructor)
+                self.fields["global"][node.identifier.identifier] = new_class
+                for statement in node.body:
+                    self.evaluate(statement)
+                self.scope = "global"
             case "StringBuilderNode":
                 tokens = node.tokens.copy()
                 if len(tokens) == 0:
@@ -390,6 +413,37 @@ class Interpreter:
         self.fields.pop(self.scope)
         self.scope = delimiter.join(self.scope.split(delimiter)[:-1])
         return returned_result
+
+
+    def class_call_handler(self, node):
+        attr_id = node.variable.identifier
+        args = [self.evaluate(arg) for arg in node.arguments]
+        attr_class = args.pop(0)
+        attr = getattr(attr_class, attr_id)
+        if isinstance(attr, Datatypes.Function):
+            return self.evaluate(Datatypes.FuncCallNode(attr, args))
+        elif len(args) > 0:
+            raise Exception(f"Attribute {attr_id} of class {attr_class} is not callable.")
+        else:
+            return attr
+
+    def instance_call_handler(self, node):
+        attr_id = node.variable.identifier
+        args = [self.evaluate(arg) for arg in node.arguments]
+        attr_instance = args.pop(0)
+        try:
+            attr = getattr(attr_instance, attr_id)
+        except AttributeError:
+            try:
+                attr = getattr(attr_instance.instanceof, attr_id)
+            except AttributeError:
+                raise Exception(f"Instance of class {attr_instance.instanceof.identifier} has no attribute {attr_id}")
+        if isinstance(attr, Datatypes.Function):
+            return self.evaluate(Datatypes.FuncCallNode(attr, [attr_instance, *args]))
+        elif len(args) > 0:
+            raise Exception(f"Attribute {attr_id} of instance {attr_instance} is not callable.")
+        else:
+            return attr
 
     def builtin_handler(self, node):
         keyword = node.variable.identifier
@@ -551,3 +605,11 @@ class Interpreter:
     
     def getScope(self):
         return Datatypes.String(self.scope)
+
+    def new(self, *args):
+        called_class = self.evaluate(args[0])
+        if not isinstance(called_class, Datatypes.Class):
+            raise TypeError(f"Cannot initialize instance of type {type(args[0]).__name__}")
+        new_instance = Datatypes.Instance(instanceof=called_class)
+        self.evaluate(Datatypes.FuncCallNode(called_class.constructor, [new_instance, *args[1:]]))
+        return new_instance

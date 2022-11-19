@@ -183,6 +183,8 @@ class Parser:
                 return self.declare_function()
             case Datatypes.ANONYMOUS_FUNCTION_KEYWORD:
                 return self.declare_anonymous_function()
+            case Datatypes.STATIC_FUNCTION_KEYWORD:
+                return self.declare_function(static=True)
             case Datatypes.CLASS_KEYWORD:
                 return Datatypes.ClassDeclareNode(identifier=self.factor(), body=self.statement_block())
             case Datatypes.RETURN:
@@ -261,7 +263,7 @@ class Parser:
                     msg += token.value
                 raise SyntaxError(msg)
 
-    def declare_function(self):
+    def declare_function(self, static=False):
         arguments = []
         if self.current_token_type != Datatypes.IDENTIFIER:
             raise SyntaxError("Expected an identifier")
@@ -276,8 +278,9 @@ class Parser:
                                         value=Datatypes.Function(
                                             arglist=arguments,
                                             identifier=identifier,
-                                            body=self.statement_block(func_block=True)
-                                        ))
+                                            body=self.statement_block(func_block=True),
+                                            is_static=static)
+                                        )
     
     def declare_anonymous_function(self):
         arguments = []
