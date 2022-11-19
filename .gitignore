@@ -28,3 +28,4 @@ __pycache__/interpreter.cpython-311.pyc
 __pycache__/lexer.cpython-311.pyc
 __pycache__/parse.cpython-311.pyc
 __pycache__/testmodules.cpython-311.pyc
+__pycache__/langutils.cpython-310.pyc

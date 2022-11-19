@@ -82,16 +82,16 @@ class Number:
         return Number(self.num ** float(other))
 
     def __lt__(self, other):
-        return self.num < float(other)
+        return Bool(self.num < float(other))
 
     def __le__(self, other):
-        return self.num <= float(other)
+        return Bool(self.num <= float(other))
 
     def __gt__(self, other):
-        return self.num > float(other)
+        return Bool(self.num > float(other))
 
     def __ge__(self, other):
-        return self.num >= float(other)
+        return Bool(self.num >= float(other))
 
     def __bool__(self):
         return False if self.num == 0 else True
@@ -177,16 +177,16 @@ class String:
         return String(str(self) + str(String(other)))
 
     def __lt__(self, other):
-        return self.str < other.str
+        return Bool(self.str < other.str)
 
     def __le__(self, other):
-        return self.str <= other.str
+        return Bool(self.str <= other.str)
 
     def __gt__(self, other):
-        return self.str > other.str
+        return Bool(self.str > other.str)
 
     def __ge__(self, other):
-        return self.str >= other.str
+        return Bool(self.str >= other.str)
 
     def __mul__(self, num):
         num = num.get_num()
@@ -196,7 +196,7 @@ class String:
         return self
 
     def __eq__(self, other):
-        return str(self) == str(other)
+        return Bool(str(self) == str(other))
 
     def __getitem__(self, index):
         return String(self.str[index.get_num()])
@@ -262,10 +262,12 @@ class String:
         for arg in convert_to_ints(args):
             self.n = [n - 1 for n in self.n]
             self.max -= 1
+            if arg<0:
+                arg = len(self) + arg
             self.str = self.str[:arg] + self.str[arg + 1:]
 
     def hasValue(self, value):
-        return value in self
+        return Bool(value in self)
 
     def remove(self, *args):
         arr = Array(list(self.str))
@@ -289,7 +291,11 @@ class String:
     def pop(self, *args):
         self.n = [n - 1 for n in self.n]
         self.max -= 1
-        return self.str.pop(*convert_to_ints(args))
+        if len(args) == 0:
+            args = [-1]
+        elem = self[Number(args[0])]
+        self.deleteAt(Number(args[0]))
+        return elem
 
     def find(self, value):
         return Number(self.str.index(str(value)))
@@ -421,6 +427,7 @@ class Bool:
 
     def reverse(self):
         self.boolean_value = not self.boolean_value
+        return self
 
 
 class Array:
@@ -504,7 +511,7 @@ class Array:
         return self.contents[index.get_num()]
 
     def __contains__(self, elem):
-        return elem in self.contents
+        return Bool(elem in self.contents)
 
     def __setitem__(self, index, val):
         self.contents[index.get_num()] = val
@@ -656,7 +663,7 @@ class Array:
             del self.contents[arg]
     
     def hasValue(self, value):
-        return value in self
+        return Bool(value in self)
 
     def removeAll(self, *args):
         for arg in args:
@@ -785,10 +792,10 @@ class Dictionary:
         return self.contents.pop(key)
 
     def hasKey(self, key):
-        return key in self.contents.keys()
+        return Bool(key in self.contents.keys())
     
     def hasValue(self, val):
-        return val in self.contents.values()
+        return Bool(val in self.contents.values())
         
     def get(self, key):
         return self.contents.get(key)
@@ -931,7 +938,6 @@ ModulusNode = namedtuple("ModulusNode", ["a", "b"])
 ExpNode = namedtuple("ExpNode", ["a", "b"])
 AssignNode = namedtuple("AssignNode", ["variable", "value"])
 VariableNode = namedtuple("VariableNode", ["identifier"])
-InstanceVariableNode = namedtuple("InstanceVariableNode", ["identifier"])
 FuncCallNode = namedtuple("FuncCallNode", ["variable", "arguments"])
 ComparisonNode = namedtuple("ComparisonNode", ["a", "b", "operator"])
 BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])

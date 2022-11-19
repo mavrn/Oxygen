@@ -80,7 +80,6 @@ class Interpreter:
         self.scope = "global"
         self.output_lines = []
         self.autoid = autoid
-        #self.lemmatizer = WordNetLemmatizer()
 
     def get_output(self, ast_list, printall=True):
         self.output_lines = []
@@ -99,32 +98,31 @@ class Interpreter:
                 if isinstance(node.variable, Datatypes.FuncCallNode):
                     return self.evaluate(
                         Datatypes.FuncCallNode(node.variable.variable, [*node.arguments, *node.variable.arguments]))
-                if len(node.arguments) >= 1 and isinstance(node.arguments[0], Datatypes.VariableNode) and \
-                    type(self.fields[self.scope].get(node.arguments[0].identifier)) == Datatypes.Class and \
-                    node.variable.identifier != "new":
-                    return self.class_call_handler(node)
-                if len(node.arguments) >= 1 and isinstance(node.arguments[0], Datatypes.VariableNode) and \
-                    node.arguments[0].identifier == "own":
-                    return self.evaluate(Datatypes.InstanceVariableNode(identifier=node.variable.identifier))
-                if len(node.arguments) >= 1 and isinstance(node.arguments[0], Datatypes.VariableNode) and \
-                    type(self.fields[self.scope].get(node.arguments[0].identifier)) == Datatypes.Instance:
-                    return self.instance_call_handler(node)
+                elif len(node.arguments) >= 1 and isinstance(node.arguments[0], Datatypes.VariableNode):
+                    argtype = type(self.evaluate(Datatypes.VariableNode(node.arguments[0].identifier)))
+                    if argtype == Datatypes.Class and node.variable.identifier != "new":
+                        return self.class_call_handler(node)
+                    elif argtype == Datatypes.Instance:
+                        return self.instance_call_handler(node)
                 if node.variable.identifier in BUILTIN_EXPECTED_ARGS:
                     return self.builtin_handler(node)
-                return self.function_call_handler(self.evaluate(node.variable), node)
+                else:
+                    return self.function_call_handler(self.evaluate(node.variable), node)
             case name if name in OPERATIONAL_NODES:
                 return self.operation_handler(node)
             case "AssignNode":
                 assignment_value = self.evaluate(node.value)
                 if isinstance(node.variable, Datatypes.FuncCallNode) and len(node.variable.arguments) == 1 and\
                     isinstance(node.variable.arguments[0], Datatypes.VariableNode) and\
-                    type(self.fields[self.scope].get(node.variable.arguments[0].identifier)) == Datatypes.Instance:
-                    current_instance = self.fields[self.scope].get(node.variable.arguments[0].identifier)
+                    type(self.evaluate(Datatypes.VariableNode(node.variable.arguments[0].identifier))) == Datatypes.Instance:
+                    current_instance = self.evaluate(Datatypes.VariableNode(node.variable.arguments[0].identifier))
                     setattr(current_instance, node.variable.variable.identifier, assignment_value)
                 elif self.scope.startswith("##"):
                     current_class = self.fields["global"].get(self.classes[-1])
-                    if isinstance(assignment_value, Datatypes.Function) and not assignment_value.is_static:
-                        assignment_value.arguments.insert(0, "own")
+                    if isinstance(assignment_value, Datatypes.Function):
+                        if not assignment_value.is_static:
+                            assignment_value.arguments.insert(0, "own")
+                        assignment_value.identifier = "#" + current_class.identifier + " > " + assignment_value.identifier
                     setattr(current_class, node.variable.identifier, assignment_value)
                 elif isinstance(node.variable, Datatypes.BracketCallNode):
                     last_index = node.variable.index.pop()
@@ -138,6 +136,14 @@ class Interpreter:
                     funcpath = " >> ".join(temp[:-1]) + " >> " if len(temp) > 1 else ""
                     super_scopes = temp[-1].split(" > ")
                     while len(super_scopes) > 0:
+                        if super_scopes[-1].startswith("#"):
+                            called_class = self.fields["global"].get(super_scopes[-1].strip("#"))
+                            try:
+                                super_value = setattr(called_class, node.identifier, assignment_value)
+                            except AttributeError:
+                                pass
+                            finally:
+                                break
                         scope = funcpath + " > ".join(super_scopes)
                         result = self.fields[scope].get(node.variable.identifier)
                         if result is not None:
@@ -241,6 +247,14 @@ class Interpreter:
                 funcpath = " >> ".join(temp[:-1]) + " >> " if len(temp) > 1 else ""
                 super_scopes = temp[-1].split(" > ")
                 while len(super_scopes) > 0:
+                    if super_scopes[-1].startswith("#"):
+                        called_class = self.fields["global"].get(super_scopes[-1].strip("#"))
+                        try:
+                            super_value = getattr(called_class, node.identifier)
+                        except AttributeError:
+                            pass
+                        finally:
+                            break
                     result = self.fields[funcpath + " > ".join(super_scopes)].get(node.identifier)
                     if result is not None:
                         super_value = result
@@ -255,8 +269,6 @@ class Interpreter:
                 else:
                     raise NameError(f"Name \"{node.identifier}\" is not defined.")
                 return result
-            case "InstanceVariableNode":
-                return self.evaluate(getattr(self.evaluate(Datatypes.VariableNode("own")),node.identifier))
             case "ForNode":
                 out = []
                 self.scope = self.scope + " > ForLoop"
