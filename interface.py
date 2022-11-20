@@ -2,6 +2,7 @@ import Datatypes
 from interpreter import Interpreter
 from lexer import Lexer
 from parse import Parser
+from collections import deque
 
 class Interface:
     def __init__(self, debug=False, quit_after_exceptions=False, printall=False, autoid=False):
@@ -10,9 +11,9 @@ class Interface:
         self.debug = debug
         self.quit_after_exceptions = quit_after_exceptions
         self.printall = printall
-        self.tokens_list = []
+        self.tokens_list = deque()
         self.open_blocks = 0
-        self.open_if_blocks = []
+        self.open_if_blocks = deque()
 
     def start_session(self):
         while True:
@@ -50,7 +51,7 @@ class Interface:
         if len(tokens) == 0:
             if self.open_blocks == 0:
                 self.inp_msg = ">> "
-                self.open_if_blocks.clear()
+                self.open_if_blocks = deque()
             else:
                 return []
         else:
@@ -75,7 +76,7 @@ class Interface:
         ast_list = parser.parse()
         if self.debug:
             print(ast_list)
-        self.tokens_list = []
+        self.tokens_list = deque()
         return self.interpreter.get_output(ast_list, printall=self.printall)
 
     def run(self, input_string, return_out=False):
