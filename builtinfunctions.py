@@ -88,10 +88,6 @@ def change(*args):
     else:
         raise RuntimeError(f"Did not find any keyword or operator {args[0]}")
 
-def macro(*args):
-    Datatypes.MACROS.append([Lexer(args[0]).gen_tokens(include_macros=False),
-                            Lexer(args[1]).gen_tokens(include_macros=False)])
-
 def repr(obj):
     return Datatypes.String(builtins.repr(obj))
 

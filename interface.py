@@ -12,7 +12,7 @@ class Interface:
         self.printall = printall
         self.tokens_list = []
         self.open_blocks = 0
-        self.active_if = False
+        self.open_if_blocks = []
 
     def start_session(self):
         while True:
@@ -36,35 +36,34 @@ class Interface:
                     print_output(self.interpreter.output_lines)
                     self.interpreter.rollback()
                     print(f"{type(e).__name__}: {e}")
-                    self.tokens_list = []
+                    self.tokens_list.clear()
                     self.active_if = False
                     self.open_blocks = 0
                 else:
                     print_output(out)
 
     def get_out(self, user_input):
-        lexer = Lexer(user_input)
-        tokens = lexer.gen_tokens()
+        tokens = Lexer(user_input).gen_tokens()
+        token_types = [t.type for t in tokens]
         self.tokens_list.extend(tokens)
         self.tokens_list.append(Datatypes.Token(Datatypes.LINEBREAK))
         if len(tokens) == 0:
-            self.inp_msg = ">> "
-            self.active_if = False
-            self.open_blocks = 0
+            if self.open_blocks == 0:
+                self.inp_msg = ">> "
+                self.open_if_blocks.clear()
+            else:
+                return []
         else:
-            for token in tokens:
-                if token.type in (Datatypes.ARROW, Datatypes.ITERATE_ARROW):
-                    if token.type in (Datatypes.ARROW, Datatypes.ITERATE_ARROW) and tokens[-1].type not in (Datatypes.ARROW, Datatypes.ITERATE_ARROW):
-                        continue
-                    else:
-                        self.open_blocks += 1
-                elif token.type == Datatypes.BLOCK_END:
-                    self.open_blocks -= 1
-                elif token.type == Datatypes.IF:
-                    self.active_if = True
-                elif token.type == Datatypes.ELSE:
-                    self.active_if = False
-            if self.open_blocks > 0 or self.active_if:
+            if token_types[0] not in (Datatypes.OR, Datatypes.ELSE) and self.open_if_blocks and self.open_blocks == self.open_if_blocks[-1]:
+                self.open_if_blocks.pop()
+            if token_types[0] in (Datatypes.IF, Datatypes.UNLESS):
+                self.open_if_blocks.append(self.open_blocks)
+            elif token_types[0] == Datatypes.ELSE:
+                self.open_if_blocks.pop()
+            if token_types[-1] in (Datatypes.ARROW, Datatypes.ITERATE_ARROW):
+                self.open_blocks += 1
+            self.open_blocks -= token_types.count(Datatypes.BLOCK_END)
+            if self.open_blocks > 0 or self.open_if_blocks or token_types[-1] == Datatypes.COMMA:
                 self.inp_msg = ".. "
                 return []
             else:
@@ -77,10 +76,27 @@ class Interface:
         if self.debug:
             print(ast_list)
         self.tokens_list = []
-        return self.interpreter.get_output(ast_list)
-
+        return self.interpreter.get_output(ast_list, printall=self.printall)
 
     def run(self, input_string, return_out=False):
+        lines = input_string.split("\n")
+        output_lines = []
+        out = []
+        for line in lines:
+            try:
+                out = self.get_out(line)
+            except Exception as e:
+                print_output(self.interpreter.output_lines)
+                raise e
+            finally:
+                if return_out:
+                    output_lines.extend(out)
+                else:
+                    print_output(out)
+        if return_out:
+            return list(output_lines)
+
+    def runl(self, input_string, return_out=False):
         lexer = Lexer(input_string)
         tokens = lexer.gen_tokens()
         if self.debug:
@@ -97,7 +113,7 @@ class Interface:
         try:
             out = self.interpreter.get_output(ast_list, printall=self.printall)
             if return_out:
-                return out
+                return list(out)
             else:
                 print_output(out)
         except Exception as e:
@@ -116,5 +132,5 @@ def print_output(output_lines):
         print(line) 
 
 if __name__ == '__main__':
-    interface = Interface()
+    interface = Interface(quit_after_exceptions=True, autoid=True, printall=True)
     interface.start_session()

@@ -551,12 +551,6 @@ class Array:
                 self += elem
         return self
 
-    def convert_to_builtins(self):
-        new = []
-        for element in self.contents:
-            new.append(convert_to_builtin(element))
-        return new
-
     def slice(self, *args):
         args = convert_to_ints(args)
         if len(args) == 1:
@@ -633,7 +627,7 @@ class Array:
         return self
 
     def mostCommon(self, *args):
-        c = Counter(self.convert_to_builtins())
+        c = Counter([convert_to_builtin(element) for element in self.contents])
         results = []
         args = convert_to_ints(args)
         if len(args) == 0:
@@ -957,7 +951,8 @@ PostIncrementNode = namedtuple("PostIncrementNode", ["factor", "value"])
 StringBuilderNode = namedtuple("StringBuilderNode", ["string", "tokens"])
 ClassDeclareNode = namedtuple("ClassDeclareNode", ["identifier", "body"])
 
-
+NUM_CHARS = set("0123456789")
+LETTERS = set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_")
 DATATYPES = [Array, Number, String, Dictionary, Bool]
 
 OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNode, DIV_SIGN: DivNode,
@@ -966,7 +961,7 @@ OPERATOR_NODE_DICT = {PLUS_SIGN: AddNode, MINUS_SIGN: SubNode, MULT_SIGN: MultNo
                       ARRAYAPPLY_ASSIGN: ArrayApplyNode, FLOORDIV_SIGN: FloorDivNode}
 
 STATEMENT_TOKENS = (IF, SOLVE_ASSIGN, SOLVE, ITERATE_ARROW, COMP_EQUALS, COMP_NOT_EQUALS, GREATER_THAN,
-                    LESS_THAN, GREATER_OR_EQUALS, LESS_OR_EQUALS, IN)
+                    LESS_THAN, GREATER_OR_EQUALS, LESS_OR_EQUALS, IN, UNLESS)
 
 EXPRESSION_TOKENS = (PLUS_SIGN, MINUS_SIGN)
 
@@ -998,12 +993,10 @@ KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
                 "delete": DEL, "let": LET, "equals": COMP_EQUALS,
                 "greater": GREATER_THAN, "smaller": LESS_THAN, "while": WHILE,
                 "unless": UNLESS, "afn": ANONYMOUS_FUNCTION_KEYWORD, "class": CLASS_KEYWORD,
-                "sfn": STATIC_FUNCTION_KEYWORD
+                "sfn": STATIC_FUNCTION_KEYWORD, "unless": UNLESS
                 }
             
 OXYGEN_DICT = OPERATOR_DICT | KEYWORD_DICT
-
-MACROS = [[[Token(UNLESS)], [Token(IF), Token(NOT)]]]
 
 type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN", MULT_SIGN: "MULT_SIGN",
              DIV_SIGN: "DIV_SIGN", MODULUS_SIGN: "MODULUS_SIGN", PLUS_ASSIGN: "PLUS_ASSIGN",

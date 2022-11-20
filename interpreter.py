@@ -29,7 +29,7 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
 INTERNAL_KEYWORDS = ["out", "apply", "select", "plot", "getFields", "getScope", "detect", "foreach", "every", "new"]
 BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["asArr", "bool", "type", "quit", "rick", "input", "size", "asString", "repr", "arrOf"]
-BUILTIN_KEYWORDS = ["midnight", "leet", "range", "asNum", "openURL", "abs", "divMod", "change", "macro", "fill"]
+BUILTIN_KEYWORDS = ["midnight", "leet", "range", "asNum", "openURL", "abs", "divMod", "change", "fill"]
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS + INTERNAL_KEYWORDS + BUILTIN_KEYWORDS)]
 
 OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode", "FloorDivNode"]
@@ -54,13 +54,7 @@ def merge(output_list, list_to_append):
 
 
 def process_nums(argument_list):
-    new = []
-    for argument in argument_list:
-        if isinstance(argument, Datatypes.Number):
-            new.append(argument.get_num())
-        else:
-            new.append(argument)
-    return new
+    return [argument.get_num() if isinstance(argument, Datatypes.Number) else argument for argument in argument_list]
 
 
 def stringify(elem):
@@ -69,13 +63,12 @@ def stringify(elem):
 
 
 def convert_to_builtins(argument_list):
-    return list(Datatypes.Array(argument_list).convert_to_builtins())
+    return [Datatypes.convert_to_builtin(arg) for arg in argument_list]
 
 
 class Interpreter:
     def __init__(self, autoid=False):
         self.fields = {"global": BUILT_IN_FIELDS.copy()}
-        self.classes = []
         self.backup_fields = {}
         self.scope = "global"
         self.output_lines = []
@@ -85,7 +78,7 @@ class Interpreter:
         self.output_lines = []
         for ast in ast_list:
             out = standardize(self.evaluate(ast))
-            out = [stringify(o) for o in out if o is not None]
+            out = [stringify(o) for o in out]
             if printall:
                 merge(self.output_lines, out)
         out = self.output_lines
@@ -118,7 +111,7 @@ class Interpreter:
                     current_instance = self.evaluate(Datatypes.VariableNode(node.variable.arguments[0].identifier))
                     setattr(current_instance, node.variable.variable.identifier, assignment_value)
                 elif self.scope.startswith("##"):
-                    current_class = self.fields["global"].get(self.classes[-1])
+                    current_class = self.fields["global"].get(self.scope.strip("##"))
                     if isinstance(assignment_value, Datatypes.Function):
                         if not assignment_value.is_static:
                             assignment_value.arguments.insert(0, "own")
@@ -212,10 +205,7 @@ class Interpreter:
             case "ComparisonNode":
                 return self.comparison_handler(node)
             case "BooleanNegationNode":
-                boolean = self.evaluate(node.value)
-                custom_bool = Datatypes.Bool(boolean)
-                custom_bool.reverse()
-                return custom_bool
+                return Datatypes.Bool(not self.evaluate(node.value))
             case "LogicalOperationNode":
                 if node.operation == Datatypes.AND:
                     return Datatypes.Bool(
@@ -354,7 +344,6 @@ class Interpreter:
             case "ClassDeclareNode":
                 constructor=None
                 self.scope = "##"+node.identifier.identifier
-                self.classes.append(node.identifier.identifier)
                 for i, statement in enumerate(node.body):
                     if isinstance(statement, Datatypes.AssignNode) and isinstance(statement.value, Datatypes.Function) and \
                         statement.value.identifier == "setup":

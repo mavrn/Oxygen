@@ -9,13 +9,15 @@ def main():
         runfile = True
         filepath = args[0]
         args = args[1:]
+        standard_printall = False
     else:
         runfile = False
+        standard_printall = True
     
-    interface_args = {"debug": False, "fallthrough": False, "printall": False, "disableautoid": False}
+    interface_args = {"debug": False, "fallthrough": False, "printall": standard_printall, "disableautoid": False}
     for arg in args:
         if arg in interface_args:
-            interface_args[arg] = True
+            interface_args[arg] = not interface_args[arg]
     interface = Interface(debug=interface_args["debug"],
                           quit_after_exceptions=interface_args["fallthrough"],
                           printall=interface_args["printall"],

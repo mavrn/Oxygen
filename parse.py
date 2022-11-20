@@ -75,18 +75,21 @@ class Parser:
         result = self.expression()
         while self.current_token_type in Datatypes.STATEMENT_TOKENS:
             token_type = self.current_token_type
-            if token_type != Datatypes.ITERATE_ARROW:
-                self.next_token()
+            self.next_token()
             if token_type == Datatypes.SOLVE:
                 result = Datatypes.SolveNode(result, self.expression())
             elif token_type == Datatypes.SOLVE_ASSIGN:
                 result = Datatypes.SolveAssignNode(result, self.expression())
             elif token_type == Datatypes.ITERATE_ARROW:
+                self.previous_token()
                 result = Datatypes.IterateNode(iterable=result, items=[], statements=self.statement_block(block_starter=Datatypes.ITERATE_ARROW))
-            elif token_type == Datatypes.IF:
+            elif token_type in (Datatypes.IF, Datatypes.UNLESS):
                 if_expr = result
                 result = Datatypes.IfNode()
-                condition = self.compound_statement()
+                if token_type == Datatypes.UNLESS:
+                    condition = Datatypes.BooleanNegationNode(self.compound_statement())
+                else:
+                    condition = self.compound_statement()
                 result.add_block(Datatypes.IF, [if_expr], condition)
                 if self.current_token_type == Datatypes.ELSE:
                     self.next_token()
@@ -135,11 +138,11 @@ class Parser:
         result = self.factor()
         while self.current_token_type in Datatypes.EXPONENTIAL_TOKENS:
             token_type = self.current_token_type
-            if token_type != Datatypes.IDENTIFIER:
-                self.next_token()
+            self.next_token()
             if token_type == Datatypes.EXP:
                 result = Datatypes.ExpNode(a=result, b=self.factor())
             elif token_type == Datatypes.IDENTIFIER:
+                self.previous_token()
                 result = Datatypes.FuncCallNode(variable=self.factor(), arguments=[result])
             elif token_type == Datatypes.COLON:
                 if isinstance(result, Datatypes.VariableNode):
@@ -166,8 +169,7 @@ class Parser:
     def factor(self):
         token = self.current_token
         token_type = self.current_token_type
-        if token_type not in (None, Datatypes.BLOCK_END):
-            self.next_token()
+        self.next_token()
         match token_type:
             case Datatypes.NUMBER:
                 return token.value
@@ -202,6 +204,8 @@ class Parser:
                 return self.gen_for()
             case Datatypes.IF:
                 return self.gen_if()
+            case Datatypes.UNLESS:
+                return self.gen_if(negate=True)
             case Datatypes.ITERATE:
                 return self.gen_iterate()
             case Datatypes.WHILE:
@@ -254,13 +258,12 @@ class Parser:
                 self.next_token()
                 return Datatypes.AssignNode(variable=Datatypes.VariableNode(identifier), value=self.compound_statement())
             case Datatypes.BLOCK_END:
+                self.previous_token()
                 return
             case None:
                 raise SyntaxError("Expected number or identifier")
             case _:
                 msg = f"Expected any factor, got {Datatypes.type_dict.get(token_type)}"
-                if token.value is not None:
-                    msg += token.value
                 raise SyntaxError(msg)
 
     def declare_function(self, static=False):
@@ -352,9 +355,11 @@ class Parser:
         condition = self.compound_statement()
         return Datatypes.ForNode(assignment=None, condition=condition, increment=None, statements=self.statement_block())
 
-    def gen_if(self):
+    def gen_if(self, negate=False):
         if_node = Datatypes.IfNode()
         condition = self.compound_statement()
+        if negate:
+            condition = Datatypes.BooleanNegationNode(condition)
         block = self.statement_block()
         if_node.add_block(Datatypes.IF, block, condition)
         self.next_token()

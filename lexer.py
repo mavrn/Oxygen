@@ -1,29 +1,7 @@
 import Datatypes
 from Datatypes import Token, OXYGEN_DICT
 
-NUM_CHARS = "0123456789"
-LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
 
-
-def find_sub_list(sl,l,mcl):
-    results=[]
-    sll=len(sl)
-    rescounter = 0
-    diff = mcl-sll
-    if sll == 1:
-        try:
-            for ind in (i for i, x in enumerate(l) if x == sl[0]):
-                results.append((ind+diff*rescounter,ind+1+diff*rescounter))
-                rescounter+=1
-            return results
-        except ValueError:
-            return results
-    for ind in (i for i,e in enumerate(l) if e==sl[0]):
-        if l[ind:ind+sll]==sl:
-            results.append((ind+diff*rescounter,ind+sll-1+diff*rescounter))
-            rescounter += 1
-    return results
-    
 class Lexer:
     def __init__(self, text):
         self.text = iter(text)
@@ -37,7 +15,7 @@ class Lexer:
         except StopIteration:
             self.current_char = None
 
-    def gen_tokens(self, include_macros=True):
+    def gen_tokens(self):
         tokens = []
         while self.current_char is not None:
             current_char = self.current_char
@@ -57,27 +35,22 @@ class Lexer:
                     operator += self.current_char
                     self.next_char()
                 tokens.append(Token(OXYGEN_DICT.get(operator)))
-            elif current_char in NUM_CHARS:
+            elif current_char in Datatypes.NUM_CHARS:
                 num_tokens = self.gen_number()
                 for token in num_tokens:
                     tokens.append(token)
-            elif current_char in LETTERS:
+            elif current_char in Datatypes.LETTERS:
                 tokens.append(self.gen_identifier())
             elif current_char in ("\"", "\'"):
                 tokens.append(self.gen_string())
             else:
                 raise SyntaxError(f"Unexpected character {current_char}")
-        if include_macros:
-            for macro in Datatypes.MACROS:
-                results = find_sub_list(macro[0], tokens, len(macro[1]))
-                for result in results:
-                    tokens[result[0]:result[1]] = macro[1]
         return tokens
 
     def gen_number(self):
         number = ""
         period_count = 0
-        while self.current_char is not None and self.current_char in (NUM_CHARS + "."):
+        while self.current_char is not None and self.current_char in (Datatypes.NUM_CHARS.union(".")):
             if self.current_char == ".":
                 period_count += 1
             else:
@@ -87,13 +60,13 @@ class Lexer:
                 return [Token(Datatypes.NUMBER, Datatypes.Number(number[:-1])), Token(Datatypes.DOUBLE_PERIOD)]
             number += self.current_char
             self.next_char()
-        if self.current_char is not None and self.current_char in LETTERS:
+        if self.current_char is not None and self.current_char in Datatypes.LETTERS:
             return [Token(Datatypes.NUMBER, Datatypes.Number(number)), Token(Datatypes.MULT_SIGN), self.gen_identifier()]
         return [Token(Datatypes.NUMBER, Datatypes.Number(number))]
 
     def gen_identifier(self):
         identifier = ""
-        while self.current_char is not None and self.current_char in (LETTERS + NUM_CHARS):
+        while self.current_char is not None and self.current_char in Datatypes.LETTERS.union(Datatypes.NUM_CHARS):
             identifier += self.current_char
             self.next_char()
         kw_id = OXYGEN_DICT.get(identifier)

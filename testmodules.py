@@ -803,7 +803,7 @@ class TestUtils(unittest.TestCase):
         #https://www.codewars.com/kata/51c8e37cee245da6b40000bd
         input = """
                 fn stripcomments str delimiters =>
-                    lines = str split: "\n"
+                    lines = str split: "\\n"
                     newlines = []
                     lines ->
                         newline = ""
@@ -813,11 +813,11 @@ class TestUtils(unittest.TestCase):
                         <<
                         newlines += newline strip
                     <<
-                    return newlines join: "\n"
+                    return newlines join: "\\n"
                 <<
-                stripcomments("apples, pears \# and bananas\ngrapes\nbananas !apples", ["\#", "!"])
-                stripcomments("a \#b\nc\nd $e f g", ["\#", "$"])"""
-        self.assertEqual(self.interface.run(input, return_out=True), ['"apples, pears\ngrapes\nbananas"', '"a\nc\nd"'])
+                stripcomments("apples, pears \# and bananas\\ngrapes\\nbananas !apples", ["\#", "!"])
+                stripcomments("a \#b\\nc\\nd $e f g", ["\#", "$"])"""
+        self.assertEqual(self.interface.run(input, return_out=True), ['"apples, pears\\ngrapes\\nbananas"', '"a\\nc\\nd"'])
 
     def test_cw4_next_bigger_number_with_same_digits(self):
         #https://www.codewars.com/kata/55983863da40caa2c900004e
@@ -1147,7 +1147,7 @@ class TestUtils(unittest.TestCase):
                     let result ""
                     let tmp []
                     iterate a as e =>
-                        unless tmp or abs(e-tmp[-1]) equals 1 => tmp += e
+                        unless tmp and not abs(e-tmp[-1]) equals 1 => tmp += e
                         else =>
                             if tmp size >= 3 =>
                                 result += tmp[0] asString + "-" + tmp[-1] asString + ","
