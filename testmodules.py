@@ -1,5 +1,6 @@
 import unittest
 from interface import Interface
+import timeit
 
 
 class TestUtils(unittest.TestCase):
@@ -1609,7 +1610,11 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(self.interface.run(input, return_out=True), ['0', '100', '1', '200', '1', '0.5', '0.5', '0.5', '200', '400', '0.25', '0.75'])
 
 def main():
-    unittest.main()
+    start_time = timeit.default_timer()
+    for i in range(20):
+        unittest.main(exit=False)
+        print("time:", (timeit.default_timer()-start_time)/(i+1))
+    print("avg", (timeit.default_timer()-start_time)/20)
 
 
 if __name__ == "__main__":

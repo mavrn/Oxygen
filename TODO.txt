@@ -38,6 +38,10 @@ free operators: $ § =>> ==>
 #+lexer deque
 
 
++deque interface: -0,1s
+
+
+
 
 #iterator deque
 
