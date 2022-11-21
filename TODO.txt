@@ -23,7 +23,8 @@ free operators: $ § =>> ==>
 
 
 +deque interface: -0,1s
-+deque lexer, parser: -1s
-+sets for datatypes: 
++deque lexer, parser: -0.1s
++sets for datatypes: +-0
++repl namedtuples with classes: -0.15s
 
 

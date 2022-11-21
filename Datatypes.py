@@ -923,33 +923,127 @@ CLASS_KEYWORD = 64
 STATIC_FUNCTION_KEYWORD = 65
 
 
-AddNode = namedtuple("AddNode", ["a", "b"])
-SubNode = namedtuple("SubNode", ["a", "b"])
-MultNode = namedtuple("MultNode", ["a", "b"])
-DivNode = namedtuple("DivNode", ["a", "b"])
-FloorDivNode = namedtuple("FloorDivNode", ["a", "b"])
-ModulusNode = namedtuple("ModulusNode", ["a", "b"])
-ExpNode = namedtuple("ExpNode", ["a", "b"])
-AssignNode = namedtuple("AssignNode", ["variable", "value"])
-VariableNode = namedtuple("VariableNode", ["identifier"])
-FuncCallNode = namedtuple("FuncCallNode", ["variable", "arguments"])
-ComparisonNode = namedtuple("ComparisonNode", ["a", "b", "operator"])
-BooleanNegationNode = namedtuple("BooleanNegationNode", ["value"])
-LogicalOperationNode = namedtuple("LogicalOperationNode", ["a", "b", "operation"])
-ForNode = namedtuple("ForNode", ["assignment", "condition", "increment", "statements"])
-ReturnNode = namedtuple("ReturnNode", ["statement"])
-PrintNode = namedtuple("PrintNode", ["statement"])
-SolveNode = namedtuple("SolveNode", ["left_side", "right_side"])
-SolveAssignNode = namedtuple("SolveAssignNode", ["left_side", "right_side"])
-BracketCallNode = namedtuple("BracketCallNode", ["identifier", "index"])
-ArrayApplyNode = namedtuple("ArrayApplyNode", ["identifier", "function"])
-IterateNode = namedtuple("IterateNode", ["iterable", "items", "statements"])
-RangeNode = namedtuple("RangeNode", ["start", "stop", "step"])
-ArrayDeclareNode = namedtuple("ArrayDeclareNode", ["items"])
-DictDeclareNode = namedtuple("DictDeclareNode", ["items"])
-PostIncrementNode = namedtuple("PostIncrementNode", ["factor", "value"])
-StringBuilderNode = namedtuple("StringBuilderNode", ["string", "tokens"])
-ClassDeclareNode = namedtuple("ClassDeclareNode", ["identifier", "body"])
+class OpNode:
+    def __init__(self,a,b):
+        self.a=a
+        self.b=b
+    
+
+class AddNode(OpNode): pass
+
+class SubNode(OpNode): pass
+
+class MultNode(OpNode): pass
+
+class DivNode(OpNode): pass
+
+class FloorDivNode(OpNode): pass
+
+class ExpNode(OpNode): pass
+
+class ModulusNode(OpNode): pass
+
+class AssignNode:
+    def __init__(self,variable,value):
+        self.variable = variable
+        self.value = value
+
+
+class FuncCallNode:
+    def __init__(self, variable, arguments):
+        self.variable = variable
+        self.arguments = arguments
+
+
+class VariableNode:
+    def __init__(self, identifier):
+        self.identifier = identifier
+
+class ComparisonNode:
+    def __init__(self,a,b,operator):
+        self.a=a
+        self.b=b
+        self.operator=operator
+
+class BooleanNegationNode:
+    def __init__(self,value):
+        self.value=value
+
+class LogicalOperationNode:
+    def __init__(self,a,b,operation):
+        self.a=a
+        self.b=b
+        self.operation=operation
+
+class ForNode:
+    def __init__(self,assignment,condition,increment,statements):
+        self.assignment=assignment
+        self.condition=condition
+        self.increment=increment
+        self.statements=statements
+
+class ReturnNode:
+    def __init__(self,statement):
+        self.statement=statement
+
+class PrintNode:
+    def __init__(self,statement):
+        self.statement=statement
+
+class SolveNode:
+    def __init__(self,left_side,right_side):
+        self.left_side =left_side
+        self.right_side=right_side
+
+class SolveAssignNode:
+    def __init__(self,left_side,right_side):
+        self.left_side=left_side
+        self.right_side=right_side
+
+class BracketCallNode:
+    def __init__(self,identifier,index):
+        self.identifier=identifier
+        self.index=index
+
+class ArrayApplyNode:
+    def __init__(self,identifier,function):
+        self.identifier=identifier
+        self.function=function
+
+class IterateNode:
+    def __init__(self,iterable,items,statements):
+        self.iterable=iterable
+        self.items=items
+        self.statements=statements
+
+class RangeNode:
+    def __init__(self,start,stop,step):
+        self.start=start
+        self.stop=stop
+        self.step=step
+
+class ArrayDeclareNode:
+    def __init__(self,items):
+        self.items=items
+
+class DictDeclareNode:
+    def __init__(self,items):
+        self.items=items
+
+class PostIncrementNode:
+    def __init__(self,factor,value):
+        self.factor=factor
+        self.value=value
+
+class StringBuilderNode:
+    def __init__(self,string,tokens):
+        self.string=string
+        self.tokens=tokens
+        
+class ClassDeclareNode:
+    def __init__(self,identifier,body):
+        self.identifier=identifier
+        self.body=body
 
 NUM_CHARS = set("0123456789")
 LETTERS = set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_")
