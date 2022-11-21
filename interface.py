@@ -81,8 +81,8 @@ class Interface:
 
     def run(self, input_string, return_out=False):
         lines = input_string.split("\n")
-        output_lines = []
-        out = []
+        output_lines = deque()
+        out = deque()
         for line in lines:
             try:
                 out = self.get_out(line)

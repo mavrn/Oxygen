@@ -1610,11 +1610,13 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(self.interface.run(input, return_out=True), ['0', '100', '1', '200', '1', '0.5', '0.5', '0.5', '200', '400', '0.25', '0.75'])
 
 def main():
-    start_time = timeit.default_timer()
+    times= []
     for i in range(20):
+        start_time = timeit.default_timer()
         unittest.main(exit=False)
-        print("time:", (timeit.default_timer()-start_time)/(i+1))
-    print("avg", (timeit.default_timer()-start_time)/20)
+        end_time = timeit.default_timer()
+        times.append(end_time-start_time)
+    print("avg", sum(times)/len(times))
 
 
 if __name__ == "__main__":

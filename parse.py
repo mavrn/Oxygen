@@ -1,29 +1,36 @@
 import Datatypes
+from collections import deque
 
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
-        self.n = -1
         self.current_token = None
         self.current_token_type = None
+        self.previous_token_buffer = None
         self.optional_open_blocks = 0
-        self.ast_list = []
+        self.ast_list = deque()
         self.next_token()
 
-    def update_token(self, token_delta):
+    def next_token(self):
         try:
-            self.n += token_delta
-            self.current_token = self.tokens[self.n]
+            self.previous_token_buffer = self.current_token
+            self.current_token = self.tokens.popleft()
             self.current_token_type = self.current_token.type
         except IndexError:
             self.current_token = None
             self.current_token_type = None
+        except AttributeError:
+            self.current_token = None
+            self.current_token_type = None
 
-    def next_token(self):
-        self.update_token(1)
-    
     def previous_token(self):
-        self.update_token(-1)
+        try:
+            self.tokens.appendleft(self.current_token)
+            self.current_token = self.previous_token_buffer
+            self.current_token_type = self.current_token.type
+        except AttributeError:
+            self.current_token = None
+            self.current_token_type = None
     
     def skip_linebreaks(self):
         while self.current_token_type == Datatypes.LINEBREAK:

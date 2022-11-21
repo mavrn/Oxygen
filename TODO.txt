@@ -16,41 +16,14 @@ free operators: $ § =>> ==>
 #make lexer operators dynamic
 #enable static class vars
 
-###in order to: 
+
+
 #make change work outside interpreter
 #add load
-###change compiler to be interpreted line-by-line
-
-#measurements interpreted comp
-0.418
-0.442
-0.453
-0.463
-0.396
-0.445
-#+deque in interface
-0.418
-0.401
-0.408
-0.418
-0.421
-0.405
-#+lexer deque
 
 
 +deque interface: -0,1s
++deque lexer, parser: -1s
++sets for datatypes: 
 
-
-
-
-#iterator deque
-
-
-#compiled
-0.418
-0.410
-0.387
-0.413
-0.429
-0.427
 

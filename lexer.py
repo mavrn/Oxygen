@@ -1,22 +1,23 @@
 import Datatypes
-from Datatypes import Token, OXYGEN_DICT
+from Datatypes import Token, OXYGEN_DICT, OXYGEN_SET
+from collections import deque
 
 
 class Lexer:
     def __init__(self, text):
-        self.text = iter(text)
+        self.text = deque(text)
         self.current_char = None
         self.ignore = False
         self.next_char()
 
     def next_char(self):
         try:
-            self.current_char = next(self.text)
-        except StopIteration:
+            self.current_char = self.text.popleft()
+        except IndexError:
             self.current_char = None
 
     def gen_tokens(self):
-        tokens = []
+        tokens = deque()
         while self.current_char is not None:
             current_char = self.current_char
             if current_char in ";\n":
@@ -29,9 +30,9 @@ class Lexer:
                 tokens.append(Token(Datatypes.LINEBREAK))
                 self.next_char()
                 self.ignore = True
-            elif current_char in OXYGEN_DICT:
+            elif current_char in OXYGEN_SET:
                 operator = ""
-                while self.current_char is not None and operator+self.current_char in OXYGEN_DICT:
+                while self.current_char is not None and operator+self.current_char in OXYGEN_SET:
                     operator += self.current_char
                     self.next_char()
                 tokens.append(Token(OXYGEN_DICT.get(operator)))
@@ -76,7 +77,7 @@ class Lexer:
         quotation_mark = self.current_char
         self.next_char()
         string = ""
-        tokens = []
+        tokens = deque()
         escaped = False
         while self.current_char not in (None, quotation_mark):
             if self.current_char == "#" and not escaped:
