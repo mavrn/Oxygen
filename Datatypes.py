@@ -819,8 +819,8 @@ class Class:
         return str(self.__dict__)
     
 class Instance:
-    def __init__(self, instanceof: Class):
-        self.instanceof = instanceof
+    def __init__(self, ownclass: Class):
+        self.ownclass = ownclass
 
 
 class Function:
@@ -968,10 +968,10 @@ class AssignNode(Node):
 
 
 class FuncCallNode(Node):
-    def __init__(self, variable, arguments):
+    def __init__(self, variable, arguments, force_skip_obj=False):
         self.variable = variable
         self.arguments = arguments
-
+        self.force_skip_obj = force_skip_obj
 
 class VariableNode(Node):
     def __init__(self, identifier):
@@ -1109,7 +1109,6 @@ KEYWORD_DICT = {"if": IF, "else": ELSE, "fn": FUNCTION_KEYWORD, "True": TRUE,
                 }
             
 OXYGEN_DICT = OPERATOR_DICT | KEYWORD_DICT
-OXYGEN_SET = set(OXYGEN_DICT.keys())
 
 type_dict = {NUMBER: "NUMBER", PLUS_SIGN: "PLUS_SIGN", MINUS_SIGN: "MINUS_SIGN", MULT_SIGN: "MULT_SIGN",
              DIV_SIGN: "DIV_SIGN", MODULUS_SIGN: "MODULUS_SIGN", PLUS_ASSIGN: "PLUS_ASSIGN",

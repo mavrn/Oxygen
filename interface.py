@@ -3,6 +3,9 @@ from interpreter import Interpreter
 from lexer import Lexer
 from parse import Parser
 from collections import deque
+import os
+
+
 
 class Interface:
     def __init__(self, debug=False, quit_after_exceptions=False, printall=False, autoid=False):
@@ -77,7 +80,14 @@ class Interface:
         if self.debug:
             print(ast_list)
         self.tokens_list = deque()
-        return self.interpreter.get_output(ast_list, printall=self.printall)
+        result, loadreq = self.interpreter.get_output(ast_list, printall=self.printall)
+        if loadreq:
+            old = self.printall
+            self.printall = False
+            for req in loadreq:
+                self.run_from_file(req)
+            self.printall = old
+        return result
 
     def run(self, input_string, return_out=False):
         lines = input_string.split("\n")
@@ -97,7 +107,7 @@ class Interface:
         if return_out:
             return list(output_lines)
 
-    def runl(self, input_string, return_out=False):
+    def runlegacy(self, input_string, return_out=False):
         lexer = Lexer(input_string)
         tokens = lexer.gen_tokens()
         if self.debug:
@@ -127,9 +137,11 @@ class Interface:
         self.run(program)
 
 
+
 def print_output(output_lines):
     for line in output_lines:
         print(line) 
+
 
 if __name__ == '__main__':
     interface = Interface(quit_after_exceptions=True, autoid=True, printall=True)

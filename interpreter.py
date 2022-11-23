@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 import Datatypes
 import builtinfunctions
 import equation_solver
+import os
 
 BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos": [1], "atan": [1], "abs": [1],
                          "sqrt": [1], "factorial": [1], "bool": [1], "plot": [3, 4], "out": range(1, 100),
@@ -24,21 +25,23 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "startswith": [2], "endswith": [2], "format": range(2, 100), "extend": [2], "repr": [1],
                          "findseq": [2], "detect": [2], "foreach": [2], "arrOf" : range(0,100), "fill": [2], 
                          "every": [2], "reverse": [1], "hasKey": [2], "hasValue": [2], "new": range(1,100),
-                         "deepclone": [1]
+                         "deepclone": [1], "load": range(1,100), "sameAs": [2], "instanceOf": [2]
                          }
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
-INTERNAL_KEYWORDS = ["out", "apply", "select", "plot", "getFields", "getScope", "detect", "foreach", "every", "new"]
-BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["asArr", "bool", "type", "quit", "rick", "input", "size", "asString", "repr", "arrOf"]
+INTERNAL_KEYWORDS = ["out", "apply", "select", "plot", "getFields", "getScope", "detect", "foreach", "every", "new", "load"]
+BUILTIN_KEYWORDS_WITHOUT_PROCESSING = ["asArr", "bool", "type", "quit", "rick", "input", "size", "asString", "repr", "arrOf", "sameAs", "instanceOf"]
 BUILTIN_KEYWORDS = ["midnight", "leet", "range", "asNum", "openURL", "abs", "divMod", "change", "fill"]
 OBJECT_KEYWORDS = [k for k in BUILTIN_EXPECTED_ARGS if k not in (MATH_KEYWORDS + INTERNAL_KEYWORDS + BUILTIN_KEYWORDS)]
 
-OPERATIONAL_NODES = ["AddNode", "SubNode", "MultNode", "DivNode", "ModulusNode", "ExpNode", "FloorDivNode"]
+OPERATIONAL_NODES = [Datatypes.AddNode, Datatypes.SubNode, Datatypes.MultNode, Datatypes.DivNode, Datatypes.ModulusNode, Datatypes.ExpNode, Datatypes.FloorDivNode]
 
 BUILT_IN_FIELDS = {"PI": Datatypes.Number(math.pi), "E": Datatypes.Number(math.e),
                    "GOLDEN": Datatypes.Number((1 + 5 ** 0.5) / 2), "H": Datatypes.Number(6.62607004 * (10 ** (-34))),
                    "ALPHABET": Datatypes.String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"),
-                   "NUMBERS": Datatypes.String("1234567890")}
+                   "NUMBERS": Datatypes.String("1234567890"), "String": Datatypes.String, "Number": Datatypes.Number, "Bool": Datatypes.Bool,
+                   "Function": Datatypes.Function, "Array": Datatypes.Array, "Dictionary": Datatypes.Dictionary, "Class": Datatypes.Class
+                   }
 
 
 def standardize(val):
@@ -68,15 +71,21 @@ def convert_to_builtins(argument_list):
 
 
 class Interpreter:
-    def __init__(self, autoid=False):
+    def __init__(self, autoid=False, filespace={}):
         self.fields = {"global": BUILT_IN_FIELDS.copy()}
         self.backup_fields = {}
         self.scope = "global"
         self.output_lines = []
+        self.filespace = {}
+        self.load_requests = []
+        for file in os.listdir():
+            if file.endswith(".oxy"):
+                self.filespace[file.strip(".oxy")] = file
         self.autoid = autoid
 
     def get_output(self, ast_list, printall=True):
         self.output_lines = []
+        self.load_requests = []
         for ast in ast_list:
             out = standardize(self.evaluate(ast))
             out = [stringify(o) for o in out]
@@ -84,28 +93,31 @@ class Interpreter:
                 merge(self.output_lines, out)
         out = self.output_lines
         self.output_lines = []
-        return out
+        load_requests = self.load_requests
+        self.load_requests = []
+        return out, load_requests
 
     def evaluate(self, node):
-        match type(node).__name__:
-            case "FuncCallNode":
+        match type(node):
+            case Datatypes.FuncCallNode:
                 if isinstance(node.variable, Datatypes.FuncCallNode):
                     return self.evaluate(
                         Datatypes.FuncCallNode(node.variable.variable, [*node.arguments, *node.variable.arguments]))
-                elif len(node.arguments) >= 1 and isinstance(node.arguments[0], Datatypes.VariableNode):
-                    argtype = type(self.evaluate(Datatypes.VariableNode(node.arguments[0].identifier)))
-                    if argtype == Datatypes.Class and node.variable.identifier != "new":
-                        return self.class_call_handler(node)
-                    elif argtype == Datatypes.Instance:
-                        return self.instance_call_handler(node)
+                args = [arg if isinstance(arg, Datatypes.AssignNode) \
+                    and type(arg.value) not in (Datatypes.AddNode, Datatypes.SubNode) else self.evaluate(arg) for arg in node.arguments]
+                if len(args) > 0 and not node.force_skip_obj:
+                    if type(args[0]) == Datatypes.Instance:
+                        return self.instance_call_handler(node,args)
+                    elif type(args[0]) == Datatypes.Class:
+                        return self.class_call_handler(node,args)
                 if node.variable.identifier in BUILTIN_EXPECTED_ARGS:
-                    return self.builtin_handler(node)
+                    return self.builtin_handler(node.variable.identifier, args)
                 if node.variable.identifier in self.fields["global"] or isinstance(node.variable, Datatypes.Function):
-                    return self.function_call_handler(self.evaluate(node.variable), node)
+                    return self.function_call_handler(self.evaluate(node.variable), node, args)
                 raise Exception()
             case name if name in OPERATIONAL_NODES:
                 return self.operation_handler(node)
-            case "AssignNode":
+            case Datatypes.AssignNode:
                 assignment_value = self.evaluate(node.value)
                 if isinstance(node.variable, Datatypes.FuncCallNode) and len(node.variable.arguments) == 1 and\
                     isinstance(node.variable.arguments[0], Datatypes.VariableNode) and\
@@ -154,14 +166,14 @@ class Interpreter:
                 else:
                     raise SyntaxError(f"Cannot assign to type {type(node.variable.identifier).__name__}")
                 return assignment_value
-            case "SolveNode":
+            case Datatypes.SolveNode:
                 _, expression = equation_solver.solve(node.left_side, node.right_side)
                 return self.evaluate(expression)
-            case "SolveAssignNode":
+            case Datatypes.SolveAssignNode:
                 variable, expression = equation_solver.solve(node.left_side, node.right_side)
                 result = self.evaluate(expression)
                 return self.evaluate(Datatypes.AssignNode(variable, result))
-            case "BracketCallNode":
+            case Datatypes.BracketCallNode:
                 arr = self.evaluate(node.identifier)
                 for index in node.index:
                     if isinstance(index, Datatypes.RangeNode):
@@ -169,11 +181,11 @@ class Interpreter:
                     else:
                         arr = arr[self.evaluate(index)]
                 return arr
-            case "PostIncrementNode":
+            case Datatypes.PostIncrementNode:
                 pre_assignment_value = self.evaluate(node.factor)
                 self.evaluate(Datatypes.AssignNode(node.factor, Datatypes.AddNode(node.factor, node.value)))
                 return pre_assignment_value
-            case "ArrayApplyNode":
+            case Datatypes.ArrayApplyNode:
                 arr = self.evaluate(node.identifier).clone()
                 if not hasattr(arr, "__iter__"):
                     raise TypeError(f"Element of type {type(arr).__name__} is not iterable.")
@@ -204,18 +216,18 @@ class Interpreter:
                         else:
                             arr[Datatypes.Number(i)] = res
                 return arr
-            case "ComparisonNode":
+            case Datatypes.ComparisonNode:
                 return self.comparison_handler(node)
-            case "BooleanNegationNode":
+            case Datatypes.BooleanNegationNode:
                 return Datatypes.Bool(not self.evaluate(node.value))
-            case "LogicalOperationNode":
+            case Datatypes.LogicalOperationNode:
                 if node.operation == Datatypes.AND:
                     return Datatypes.Bool(
                         Datatypes.Bool(self.evaluate(node.a)) and Datatypes.Bool(self.evaluate(node.b)))
                 else:
                     return Datatypes.Bool(
                         Datatypes.Bool(self.evaluate(node.a)) or Datatypes.Bool(self.evaluate(node.b)))
-            case "IfNode":
+            case Datatypes.IfNode:
                 out = []
                 results = []
                 for block in node.blocks:
@@ -232,8 +244,9 @@ class Interpreter:
                 if len(out) == 1:
                     return out[0]
                 return out
-            case "VariableNode":
+            case Datatypes.VariableNode:
                 global_value = self.fields["global"].get(node.identifier)
+                filespace_value = self.filespace.get(node.identifier)
                 super_value = None
                 temp = self.scope.split(" >> ")
                 funcpath = " >> ".join(temp[:-1]) + " >> " if len(temp) > 1 else ""
@@ -258,10 +271,12 @@ class Interpreter:
                     result = global_value
                 elif node.identifier in BUILTIN_EXPECTED_ARGS:
                     result = Datatypes.VariableNode(node.identifier)
+                elif filespace_value is not None:
+                    result = filespace_value
                 else:
                     raise NameError(f"Name \"{node.identifier}\" is not defined.")
                 return result
-            case "ForNode":
+            case Datatypes.ForNode:
                 out = []
                 self.scope = self.scope + " > ForLoop"
                 self.fields[self.scope] = {}
@@ -283,7 +298,7 @@ class Interpreter:
                 self.fields.pop(self.scope)
                 self.scope = " > ".join(self.scope.split(" > ")[:-1])
                 return out
-            case "IterateNode":
+            case Datatypes.IterateNode:
                 out = []
                 iterable = self.evaluate(node.iterable)
                 if len(node.items) == 2:
@@ -323,27 +338,27 @@ class Interpreter:
                 self.fields.pop(self.scope)
                 self.scope = " > ".join(self.scope.split(" > ")[:-1])
                 return out
-            case "RangeNode":
+            case Datatypes.RangeNode:
                 return Datatypes.Array([Datatypes.Number(num) for num in builtins.range(
                     self.evaluate(node.start).get_num(),
                     self.evaluate(node.stop).get_num(),
                     self.evaluate(node.step).get_num()
                 )])
-            case "ReturnNode":
+            case Datatypes.ReturnNode:
                 if self.scope == "global":
                     raise SyntaxError("Return statement outside function")
                 self.fields[self.scope]["__return__"] = self.evaluate(node.statement)
-            case "ArrayDeclareNode":
+            case Datatypes.ArrayDeclareNode:
                 new_arr = Datatypes.Array(node.items.copy())
                 for i, elem in enumerate(new_arr):
                     new_arr[Datatypes.Number(i)] = self.evaluate(elem)
                 return new_arr
-            case "DictDeclareNode":
+            case Datatypes.DictDeclareNode:
                 new_dict = Datatypes.Dictionary({})
                 for item in node.items:
                     new_dict[self.evaluate(item[0])] = self.evaluate(item[1])
                 return new_dict
-            case "ClassDeclareNode":
+            case Datatypes.ClassDeclareNode:
                 constructor=None
                 self.scope = "##"+node.identifier.identifier
                 for i, statement in enumerate(node.body):
@@ -358,7 +373,7 @@ class Interpreter:
                 for statement in node.body:
                     self.evaluate(statement)
                 self.scope = "global"
-            case "StringBuilderNode":
+            case Datatypes.StringBuilderNode:
                 tokens = node.tokens.copy()
                 if len(tokens) == 0:
                     return Datatypes.String(node.string)
@@ -376,19 +391,19 @@ class Interpreter:
         self.fields = self.backup_fields
         self.scope = "global"
         self.output_lines = []
+        self.load_requests = []
 
-    def function_call_handler(self, func, node, optional_funcargs=dict()):
+    def function_call_handler(self, func, node, args, optional_funcargs=dict()):
         delimiter = " > " if func.identifier == "Anonymous" else " >> "
         if not isinstance(func, Datatypes.Function):
             raise TypeError(f"{builtins.type(node).__name__} object is not callable")
-        arguments = node.arguments
-        if len(arguments) != len(func.arguments):
+        if len(args) != len(func.arguments):
             raise TypeError(
-                f"Expected {len(func.arguments)} arguments for function {func.identifier}, got {len(arguments)}.")
+                f"Expected {len(func.arguments)} arguments for function {func.identifier}, got {len(args)}.")
         new_function_scope = self.scope + delimiter + func.identifier
         self.fields[new_function_scope] = {}
         reached_kwargs = False
-        for i, argument in enumerate(arguments):
+        for i, argument in enumerate(args):
             if isinstance(argument, Datatypes.AssignNode) and type(argument.value) not in (Datatypes.AddNode, Datatypes.SubNode):
                 reached_kwargs = True
                 if argument.variable.identifier in func.arguments:
@@ -398,7 +413,7 @@ class Interpreter:
             elif reached_kwargs:
                 raise SyntaxError("Positional arguments are not allowed after keyword arguments.")
             else:
-                self.fields[new_function_scope][func.arguments[i]] = self.evaluate(argument)
+                self.fields[new_function_scope][func.arguments[i]] = argument
         for k, v in optional_funcargs.items():
             self.fields[new_function_scope][k] = v
         self.scope = new_function_scope
@@ -418,29 +433,30 @@ class Interpreter:
         return returned_result
 
 
-    def class_call_handler(self, node):
+    def class_call_handler(self, node, args):
         attr_id = node.variable.identifier
-        args = [self.evaluate(arg) for arg in node.arguments]
         attr_class = args.pop(0)
-        attr = getattr(attr_class, attr_id)
+        try:
+            attr = getattr(attr_class, attr_id)
+        except AttributeError:
+            return self.evaluate(Datatypes.FuncCallNode(node.variable, [attr_class]+args, True))
         if isinstance(attr, Datatypes.Function):
             return self.evaluate(Datatypes.FuncCallNode(attr, args))
-        elif len(args) > 0:
+        elif len(node.arguments) > 0:
             raise Exception(f"Attribute {attr_id} of class {attr_class} is not callable.")
         else:
             return attr
 
-    def instance_call_handler(self, node):
+    def instance_call_handler(self, node, args):
         attr_id = node.variable.identifier
-        args = [self.evaluate(arg) for arg in node.arguments]
         attr_instance = args.pop(0)
         try:
             attr = getattr(attr_instance, attr_id)
         except AttributeError:
             try:
-                attr = getattr(attr_instance.instanceof, attr_id)
+                attr = getattr(attr_instance.ownclass, attr_id)
             except AttributeError:
-                raise Exception(f"Instance of class {attr_instance.instanceof.identifier} has no attribute {attr_id}")
+                return self.evaluate(Datatypes.FuncCallNode(node.variable, [attr_instance]+args, True))
         if isinstance(attr, Datatypes.Function):
             return self.evaluate(Datatypes.FuncCallNode(attr, [attr_instance, *args]))
         elif len(args) > 0:
@@ -448,27 +464,25 @@ class Interpreter:
         else:
             return attr
 
-    def builtin_handler(self, node):
-        keyword = node.variable.identifier
-        args = [self.evaluate(arg) for arg in node.arguments]
-        arg_count = len(node.arguments)
-        expected_arg_count = BUILTIN_EXPECTED_ARGS[keyword]
+    def builtin_handler(self, funcname, args):
+        arg_count = len(args)
+        expected_arg_count = BUILTIN_EXPECTED_ARGS[funcname]
         if arg_count not in expected_arg_count:
             if len(expected_arg_count) == 1:
-                raise TypeError(f"Expected {expected_arg_count[0]} arguments for function {keyword}, got {arg_count}.")
+                raise TypeError(f"Expected {expected_arg_count[0]} arguments for function {funcname}, got {arg_count}.")
             else:
                 TypeError(
-                    f"Expected at least {expected_arg_count[0]} arguments for function {keyword}, got {arg_count}.")
-        if keyword in INTERNAL_KEYWORDS:
-            return getattr(Interpreter, keyword)(self, *args)
-        elif keyword in BUILTIN_KEYWORDS:
-            return getattr(builtinfunctions, keyword)(*convert_to_builtins(args))
-        elif keyword in BUILTIN_KEYWORDS_WITHOUT_PROCESSING:
-            return getattr(builtinfunctions, keyword)(*args)
-        elif keyword in MATH_KEYWORDS:
-            return Datatypes.Number(getattr(math, keyword)(*process_nums(args)))
+                    f"Expected at least {expected_arg_count[0]} arguments for function {funcname}, got {arg_count}.")
+        if funcname in INTERNAL_KEYWORDS:
+            return getattr(Interpreter, funcname)(self, *args)
+        elif funcname in BUILTIN_KEYWORDS:
+            return getattr(builtinfunctions, funcname)(*convert_to_builtins(args))
+        elif funcname in BUILTIN_KEYWORDS_WITHOUT_PROCESSING:
+            return getattr(builtinfunctions, funcname)(*args)
+        elif funcname in MATH_KEYWORDS:
+            return Datatypes.Number(getattr(math, funcname)(*process_nums(args)))
         else:
-            return getattr(builtins.type(args[0]), keyword)(*process_nums(args))
+            return getattr(builtins.type(args[0]), funcname)(*process_nums(args))
 
     def operation_handler(self, node):
         node_type = type(node).__name__
@@ -613,6 +627,10 @@ class Interpreter:
         called_class = self.evaluate(args[0])
         if not isinstance(called_class, Datatypes.Class):
             raise TypeError(f"Cannot initialize instance of type {type(args[0]).__name__}")
-        new_instance = Datatypes.Instance(instanceof=called_class)
+        new_instance = Datatypes.Instance(ownclass=called_class)
         self.evaluate(Datatypes.FuncCallNode(called_class.constructor, [new_instance, *args[1:]]))
         return new_instance
+
+    def load(self, *args):
+        for arg in args:
+            self.load_requests.append(arg)

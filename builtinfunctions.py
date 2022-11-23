@@ -68,6 +68,15 @@ def quit():
 def type(obj):
     return Datatypes.String(builtins.type(obj).__name__)
 
+def sameAs(obj, other):
+    return Datatypes.Bool(obj is other)
+
+def instanceOf(obj, otherclass):
+    if isinstance(obj, Datatypes.Instance):
+        return Datatypes.Bool(otherclass == obj.ownclass)
+    else:
+        return Datatypes.Bool(isinstance(obj, otherclass))
+
 def asArr(obj):
     return Datatypes.Array(list(obj))
 

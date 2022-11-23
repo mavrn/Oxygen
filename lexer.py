@@ -1,5 +1,5 @@
 import Datatypes
-from Datatypes import Token, OXYGEN_DICT, OXYGEN_SET
+from Datatypes import Token, OXYGEN_DICT
 from collections import deque
 
 
@@ -30,9 +30,9 @@ class Lexer:
                 tokens.append(Token(Datatypes.LINEBREAK))
                 self.next_char()
                 self.ignore = True
-            elif current_char in OXYGEN_SET:
+            elif current_char in OXYGEN_DICT:
                 operator = ""
-                while self.current_char is not None and operator+self.current_char in OXYGEN_SET:
+                while self.current_char is not None and operator+self.current_char in OXYGEN_DICT:
                     operator += self.current_char
                     self.next_char()
                 tokens.append(Token(OXYGEN_DICT.get(operator)))

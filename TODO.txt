@@ -2,10 +2,7 @@ free operators: $ § =>> ==>
 #redo exceptions + add trycatch
 #update comments
 #bugtest change, macro
-#rename tests
 
-#isinstance = "is"
-#binding variables
 #findseq
 #at assignment or atPut
 #list comps ?
@@ -15,20 +12,11 @@ free operators: $ § =>> ==>
 #default args
 #make lexer operators dynamic
 #enable static class vars
-#cant print instances
 #add error in funccallh
-
-
-
-#make change work outside interpreter
-#add load
-
-
-+deque interface: -0,1s
-+deque lexer, parser: -0.1s
-+sets for datatypes: +-0
-+repl namedtuples with classes: -0.15s
-
+#fix class func scopes
+#closed blocks dont throw exceptions in new run func
+#fix input behavior
+#type obj?
 
 #https://www.codewars.com/kata/55171d87236c880cea0004c6
 
@@ -192,7 +180,7 @@ puzzle3 solve out
 
 class Calculator =>
     fn setup expression =>
-        own ex = expression asArr >> del if x==""
+        own ex = expression asArr >> delete if x==" "
     <<
     fn peek => own ex[0] if own ex else ""
     fn get_next => own ex pop: 0
@@ -223,7 +211,7 @@ class Calculator =>
         result = own factor 
         while own peek == "*" or own peek == "/" =>
             if own get_next == "*" => result *= own factor
-            else => result /= factor()
+            else => result /= own factor
         <<
         return result
     <<
@@ -237,4 +225,10 @@ class Calculator =>
     <<
     fn evaluate => own expression
 <<
-(Calculator new: "1+1*6") evaluate out
+
+fn solve inp =>
+    Calculator new: inp evaluate out
+<<
+
+["9+9", "1*10+1", "(6+5)*2", "1/ 2", "10*10-2"] foreach: solve
+
