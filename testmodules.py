@@ -233,7 +233,11 @@ class TestUtils(unittest.TestCase):
 
     #def test_change(self):
     #    self.assertEqual(self.interface.run(
-    #        'change("let", "\#");#x 9;x',
+    #        """
+    #        change("let", "\#")
+    #        #x 9
+    #        x
+    #        """,
     #        return_out=True, ),
     #        ['9', '9'])
 
@@ -1356,7 +1360,7 @@ class TestUtils(unittest.TestCase):
 
     def test_cw5_extract_domain_name_from_url(self):
         #https://www.codewars.com/kata/514a024011ea4fb54200004b/python
-        input = """fn domainName url => url replace("http://", "") replace("https://", "") replace("www.", "") split: "." [0]
+        input = """fn domainName url => url replace: "http://", "" replace: "https://", "" replace: "www.", "" split: "." at: 0
                 "http://github.com/carbonfive/raygun"  domainName 
                 "http://www.zombie-bites.com" domainName 
                 "https://www.cnet.com" domainName 

@@ -118,8 +118,7 @@ class Interface:
             else:
                 print_output(out)
         except Exception as e:
-            if not return_out:
-                print_output(self.interpreter.output_lines)
+            print_output(self.interpreter.output_lines)
             raise(e)
 
     def run_from_file(self, filepath):

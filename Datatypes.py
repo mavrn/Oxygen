@@ -459,6 +459,16 @@ class Array:
 
     def clone(self):
         return Array(self.contents.copy())
+    
+    def deepclone(self):
+        new = Array([])
+        for x in self:
+            if isinstance(x, Array):
+                new.append(x.clone())
+            else:
+                new.append(x)
+        return new
+
 
     def __mul__(self, num):
         num = int(num)
@@ -505,7 +515,7 @@ class Array:
                     eq = False
             return Bool(eq)
         except TypeError:
-            raise TypeError(f"{type(other).__name__} object is not iterable.")
+            return Bool(False)
 
     def __getitem__(self, index):
         return self.contents[index.get_num()]
@@ -922,8 +932,16 @@ ANONYMOUS_FUNCTION_KEYWORD = 63
 CLASS_KEYWORD = 64
 STATIC_FUNCTION_KEYWORD = 65
 
+class Node:
+    def __repr__(self):
+        rpr = type(self).__name__+"("
+        for k,v in vars(self).items():
+            rpr += k + " = " + repr(v)
+        rpr += ")"
+        return rpr 
 
-class OpNode:
+
+class OpNode(Node):
     def __init__(self,a,b):
         self.a=a
         self.b=b
@@ -943,104 +961,104 @@ class ExpNode(OpNode): pass
 
 class ModulusNode(OpNode): pass
 
-class AssignNode:
+class AssignNode(Node):
     def __init__(self,variable,value):
         self.variable = variable
         self.value = value
 
 
-class FuncCallNode:
+class FuncCallNode(Node):
     def __init__(self, variable, arguments):
         self.variable = variable
         self.arguments = arguments
 
 
-class VariableNode:
+class VariableNode(Node):
     def __init__(self, identifier):
         self.identifier = identifier
 
-class ComparisonNode:
+class ComparisonNode(Node):
     def __init__(self,a,b,operator):
         self.a=a
         self.b=b
         self.operator=operator
 
-class BooleanNegationNode:
+class BooleanNegationNode(Node):
     def __init__(self,value):
         self.value=value
 
-class LogicalOperationNode:
+class LogicalOperationNode(Node):
     def __init__(self,a,b,operation):
         self.a=a
         self.b=b
         self.operation=operation
 
-class ForNode:
+class ForNode(Node):
     def __init__(self,assignment,condition,increment,statements):
         self.assignment=assignment
         self.condition=condition
         self.increment=increment
         self.statements=statements
 
-class ReturnNode:
+class ReturnNode(Node):
     def __init__(self,statement):
         self.statement=statement
 
-class PrintNode:
+class PrintNode(Node):
     def __init__(self,statement):
         self.statement=statement
 
-class SolveNode:
+class SolveNode(Node):
     def __init__(self,left_side,right_side):
         self.left_side =left_side
         self.right_side=right_side
 
-class SolveAssignNode:
+class SolveAssignNode(Node):
     def __init__(self,left_side,right_side):
         self.left_side=left_side
         self.right_side=right_side
 
-class BracketCallNode:
+class BracketCallNode(Node):
     def __init__(self,identifier,index):
         self.identifier=identifier
         self.index=index
 
-class ArrayApplyNode:
+class ArrayApplyNode(Node):
     def __init__(self,identifier,function):
         self.identifier=identifier
         self.function=function
 
-class IterateNode:
+class IterateNode(Node):
     def __init__(self,iterable,items,statements):
         self.iterable=iterable
         self.items=items
         self.statements=statements
 
-class RangeNode:
+class RangeNode(Node):
     def __init__(self,start,stop,step):
         self.start=start
         self.stop=stop
         self.step=step
 
-class ArrayDeclareNode:
+class ArrayDeclareNode(Node):
     def __init__(self,items):
         self.items=items
 
-class DictDeclareNode:
+class DictDeclareNode(Node):
     def __init__(self,items):
         self.items=items
 
-class PostIncrementNode:
+class PostIncrementNode(Node):
     def __init__(self,factor,value):
         self.factor=factor
         self.value=value
 
-class StringBuilderNode:
+class StringBuilderNode(Node):
     def __init__(self,string,tokens):
         self.string=string
         self.tokens=tokens
         
-class ClassDeclareNode:
+class ClassDeclareNode(Node):
     def __init__(self,identifier,body):
         self.identifier=identifier
         self.body=body

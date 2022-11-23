@@ -60,7 +60,7 @@ def size(obj):
     return Datatypes.Number(len(obj))
 
 def range(*args):
-    return Datatypes.Array(list(np.arange(*args)))
+    return Datatypes.Array([Datatypes.Number(num) for num in builtins.range(*args)])
 
 def quit():
     exit()

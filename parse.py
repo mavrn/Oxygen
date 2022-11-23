@@ -137,7 +137,7 @@ class Parser:
                         self.next_token()
                         step = self.exponential()
                     else:
-                        step = 1
+                        step = Datatypes.Number(1)
                     return Datatypes.RangeNode(start=start, stop=stop, step=step)
         return result
 
@@ -325,7 +325,7 @@ class Parser:
                 raise SyntaxError("Expected identifier after 'as' keyword")
             items.append(self.current_token.value)
             self.next_token()
-        return Datatypes.IterateNode(iterable = Datatypes.RangeNode(start=0, stop=loop_reps, step=1),
+        return Datatypes.IterateNode(iterable = Datatypes.RangeNode(start=Datatypes.Number(0), stop=loop_reps, step=Datatypes.Number(1)),
                                     items = items,
                                      statements=self.statement_block())
 

@@ -15,6 +15,8 @@ free operators: $ § =>> ==>
 #default args
 #make lexer operators dynamic
 #enable static class vars
+#cant print instances
+#add error in funccallh
 
 
 
@@ -28,3 +30,211 @@ free operators: $ § =>> ==>
 +repl namedtuples with classes: -0.15s
 
 
+#https://www.codewars.com/kata/55171d87236c880cea0004c6
+
+class SudokuState =>
+    fn setup grid =>
+        own grid = grid
+        own _children = []
+        own _min_choice = 0
+    <<
+    fn grequals other => own grid == other grid
+    fn grnotequals other => own grid != other grid
+    fn poss_by_row row col =>
+        poss = 1..10
+        iterate own grid[row] as n =>
+            if n != 0 => poss remove: n
+        <<
+        return poss
+    <<
+    fn poss_by_square row col =>
+        poss = 1..10
+        sq_row = row//3*3
+        sq_col = col//3*3
+        iterate range(sq_row, sq_row+3) as r =>
+            iterate range(sq_col, sq_col + 3) as c =>
+                n = own grid[r][c]
+                if n != 0 => poss remove: n
+            <<
+        <<
+        return poss
+    <<
+    fn poss_by_col row col =>
+        poss = 1..10
+        iterate own grid as row =>
+            if row[col] != 0 => poss remove(row[col])
+        <<
+        return poss
+    <<
+    fn all_poss row col =>
+        row_poss = own poss_by_row: row, col
+        col_poss = own poss_by_col: row, col
+        sq_poss = own poss_by_square: row, col
+        poss = row_poss intersection(col_poss, sq_poss)
+        return poss
+    <<
+    fn min_choice =>
+        if not own _min_choice =>
+            min_poss = 10
+            iterate 0..9 as r =>
+                iterate 0..9 as c =>
+                    if own grid[r][c] == 0 =>
+                        n_poss = own all_poss(r,c) size
+                        if n_poss < min_poss =>
+                            min_poss = n_poss
+                            own _min_choice = [r,c]
+                            if n_poss == 1 => return own _min_choice
+                        <<
+                    <<
+                <<
+            <<
+        <<
+        return own _min_choice
+    <<
+    fn children =>
+        if not own _children =>
+            cr = own min_choice
+            row = cr[0]; col = cr[1]
+            poss = own all_poss: row, col
+            iterate poss as p =>
+                new_grid = own grid deepclone
+                new_grid[row][col] = p
+                child = SudokuState new(new_grid)
+                own _children append: child
+            <<
+        <<
+        return own _children
+    <<
+    fn is_goal =>
+        iterate own grid as row =>
+            iterate row as n =>
+                if n==0 => return False
+            <<
+        <<
+        return True
+    <<
+<<
+
+fn solve puzzle =>
+    start=SudokuState new: puzzle
+    SL = [start]
+    NSL = [start]
+    DE = []
+    CS = start
+    while NSL =>
+        if CS is_goal => return CS grid
+        children = []
+        iterate CS children as child=>
+            if child not in DE and child not in NSL and child not in SL =>
+                children append: child
+            <<
+        <<
+        if not children =>
+            while SL and (CS grequals: (SL[0])) =>
+                DE insert: 0, CS
+                SL pop: 0
+                NSL pop: 0
+                if NSL => CS = NSL[0]
+            <<
+            SL insert: 0, CS
+        <<
+        else =>
+            NSL = children extend: NSL
+            CS = NSL[0]
+            SL insert: 0, CS
+        <<
+    <<
+<<
+
+
+puzzle = [[5,3,0,0,7,0,0,0,0],
+          [6,0,0,1,9,5,0,0,0],
+          [0,9,8,0,0,0,0,6,0],
+          [8,0,0,0,6,0,0,0,3],
+          [4,0,0,8,0,3,0,0,1],
+          [7,0,0,0,2,0,0,0,6],
+          [0,6,0,0,0,0,2,8,0],
+          [0,0,0,4,1,9,0,0,5],
+          [0,0,0,0,8,0,0,7,9]]
+ puzzle2 = [[0,0,6,1,0,0,0,0,8], 
+           [0,8,0,0,9,0,0,3,0], 
+           [2,0,0,0,0,5,4,0,0], 
+           [4,0,0,0,0,1,8,0,0], 
+           [0,3,0,0,7,0,0,4,0], 
+           [0,0,7,9,0,0,0,0,3], 
+           [0,0,8,4,0,0,0,0,6], 
+           [0,2,0,0,5,0,0,8,0], 
+           [1,0,0,0,0,2,5,0,0]]
+puzzle3 =  [[0,0,0,0,0,2,7,5,0],
+           [0,1,8,0,9,0,0,0,0],
+           [0,0,0,0,0,0,0,0,0],
+           [4,9,0,0,0,0,0,0,0],
+           [0,3,0,0,0,0,0,0,8],
+           [0,0,0,7,0,0,2,0,0],
+           [0,0,0,0,3,0,0,0,9],
+           [7,0,0,0,0,0,0,0,0],
+           [5,0,0,0,0,0,0,8,0]]
+puzzle solve out
+puzzle2 solve out
+puzzle3 solve out
+
+['[[5, 3, 4, 6, 7, 8, 9, 1, 2], [6, 7, 2, 1, 9, 5, 3, 4, 8], [1, 9, 8, 3, 4, 2, 5, 6, 7], [8, 5, 9, 7, 6, 1, 4, 2, 3], [4, 2, 6, 8, 5, 3, 7, 9, 1], [7, 1, 3, 9, 2, 4, 8, 
+5, 6], [9, 6, 1, 5, 3, 7, 2, 8, 4], [2, 8, 7, 4, 1, 9, 6, 3, 5], [3, 4, 5, 2, 8, 6, 1, 7, 9]]',
+'[[3, 4, 6, 1, 2, 7, 9, 5, 8], [7, 8, 5, 6, 9, 4, 1, 3, 2], [2, 1, 9, 3, 8, 5, 4, 6, 7], [4, 6, 2, 5, 3, 1, 8, 7, 9], [9, 3, 1, 2, 7, 8, 6, 4, 5], [8, 5, 7, 9, 4, 6, 2, 
+1, 3], [5, 9, 8, 4, 1, 3, 7, 2, 6], [6, 2, 4, 7, 5, 9, 3, 8, 1], [1, 7, 3, 8, 6, 2, 5, 9, 4]]',
+'[[9, 4, 6, 1, 8, 2, 7, 5, 3], [3, 1, 8, 5, 9, 7, 4, 2, 6], [2, 7, 5, 6, 4, 3, 8, 9, 1], [4, 9, 2, 3, 1, 8, 5, 6, 7], [6, 3, 7, 2, 5, 4, 9, 1, 8], [8, 5, 1, 7, 6, 9, 2, 
+3, 4], [1, 2, 4, 8, 3, 5, 6, 7, 9], [7, 8, 3, 9, 2, 6, 1, 4, 5], [5, 6, 9, 4, 7, 1, 3, 8, 2]]']
+
+
+
+
+~https://www.codewars.com/kata/52a78825cdfc2cfc87000005
+
+class Calculator =>
+    fn setup expression =>
+        own ex = expression asArr >> del if x==""
+    <<
+    fn peek => own ex[0] if own ex else ""
+    fn get_next => own ex pop: 0
+    fn number =>
+        result = own get_next 
+        while own peek >= "0" and own peek <= "9" or own peek == "." =>
+            result += own get_next
+        <<
+        return result asNum
+    <<
+    fn factor =>
+        if "0" <= own peek <= "9" or own peek == "." =>
+            return own number
+        <<
+        or own peek == "(" =>
+            own get_next
+            result = own expression
+            
+            own get_next
+            return result
+        <<
+        or peek == "-" =>
+            own get_next
+            return -(own factor)
+        <<
+    <<
+    fn term =>
+        result = own factor 
+        while own peek == "*" or own peek == "/" =>
+            if own get_next == "*" => result *= own factor
+            else => result /= factor()
+        <<
+        return result
+    <<
+    fn expression =>
+        result = own term
+        while own peek == "+" or own peek == "-" =>
+            if own get_next == "+" => result += own term
+            else => result -= own term
+        <<
+        return result
+    <<
+    fn evaluate => own expression
+<<
+(Calculator new: "1+1*6") evaluate out

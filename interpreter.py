@@ -23,7 +23,8 @@ BUILTIN_EXPECTED_ARGS = {"sin": [1], "cos": [1], "tan": [1], "asin": [1], "acos"
                          "at": [2], "insert": [3], "get": [2], "sorted": [1], "all": [1], "some": [1], "none": [1],
                          "startswith": [2], "endswith": [2], "format": range(2, 100), "extend": [2], "repr": [1],
                          "findseq": [2], "detect": [2], "foreach": [2], "arrOf" : range(0,100), "fill": [2], 
-                         "every": [2], "reverse": [1], "hasKey": [2], "hasValue": [2], "new": range(1,100)
+                         "every": [2], "reverse": [1], "hasKey": [2], "hasValue": [2], "new": range(1,100),
+                         "deepclone": [1]
                          }
 
 MATH_KEYWORDS = ["sin", "cos", "tan", "asin", "acos", "atan", "sqrt", "factorial"]
@@ -99,8 +100,9 @@ class Interpreter:
                         return self.instance_call_handler(node)
                 if node.variable.identifier in BUILTIN_EXPECTED_ARGS:
                     return self.builtin_handler(node)
-                else:
+                if node.variable.identifier in self.fields["global"] or isinstance(node.variable, Datatypes.Function):
                     return self.function_call_handler(self.evaluate(node.variable), node)
+                raise Exception()
             case name if name in OPERATIONAL_NODES:
                 return self.operation_handler(node)
             case "AssignNode":
@@ -322,10 +324,10 @@ class Interpreter:
                 self.scope = " > ".join(self.scope.split(" > ")[:-1])
                 return out
             case "RangeNode":
-                return Datatypes.Array([Datatypes.Number(num) for num in np.arange(
-                    self.evaluate(node.start),
-                    self.evaluate(node.stop),
-                    self.evaluate(node.step)
+                return Datatypes.Array([Datatypes.Number(num) for num in builtins.range(
+                    self.evaluate(node.start).get_num(),
+                    self.evaluate(node.stop).get_num(),
+                    self.evaluate(node.step).get_num()
                 )])
             case "ReturnNode":
                 if self.scope == "global":
@@ -499,12 +501,12 @@ class Interpreter:
                                                Datatypes.AND))
         a = self.evaluate(node.a)
         b = self.evaluate(node.b)
-        operator = node.operator
+        
         if isinstance(a, Datatypes.Bool):
             a = bool(a)
         if isinstance(b, Datatypes.Bool):
             b = bool(b)
-        match operator:
+        match node.operator:
             case Datatypes.COMP_EQUALS:
                 result = Datatypes.Bool(a == b)
             case Datatypes.COMP_NOT_EQUALS:
